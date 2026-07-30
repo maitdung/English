@@ -1,3 +1,5 @@
+import Button from "../../../components/ui/Button/Button";
+
 const overviewCards = [
   {
     label: "Bài học hoàn thành",
@@ -56,7 +58,33 @@ const recentLessons = [
   },
 ];
 
+const achievements = [
+  {
+    icon: "🔥",
+    title: "Chuỗi 10 ngày",
+    detail: "Học liên tục trong 10 ngày",
+  },
+  {
+    icon: "⭐",
+    title: "100 từ đầu tiên",
+    detail: "Đã học thành công 100 từ",
+  },
+  {
+    icon: "🎧",
+    title: "Người nghe chăm chỉ",
+    detail: "Hoàn thành 20 bài nghe",
+  },
+];
+
 function DashboardPage() {
+  const handleContinueLearning = () => {
+    console.log("Tiếp tục học");
+  };
+
+  const handleContinueLesson = (lessonTitle: string) => {
+    console.log("Học tiếp:", lessonTitle);
+  };
+
   return (
     <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9">
       <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
@@ -75,27 +103,29 @@ function DashboardPage() {
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
-          className="w-full rounded-2xl bg-cyan-400 px-6 py-3.5 font-black text-slate-950 transition hover:bg-cyan-300 sm:w-auto"
+          size="large"
+          onClick={handleContinueLearning}
+          className="w-full sm:w-auto"
         >
           Tiếp tục học →
-        </button>
+        </Button>
       </section>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {overviewCards.map((card) => (
           <article
             key={card.label}
-            className="rounded-3xl border border-white/10 bg-slate-900/60 p-5"
+            className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 transition hover:-translate-y-1 hover:border-cyan-400/20 hover:bg-slate-900/80"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-400">{card.label}</p>
                 <p className="mt-2 text-3xl font-black">{card.value}</p>
               </div>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-xl">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/5 text-xl">
                 {card.icon}
               </div>
             </div>
@@ -109,7 +139,7 @@ function DashboardPage() {
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-black">Hoạt động tuần này</h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -117,13 +147,21 @@ function DashboardPage() {
               </p>
             </div>
 
-            <select className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-300 outline-none">
-              <option>Tuần này</option>
-              <option>Tuần trước</option>
+            <label className="sr-only" htmlFor="activity-period">
+              Chọn khoảng thời gian
+            </label>
+
+            <select
+              id="activity-period"
+              defaultValue="current-week"
+              className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-slate-300 outline-none transition focus:border-cyan-400/50"
+            >
+              <option value="current-week">Tuần này</option>
+              <option value="previous-week">Tuần trước</option>
             </select>
           </div>
 
-          <div className="mt-8 flex h-64 items-end justify-between gap-3">
+          <div className="mt-8 flex h-64 items-end justify-between gap-2 sm:gap-3">
             {weeklyActivity.map((item) => (
               <div
                 key={item.day}
@@ -133,6 +171,7 @@ function DashboardPage() {
                   <div
                     className="w-full rounded-xl bg-gradient-to-t from-blue-600 to-cyan-300 transition hover:opacity-80"
                     style={{ height: `${item.value}%` }}
+                    title={`${item.day}: ${item.value} phút`}
                   />
 
                   <span className="absolute left-1/2 top-3 -translate-x-1/2 text-[10px] font-bold text-slate-400">
@@ -154,7 +193,14 @@ function DashboardPage() {
           </p>
 
           <div className="mt-6 flex items-center justify-center">
-            <div className="relative flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(#22d3ee_0deg,#22d3ee_240deg,#1e293b_240deg,#1e293b_360deg)]">
+            <div
+              className="relative flex h-44 w-44 items-center justify-center rounded-full bg-[conic-gradient(#22d3ee_0deg,#22d3ee_240deg,#1e293b_240deg,#1e293b_360deg)]"
+              role="progressbar"
+              aria-label="Tiến độ mục tiêu hôm nay"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={67}
+            >
               <div className="flex h-36 w-36 flex-col items-center justify-center rounded-full bg-slate-900">
                 <p className="text-4xl font-black">67%</p>
                 <p className="mt-1 text-xs text-slate-500">Hoàn thành</p>
@@ -183,7 +229,7 @@ function DashboardPage() {
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-black">Bài học gần đây</h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -193,7 +239,7 @@ function DashboardPage() {
 
             <button
               type="button"
-              className="text-sm font-bold text-cyan-400 transition hover:text-cyan-300"
+              className="shrink-0 text-sm font-bold text-cyan-400 transition hover:text-cyan-300"
             >
               Xem tất cả
             </button>
@@ -203,7 +249,7 @@ function DashboardPage() {
             {recentLessons.map((lesson) => (
               <div
                 key={lesson.title}
-                className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:flex-row sm:items-center"
+                className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-white/20 hover:bg-white/[0.04] sm:flex-row sm:items-center"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/5 text-xl">
                   {lesson.icon}
@@ -211,11 +257,19 @@ function DashboardPage() {
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold">{lesson.title}</p>
+
                   <p className="mt-1 text-xs text-slate-500">
                     {lesson.category}
                   </p>
 
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800"
+                    role="progressbar"
+                    aria-label={`Tiến độ bài học ${lesson.title}`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={lesson.progress}
+                  >
                     <div
                       className="h-full rounded-full bg-cyan-400"
                       style={{ width: `${lesson.progress}%` }}
@@ -228,12 +282,15 @@ function DashboardPage() {
                     {lesson.progress}%
                   </p>
 
-                  <button
+                  <Button
                     type="button"
-                    className="mt-0 rounded-xl bg-white/5 px-4 py-2 text-xs font-bold transition hover:bg-white/10 sm:mt-2"
+                    variant="ghost"
+                    size="small"
+                    onClick={() => handleContinueLesson(lesson.title)}
+                    className="sm:mt-2"
                   >
                     Học tiếp
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -242,31 +299,16 @@ function DashboardPage() {
 
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <h2 className="text-xl font-black">Thành tích</h2>
+
           <p className="mt-1 text-sm text-slate-500">
             Các cột mốc gần đây của bạn
           </p>
 
           <div className="mt-6 space-y-4">
-            {[
-              {
-                icon: "🔥",
-                title: "Chuỗi 10 ngày",
-                detail: "Học liên tục trong 10 ngày",
-              },
-              {
-                icon: "⭐",
-                title: "100 từ đầu tiên",
-                detail: "Đã học thành công 100 từ",
-              },
-              {
-                icon: "🎧",
-                title: "Người nghe chăm chỉ",
-                detail: "Hoàn thành 20 bài nghe",
-              },
-            ].map((achievement) => (
+            {achievements.map((achievement) => (
               <div
                 key={achievement.title}
-                className="flex items-center gap-4 rounded-2xl bg-white/[0.03] p-4"
+                className="flex items-center gap-4 rounded-2xl bg-white/[0.03] p-4 transition hover:bg-white/[0.05]"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-400/10 text-xl">
                   {achievement.icon}
@@ -274,6 +316,7 @@ function DashboardPage() {
 
                 <div>
                   <p className="text-sm font-bold">{achievement.title}</p>
+
                   <p className="mt-1 text-xs leading-5 text-slate-500">
                     {achievement.detail}
                   </p>
