@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "../../auth/context/AuthContext";
 import type { LearningProgress } from "../types/learning";
 
-const STORAGE_KEY = "mtd-lingo-learning-progress";
+const STORAGE_KEY_PREFIX = "mtd-lingo-learning-progress";
 
 const defaultProgress: LearningProgress = {
   completedLessonIds: [],
@@ -10,42 +11,76 @@ const defaultProgress: LearningProgress = {
   quizHighScore: 0,
 };
 
-function readStoredProgress(): LearningProgress {
+function createDefaultProgress(): LearningProgress {
+  return {
+    completedLessonIds: [],
+    reviewedFlashcardIds: [],
+    quizHighScore: 0,
+  };
+}
+
+function readStoredProgress(storageKey: string): LearningProgress {
   try {
-    const storedValue = window.localStorage.getItem(STORAGE_KEY);
+    const storedValue = window.localStorage.getItem(storageKey);
 
     if (!storedValue) {
-      return defaultProgress;
+      return createDefaultProgress();
     }
 
-    const parsedValue = JSON.parse(storedValue) as Partial<LearningProgress>;
+    const parsedValue = JSON.parse(
+      storedValue,
+    ) as Partial<LearningProgress>;
 
     return {
-      completedLessonIds: Array.isArray(parsedValue.completedLessonIds)
-        ? parsedValue.completedLessonIds
+      completedLessonIds: Array.isArray(
+        parsedValue.completedLessonIds,
+      )
+        ? parsedValue.completedLessonIds.filter(
+            (lessonId): lessonId is string =>
+              typeof lessonId === "string",
+          )
         : [],
       reviewedFlashcardIds: Array.isArray(
         parsedValue.reviewedFlashcardIds,
       )
-        ? parsedValue.reviewedFlashcardIds
+        ? parsedValue.reviewedFlashcardIds.filter(
+            (flashcardId): flashcardId is string =>
+              typeof flashcardId === "string",
+          )
         : [],
       quizHighScore:
         typeof parsedValue.quizHighScore === "number"
-          ? parsedValue.quizHighScore
+          ? Math.max(0, Math.min(100, parsedValue.quizHighScore))
           : 0,
     };
   } catch {
-    return defaultProgress;
+    return createDefaultProgress();
   }
 }
 
 export default function useLearningProgress() {
-  const [progress, setProgress] =
-    useState<LearningProgress>(readStoredProgress);
+  const { user } = useAuth();
+
+  const storageKey = useMemo(() => {
+    const userId = user?.id ?? "guest";
+
+    return `${STORAGE_KEY_PREFIX}:${userId}`;
+  }, [user?.id]);
+
+  const [progress, setProgress] = useState<LearningProgress>(() =>
+    readStoredProgress(storageKey),
+  );
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+    setProgress(readStoredProgress(storageKey));
+  }, [storageKey]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify(progress),
+    );
+  }, [progress, storageKey]);
 
   const completeLesson = (lessonId: string) => {
     setProgress((currentProgress) => {
@@ -82,9 +117,14 @@ export default function useLearningProgress() {
   };
 
   const saveQuizScore = (score: number) => {
+    const normalizedScore = Math.max(0, Math.min(100, score));
+
     setProgress((currentProgress) => ({
       ...currentProgress,
-      quizHighScore: Math.max(currentProgress.quizHighScore, score),
+      quizHighScore: Math.max(
+        currentProgress.quizHighScore,
+        normalizedScore,
+      ),
     }));
   };
 

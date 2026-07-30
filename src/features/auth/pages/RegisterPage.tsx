@@ -1,234 +1,250 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+
 import Button from "../../../components/ui/Button/Button";
+import Input from "../../../components/ui/Input/Input";
+import { useAuth } from "../context/AuthContext";
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { register, isAuthenticated } = useAuth();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const validateForm = () => {
+    if (fullName.trim().length < 2) {
+      return "Họ và tên phải có ít nhất 2 ký tự.";
+    }
+
+    if (!email.trim()) {
+      return "Vui lòng nhập email.";
+    }
+
+    if (password.length < 6) {
+      return "Mật khẩu phải có ít nhất 6 ký tự.";
+    }
 
     if (password !== confirmPassword) {
-      setErrorMessage("Mật khẩu xác nhận không trùng khớp.");
+      return "Mật khẩu xác nhận không khớp.";
+    }
+
+    if (!acceptedTerms) {
+      return "Bạn cần đồng ý với điều khoản sử dụng.";
+    }
+
+    return "";
+  };
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    const validationMessage = validateForm();
+
+    if (validationMessage) {
+      setErrorMessage(validationMessage);
       return;
     }
 
-    setErrorMessage("");
+    try {
+      setIsSubmitting(true);
+      setErrorMessage("");
 
-    // Tạm thời chuyển tới Dashboard.
-    // Sau này sẽ thay bằng API đăng ký thật.
-    navigate("/dashboard");
-  }
+      await register({
+        fullName,
+        email,
+        password,
+      });
+
+      navigate("/dashboard", {
+        replace: true,
+      });
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Không thể đăng ký. Vui lòng thử lại.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-10 text-white">
-      <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-7xl items-center justify-center">
-        <div className="grid w-full max-w-5xl overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/70 shadow-2xl lg:grid-cols-2">
-          <section className="relative hidden overflow-hidden bg-gradient-to-br from-violet-500/20 via-blue-500/20 to-cyan-500/20 p-10 lg:flex lg:flex-col lg:justify-between">
-            <div className="absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
-            <div className="absolute -right-20 top-0 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
+    <main className="min-h-screen bg-slate-950 px-5 py-8 text-white sm:px-8">
+      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/60 lg:grid-cols-2">
+        <section className="hidden bg-gradient-to-br from-violet-500/20 via-slate-950 to-cyan-500/20 p-10 lg:flex lg:flex-col lg:justify-between">
+          <Link
+            to="/"
+            className="text-2xl font-black tracking-tight text-white"
+          >
+            MTD <span className="text-cyan-400">Lingo Pro</span>
+          </Link>
 
-            <Link to="/" className="relative flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-400 font-black text-slate-950">
-                M
-              </div>
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-300">
+              Bắt đầu miễn phí
+            </p>
 
-              <div>
-                <p className="text-lg font-black">MTD Lingo Pro</p>
-                <p className="text-xs text-slate-400">
-                  English Learning Platform
-                </p>
-              </div>
+            <h1 className="mt-5 max-w-xl text-5xl font-black leading-tight">
+              Xây dựng thói quen học tiếng Anh mỗi ngày.
+            </h1>
+
+            <div className="mt-8 space-y-4 text-slate-300">
+              <p>✓ Lộ trình học theo trình độ</p>
+              <p>✓ Flashcard và Quiz tương tác</p>
+              <p>✓ Theo dõi tiến độ học tập</p>
+              <p>✓ Luyện nghe và luyện thi TOEIC</p>
+            </div>
+          </div>
+
+          <p className="text-sm text-slate-500">
+            © 2026 MTD Lingo Pro
+          </p>
+        </section>
+
+        <section className="flex items-center justify-center p-6 sm:p-10">
+          <div className="w-full max-w-md">
+            <Link
+              to="/"
+              className="inline-flex text-xl font-black lg:hidden"
+            >
+              MTD&nbsp;<span className="text-cyan-400">Lingo Pro</span>
             </Link>
 
-            <div className="relative">
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-violet-300">
-                Học miễn phí
-              </p>
+            <p className="mt-8 text-sm font-black uppercase tracking-[0.2em] text-cyan-400 lg:mt-0">
+              Tạo tài khoản
+            </p>
 
-              <h1 className="mt-4 text-4xl font-black leading-tight">
-                Xây dựng thói quen tiếng Anh ngay hôm nay
-              </h1>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">
+              Đăng ký MTD Lingo Pro
+            </h2>
 
-              <p className="mt-5 max-w-md leading-7 text-slate-300">
-                Tạo tài khoản để nhận lộ trình học cá nhân và theo dõi sự tiến
-                bộ qua từng ngày.
-              </p>
-            </div>
+            <p className="mt-3 text-sm leading-7 text-slate-400">
+              Tạo tài khoản để lưu bài học và tiến độ của bạn.
+            </p>
 
-            <div className="relative space-y-4">
-              {[
-                "Bài kiểm tra trình độ miễn phí",
-                "Lộ trình học tập cá nhân",
-                "Theo dõi tiến độ mỗi ngày",
-              ].map((benefit) => (
-                <div key={benefit} className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/15 text-xs font-black text-emerald-300">
-                    ✓
-                  </div>
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+              <Input
+                id="register-full-name"
+                label="Họ và tên"
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+                placeholder="Nguyễn Văn A"
+                autoComplete="name"
+                required
+              />
 
-                  <p className="text-sm font-semibold text-slate-200">
-                    {benefit}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+              <Input
+                id="register-email"
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="example@email.com"
+                autoComplete="email"
+                required
+              />
 
-          <section className="p-6 sm:p-10">
-            <div className="mx-auto max-w-md">
-              <Link
-                to="/"
-                className="mb-10 inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-white lg:hidden"
-              >
-                ← Quay lại trang chủ
-              </Link>
-
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-400">
-                Tạo tài khoản
-              </p>
-
-              <h2 className="mt-3 text-3xl font-black">
-                Bắt đầu học miễn phí
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                Chỉ mất một phút để tạo tài khoản.
-              </p>
-
-              <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-semibold text-slate-200"
-                    htmlFor="fullName"
-                  >
-                    Họ và tên
-                  </label>
-
-                  <input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                    placeholder="Nguyễn Văn A"
-                    required
-                    autoComplete="name"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-violet-400/60"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-semibold text-slate-200"
-                    htmlFor="registerEmail"
-                  >
-                    Email
-                  </label>
-
-                  <input
-                    id="registerEmail"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="example@gmail.com"
-                    required
-                    autoComplete="email"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-violet-400/60"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-semibold text-slate-200"
-                    htmlFor="registerPassword"
-                  >
-                    Mật khẩu
-                  </label>
-
-                  <input
-                    id="registerPassword"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Tối thiểu 6 ký tự"
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-violet-400/60"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-semibold text-slate-200"
-                    htmlFor="confirmPassword"
-                  >
-                    Xác nhận mật khẩu
-                  </label>
-
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) =>
-                      setConfirmPassword(event.target.value)
+              <Input
+                id="register-password"
+                label="Mật khẩu"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Tối thiểu 6 ký tự"
+                autoComplete="new-password"
+                required
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword((currentValue) => !currentValue)
                     }
-                    placeholder="Nhập lại mật khẩu"
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-violet-400/60"
-                  />
-                </div>
+                    className="text-xs font-bold text-cyan-300"
+                  >
+                    {showPassword ? "Ẩn" : "Hiện"}
+                  </button>
+                }
+              />
 
-                {errorMessage && (
-                  <p className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300">
-                    {errorMessage}
-                  </p>
-                )}
+              <Input
+                id="register-confirm-password"
+                label="Xác nhận mật khẩu"
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(event) =>
+                  setConfirmPassword(event.target.value)
+                }
+                placeholder="Nhập lại mật khẩu"
+                autoComplete="new-password"
+                required
+              />
 
-                <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-slate-400">
-                  <input
-                    type="checkbox"
-                    required
-                    className="mt-1 h-4 w-4 shrink-0 accent-violet-400"
-                  />
+              <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-slate-400">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(event) =>
+                    setAcceptedTerms(event.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 shrink-0 accent-cyan-400"
+                />
 
-                  <span>
-                    Tôi đồng ý với{" "}
-                    <button
-                      type="button"
-                      className="font-semibold text-violet-400"
-                    >
-                      điều khoản sử dụng
-                    </button>{" "}
-                    và chính sách bảo mật.
-                  </span>
-                </label>
+                <span>
+                  Tôi đồng ý với{" "}
+                  <button
+                    type="button"
+                    className="font-bold text-cyan-300"
+                  >
+                    điều khoản sử dụng
+                  </button>{" "}
+                  và chính sách bảo mật.
+                </span>
+              </label>
 
-            <Button type="submit" fullWidth>
-                Tạo tài khoản
-            </Button>
-              </form>
-
-              <p className="mt-8 text-center text-sm text-slate-400">
-                Đã có tài khoản?{" "}
-                <Link
-                  to="/login"
-                  className="font-bold text-violet-400 transition hover:text-violet-300"
+              {errorMessage && (
+                <p
+                  role="alert"
+                  className="rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm font-semibold text-red-300"
                 >
-                  Đăng nhập
-                </Link>
-              </p>
-            </div>
-          </section>
-        </div>
+                  {errorMessage}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                fullWidth
+                size="large"
+                isLoading={isSubmitting}
+              >
+                Tạo tài khoản
+              </Button>
+            </form>
+
+            <p className="mt-7 text-center text-sm text-slate-400">
+              Đã có tài khoản?{" "}
+              <Link
+                to="/login"
+                className="font-black text-cyan-300 transition hover:text-cyan-200"
+              >
+                Đăng nhập
+              </Link>
+            </p>
+          </div>
+        </section>
       </div>
     </main>
   );

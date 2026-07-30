@@ -1,37 +1,81 @@
 import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
+
+import { useAuth } from "../features/auth/context/AuthContext";
 
 const navigationItems = [
   {
     label: "Tổng quan",
+    path: "/dashboard",
     icon: "🏠",
-    to: "/dashboard",
     end: true,
   },
   {
     label: "Lộ trình học",
+    path: "/dashboard/learning",
     icon: "🗺️",
-    to: "/dashboard/learning",
+  },
+  {
+    label: "Khóa học",
+    path: "/dashboard/courses",
+    icon: "🎓",
   },
   {
     label: "Từ vựng",
-    icon: "📚",
-    to: "/dashboard/vocabulary",
+    path: "/dashboard/vocabulary",
+    icon: "📖",
+  },
+  {
+    label: "Flashcard",
+    path: "/dashboard/flashcards",
+    icon: "🃏",
   },
   {
     label: "Luyện nghe",
+    path: "/dashboard/listening",
     icon: "🎧",
-    to: "/dashboard/listening",
+  },
+  {
+    label: "Quiz",
+    path: "/dashboard/quiz",
+    icon: "✅",
   },
   {
     label: "Luyện thi TOEIC",
+    path: "/dashboard/toeic",
     icon: "🏆",
-    to: "/dashboard/toeic",
+  },
+  {
+    label: "Hồ sơ cá nhân",
+    path: "/dashboard/profile",
+    icon: "👤",
   },
 ];
 
 function DashboardLayout() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", {
+      replace: true,
+    });
+  };
+
+  const userInitial =
+    user?.fullName.trim().charAt(0).toUpperCase() || "U";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -39,8 +83,8 @@ function DashboardLayout() {
         <button
           type="button"
           aria-label="Đóng menu"
-          onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          onClick={closeSidebar}
+          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden"
         />
       )}
 
@@ -50,141 +94,167 @@ function DashboardLayout() {
         }`}
       >
         <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 font-black text-slate-950">
-              M
-            </div>
-
-            <div>
-              <p className="font-black">MTD Lingo</p>
-              <p className="text-xs text-slate-500">Learning Dashboard</p>
-            </div>
-          </Link>
+          <NavLink
+            to="/dashboard"
+            onClick={closeSidebar}
+            className="text-xl font-black"
+          >
+            MTD <span className="text-cyan-400">Lingo Pro</span>
+          </NavLink>
 
           <button
             type="button"
-            onClick={() => setIsSidebarOpen(false)}
-            className="text-xl text-slate-400 lg:hidden"
+            onClick={closeSidebar}
+            aria-label="Đóng thanh điều hướng"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-xl lg:hidden"
           >
             ×
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
-          <p className="mb-3 px-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-            Học tập
-          </p>
-
-          <div className="space-y-1">
-            {navigationItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={() => setIsSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-cyan-400 text-slate-950"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white"
-                  }`
-                }
-              >
-                <span className="text-lg">{item.icon}</span>
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-
-          <p className="mb-3 mt-8 px-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-            Tài khoản
-          </p>
-
-          <div className="space-y-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          {navigationItems.map((item) => (
             <NavLink
-              to="/dashboard/profile"
+              key={item.path}
+              to={item.path}
+              end={item.end}
+              onClick={closeSidebar}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition ${
                   isActive
                     ? "bg-cyan-400 text-slate-950"
                     : "text-slate-400 hover:bg-white/5 hover:text-white"
                 }`
               }
             >
-              <span className="text-lg">👤</span>
-              Hồ sơ cá nhân
-            </NavLink>
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 items-center justify-center"
+              >
+                {item.icon}
+              </span>
 
-            <Link
-              to="/"
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-400 transition hover:bg-red-400/10 hover:text-red-300"
-            >
-              <span className="text-lg">↪</span>
-              Đăng xuất
-            </Link>
-          </div>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="border-t border-white/10 p-4">
-          <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-4">
-            <p className="text-sm font-bold text-cyan-300">MTD Lingo Pro</p>
-            <p className="mt-2 text-xs leading-5 text-slate-400">
-              Mở khóa toàn bộ bài học và đề luyện thi chuyên sâu.
+          <div className="rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
+              Mục tiêu hôm nay
             </p>
 
-            <button
-              type="button"
-              className="mt-4 w-full rounded-xl bg-cyan-400 px-3 py-2.5 text-sm font-black text-slate-950"
-            >
-              Nâng cấp ngay
-            </button>
+            <div className="mt-3 flex items-end justify-between">
+              <p className="text-2xl font-black">32 phút</p>
+              <p className="text-xs font-bold text-slate-400">
+                / 45 phút
+              </p>
+            </div>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-full w-[71%] rounded-full bg-cyan-400" />
+            </div>
           </div>
         </div>
       </aside>
 
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-slate-950/85 px-5 backdrop-blur-xl sm:px-8">
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xl lg:hidden"
-            >
-              ☰
-            </button>
+      <div className="min-h-screen lg:pl-72">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-slate-950/90 px-5 backdrop-blur-xl sm:px-8">
+          <button
+            type="button"
+            onClick={() =>
+              setIsSidebarOpen((currentValue) => !currentValue)
+            }
+            aria-label="Mở thanh điều hướng"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-xl lg:hidden"
+          >
+            ☰
+          </button>
 
-            <div>
-              <p className="text-xs text-slate-500">Thứ năm, 30 tháng 7</p>
-              <p className="font-bold">Chào buổi tối, MTD 👋</p>
-            </div>
+          <div className="hidden lg:block">
+            <p className="text-sm text-slate-500">
+              Chào mừng trở lại,
+            </p>
+
+            <p className="mt-1 font-black">
+              {user?.fullName || "Học viên"}
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="relative ml-auto">
             <button
               type="button"
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5"
+              onClick={() =>
+                setShowUserMenu((currentValue) => !currentValue)
+              }
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-2 pr-3 transition hover:border-white/20"
             >
-              🔔
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-400" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 font-black text-slate-950">
+                {userInitial}
+              </span>
+
+              <span className="hidden text-left sm:block">
+                <span className="block max-w-40 truncate text-sm font-black">
+                  {user?.fullName || "Học viên"}
+                </span>
+
+                <span className="block max-w-40 truncate text-xs text-slate-500">
+                  {user?.email || ""}
+                </span>
+              </span>
+
+              <span
+                className={`text-xs text-slate-500 transition ${
+                  showUserMenu ? "rotate-180" : ""
+                }`}
+              >
+                ▼
+              </span>
             </button>
 
-            <button
-              type="button"
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-1.5 pr-3"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 font-black text-slate-950">
-                M
-              </div>
+            {showUserMenu && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Đóng menu tài khoản"
+                  onClick={() => setShowUserMenu(false)}
+                  className="fixed inset-0 z-30 cursor-default"
+                />
 
-              <div className="hidden text-left sm:block">
-                <p className="text-sm font-bold">Mai Tiến Dũng</p>
-                <p className="text-xs text-slate-500">Trình độ A2</p>
-              </div>
-            </button>
+                <div className="absolute right-0 top-[calc(100%+12px)] z-40 w-64 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-2xl shadow-black/30">
+                  <div className="border-b border-white/10 px-3 py-3">
+                    <p className="truncate text-sm font-black">
+                      {user?.fullName}
+                    </p>
+
+                    <p className="mt-1 truncate text-xs text-slate-500">
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <NavLink
+                    to="/dashboard/profile"
+                    onClick={() => setShowUserMenu(false)}
+                    className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-slate-300 transition hover:bg-white/5 hover:text-white"
+                  >
+                    👤 Hồ sơ cá nhân
+                  </NavLink>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold text-red-300 transition hover:bg-red-400/10"
+                  >
+                    🚪 Đăng xuất
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </header>
 
-        <main className="min-h-[calc(100vh-80px)]">
+        <main>
           <Outlet />
         </main>
       </div>

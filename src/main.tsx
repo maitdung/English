@@ -1,16 +1,21 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { RouterProvider } from "react-router-dom";
 
 import "./index.css";
-import "./styles/glass.css";
+import { AuthProvider } from "./features/auth/context/AuthContext";
+import { router } from "./router";
 
-import App from "./app/App";
-import Providers from "./app/providers";
+const rootElement = document.getElementById("root");
 
-createRoot(document.getElementById("root")!).render(
+if (!rootElement) {
+  throw new Error("Không tìm thấy phần tử #root.");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
-    <Providers>
-      <App />
-    </Providers>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 );
