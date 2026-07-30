@@ -12,7 +12,9 @@ function MainLayout() {
 
             <div>
               <p className="text-lg font-bold leading-none">MTD Lingo</p>
-              <p className="mt-1 text-xs text-slate-400">English Learning Platform</p>
+              <p className="mt-1 text-xs text-slate-400">
+                English Learning Platform
+              </p>
             </div>
           </Link>
 
@@ -35,19 +37,19 @@ function MainLayout() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
+            <Link
+              to="/login"
               className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white sm:block"
             >
               Đăng nhập
-            </button>
+            </Link>
 
-            <button
-              type="button"
+            <Link
+              to="/register"
               className="rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
             >
               Học miễn phí
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -60,6 +62,7 @@ function MainLayout() {
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:justify-between lg:px-8">
           <div>
             <p className="text-lg font-bold">MTD Lingo Pro</p>
+
             <p className="mt-2 text-sm text-slate-400">
               Nền tảng tự học tiếng Anh dành cho người Việt.
             </p>
