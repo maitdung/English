@@ -22,3 +22,41 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backend environment
+server/.env
+
+# Local database backups
+backups/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# Dependencies and builds
+node_modules/
+dist/
+coverage/
+server/node_modules/
+server/dist/
+server/coverage/
+
+# Temporary files
+*.zip
+tsc-errors*.txt
+*.log
+.DS_Store
+
+# Local AI/editor folders
+server/.agents/
+server/.claude/
+server/.windsurf/
+
+# Backups
+*.backup.ts
+*.fixed.ts
+server-git-backup/

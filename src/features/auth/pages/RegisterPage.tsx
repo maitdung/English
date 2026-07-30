@@ -31,8 +31,8 @@ function RegisterPage() {
       return "Vui lòng nhập email.";
     }
 
-    if (password.length < 6) {
-      return "Mật khẩu phải có ít nhất 6 ký tự.";
+    if (password.length < 8) {
+  return "Mật khẩu phải có ít nhất 8 ký tự.";
     }
 
     if (password !== confirmPassword) {
@@ -164,7 +164,7 @@ function RegisterPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 8 ký tự"
                 autoComplete="new-password"
                 required
                 rightElement={

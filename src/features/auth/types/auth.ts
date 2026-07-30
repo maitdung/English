@@ -1,11 +1,34 @@
+export type UserRole = "STUDENT" | "TEACHER" | "ADMIN";
+
+export type UserStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+
 export type AuthUser = {
   id: string;
-  fullName: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
+  fullName: string;
+  avatarUrl: string | null;
+  role: UserRole;
+  status: UserStatus;
+  emailVerified: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
-export type StoredUser = AuthUser & {
-  password: string;
+export type ApiUser = {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  avatarUrl: string | null;
+  role: UserRole;
+  status: UserStatus;
+  emailVerified: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type LoginCredentials = {
@@ -19,11 +42,29 @@ export type RegisterPayload = {
   password: string;
 };
 
+export type AuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiresIn: number;
+  refreshTokenExpiresIn: number;
+};
+
+export type AuthResponse = AuthTokens & {
+  user: ApiUser;
+};
+
+export type AuthSession = {
+  user: AuthUser;
+  accessToken: string;
+  refreshToken: string;
+};
+
 export type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
-  logout: () => void;
+  refreshCurrentUser: () => Promise<void>;
+  logout: () => Promise<void>;
 };

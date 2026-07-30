@@ -1,46 +1,57 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
+import {
+  getCurrentUserRequest,
+  loginRequest,
+  logoutRequest,
+  refreshTokensRequest,
+  registerRequest,
+} from "../../../lib/api/auth-api";
 import type {
+  ApiUser,
   AuthContextValue,
+  AuthSession,
   AuthUser,
   LoginCredentials,
   RegisterPayload,
-  StoredUser,
 } from "../types/auth";
 
-const USERS_STORAGE_KEY = "mtd-lingo-users";
-const SESSION_STORAGE_KEY = "mtd-lingo-session";
+const SESSION_STORAGE_KEY = "mtd-lingo-auth-session";
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | undefined>(
+  undefined,
+);
 
 type AuthProviderProps = {
   children: ReactNode;
 };
 
-function readStoredUsers(): StoredUser[] {
-  try {
-    const storedUsers = window.localStorage.getItem(USERS_STORAGE_KEY);
+function createFullName(user: ApiUser): string {
+  const fullName = [user.lastName, user.firstName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
-    if (!storedUsers) {
-      return [];
-    }
-
-    const parsedUsers = JSON.parse(storedUsers);
-
-    return Array.isArray(parsedUsers) ? parsedUsers : [];
-  } catch {
-    return [];
-  }
+  return fullName || user.email.split("@")[0] || "Học viên";
 }
 
-function readStoredSession(): AuthUser | null {
+function mapApiUser(user: ApiUser): AuthUser {
+  return {
+    ...user,
+    fullName: createFullName(user),
+  };
+}
+
+function readStoredSession(): AuthSession | null {
   try {
     const storedSession = window.localStorage.getItem(
       SESSION_STORAGE_KEY,
@@ -50,142 +61,246 @@ function readStoredSession(): AuthUser | null {
       return null;
     }
 
-    const parsedSession = JSON.parse(storedSession) as AuthUser;
+    const parsedSession = JSON.parse(
+      storedSession,
+    ) as Partial<AuthSession>;
 
     if (
-      typeof parsedSession.id !== "string" ||
-      typeof parsedSession.fullName !== "string" ||
-      typeof parsedSession.email !== "string"
+      !parsedSession.user ||
+      typeof parsedSession.accessToken !== "string" ||
+      typeof parsedSession.refreshToken !== "string"
     ) {
       return null;
     }
 
-    return parsedSession;
+    return parsedSession as AuthSession;
   } catch {
     return null;
   }
 }
 
-function createUserId() {
-  if ("randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-
-  return `user-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+function storeSession(session: AuthSession): void {
+  window.localStorage.setItem(
+    SESSION_STORAGE_KEY,
+    JSON.stringify(session),
+  );
 }
 
-function wait(milliseconds: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, milliseconds);
-  });
+function clearStoredSession(): void {
+  window.localStorage.removeItem(SESSION_STORAGE_KEY);
+
+  // Xóa dữ liệu đăng nhập giả của phiên bản frontend cũ.
+  window.localStorage.removeItem("mtd-lingo-users");
+  window.localStorage.removeItem("mtd-lingo-session");
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const sessionRef = useRef<AuthSession | null>(null);
+
+  const updateSession = useCallback(
+    (nextSession: AuthSession | null) => {
+      sessionRef.current = nextSession;
+      setSession(nextSession);
+
+      if (nextSession) {
+        storeSession(nextSession);
+      } else {
+        clearStoredSession();
+      }
+    },
+    [],
+  );
+
+  const refreshSession = useCallback(
+    async (
+      currentSession: AuthSession,
+    ): Promise<AuthSession | null> => {
+      try {
+        const tokens = await refreshTokensRequest(
+          currentSession.refreshToken,
+        );
+
+        const nextSession: AuthSession = {
+          user: currentSession.user,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        };
+
+        updateSession(nextSession);
+
+        return nextSession;
+      } catch {
+        updateSession(null);
+        return null;
+      }
+    },
+    [updateSession],
+  );
+
+  const loadCurrentUser = useCallback(
+    async (
+      currentSession: AuthSession,
+    ): Promise<AuthSession | null> => {
+      try {
+        const apiUser = await getCurrentUserRequest(
+          currentSession.accessToken,
+        );
+
+        const nextSession: AuthSession = {
+          ...currentSession,
+          user: mapApiUser(apiUser),
+        };
+
+        updateSession(nextSession);
+
+        return nextSession;
+      } catch (error) {
+        const errorStatus =
+          error instanceof Error &&
+          "status" in error &&
+          typeof error.status === "number"
+            ? error.status
+            : null;
+
+        if (errorStatus !== 401) {
+          throw error;
+        }
+
+        const refreshedSession =
+          await refreshSession(currentSession);
+
+        if (!refreshedSession) {
+          return null;
+        }
+
+        const apiUser = await getCurrentUserRequest(
+          refreshedSession.accessToken,
+        );
+
+        const nextSession: AuthSession = {
+          ...refreshedSession,
+          user: mapApiUser(apiUser),
+        };
+
+        updateSession(nextSession);
+
+        return nextSession;
+      }
+    },
+    [refreshSession, updateSession],
+  );
+
   useEffect(() => {
-    const storedSession = readStoredSession();
+    let isMounted = true;
 
-    setUser(storedSession);
-    setIsLoading(false);
-  }, []);
+    const initializeAuth = async () => {
+      const storedSession = readStoredSession();
 
-  const login = async ({
-    email,
-    password,
-  }: LoginCredentials): Promise<void> => {
-    await wait(600);
+      if (!storedSession) {
+        clearStoredSession();
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const storedUsers = readStoredUsers();
+        if (isMounted) {
+          setIsLoading(false);
+        }
 
-    const matchedUser = storedUsers.find(
-      (storedUser) =>
-        storedUser.email.toLowerCase() === normalizedEmail &&
-        storedUser.password === password,
-    );
+        return;
+      }
 
-    if (!matchedUser) {
-      throw new Error("Email hoặc mật khẩu không chính xác.");
+      sessionRef.current = storedSession;
+      setSession(storedSession);
+
+      try {
+        await loadCurrentUser(storedSession);
+      } catch {
+        updateSession(null);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void initializeAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadCurrentUser, updateSession]);
+
+  const login = useCallback(
+    async (credentials: LoginCredentials): Promise<void> => {
+      const response = await loginRequest(credentials);
+
+      updateSession({
+        user: mapApiUser(response.user),
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+    },
+    [updateSession],
+  );
+
+  const register = useCallback(
+    async (payload: RegisterPayload): Promise<void> => {
+      const response = await registerRequest(payload);
+
+      updateSession({
+        user: mapApiUser(response.user),
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+    },
+    [updateSession],
+  );
+
+  const refreshCurrentUser =
+    useCallback(async (): Promise<void> => {
+      const currentSession = sessionRef.current;
+
+      if (!currentSession) {
+        return;
+      }
+
+      await loadCurrentUser(currentSession);
+    }, [loadCurrentUser]);
+
+  const logout = useCallback(async (): Promise<void> => {
+    const currentSession = sessionRef.current;
+
+    updateSession(null);
+
+    if (!currentSession?.accessToken) {
+      return;
     }
 
-    const authenticatedUser: AuthUser = {
-      id: matchedUser.id,
-      fullName: matchedUser.fullName,
-      email: matchedUser.email,
-    };
-
-    window.localStorage.setItem(
-      SESSION_STORAGE_KEY,
-      JSON.stringify(authenticatedUser),
-    );
-
-    setUser(authenticatedUser);
-  };
-
-  const register = async ({
-    fullName,
-    email,
-    password,
-  }: RegisterPayload): Promise<void> => {
-    await wait(700);
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const storedUsers = readStoredUsers();
-
-    const emailAlreadyExists = storedUsers.some(
-      (storedUser) =>
-        storedUser.email.toLowerCase() === normalizedEmail,
-    );
-
-    if (emailAlreadyExists) {
-      throw new Error("Email này đã được sử dụng.");
+    try {
+      await logoutRequest(currentSession.accessToken);
+    } catch {
+      // Phiên phía trình duyệt vẫn phải bị xóa dù server đã hết hạn.
     }
-
-    const newStoredUser: StoredUser = {
-      id: createUserId(),
-      fullName: fullName.trim(),
-      email: normalizedEmail,
-      password,
-    };
-
-    const updatedUsers = [...storedUsers, newStoredUser];
-
-    window.localStorage.setItem(
-      USERS_STORAGE_KEY,
-      JSON.stringify(updatedUsers),
-    );
-
-    const authenticatedUser: AuthUser = {
-      id: newStoredUser.id,
-      fullName: newStoredUser.fullName,
-      email: newStoredUser.email,
-    };
-
-    window.localStorage.setItem(
-      SESSION_STORAGE_KEY,
-      JSON.stringify(authenticatedUser),
-    );
-
-    setUser(authenticatedUser);
-  };
-
-  const logout = () => {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY);
-    setUser(null);
-  };
+  }, [updateSession]);
 
   const contextValue = useMemo<AuthContextValue>(
     () => ({
-      user,
-      isAuthenticated: Boolean(user),
+      user: session?.user ?? null,
+      isAuthenticated: Boolean(session?.user),
       isLoading,
       login,
       register,
+      refreshCurrentUser,
       logout,
     }),
-    [isLoading, user],
+    [
+      isLoading,
+      login,
+      logout,
+      refreshCurrentUser,
+      register,
+      session?.user,
+    ],
   );
 
   return (
@@ -195,11 +310,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth phải được sử dụng bên trong AuthProvider.");
+    throw new Error(
+      "useAuth phải được sử dụng bên trong AuthProvider.",
+    );
   }
 
   return context;

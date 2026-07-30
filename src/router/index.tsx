@@ -59,11 +59,11 @@ export const router = createBrowserRouter([
             element: <CoursesPage />,
           },
           {
-            path: "courses/:courseId",
+            path: "courses/:courseSlug",
             element: <CourseDetailPage />,
           },
           {
-            path: "lessons/:lessonId",
+            path: "courses/:courseSlug/lessons/:lessonSlug",
             element: <LessonPlayerPage />,
           },
           {

@@ -67,12 +67,13 @@ function DashboardLayout() {
     setIsSidebarOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login", {
-      replace: true,
-    });
-  };
+  const handleLogout = async () => {
+  await logout();
+
+  navigate("/login", {
+    replace: true,
+  });
+};
 
   const userInitial =
     user?.fullName.trim().charAt(0).toUpperCase() || "U";
