@@ -1,0 +1,189 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum CourseLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonType {
+  VOCABULARY
+  GRAMMAR
+  READING
+  LISTENING
+  SPEAKING
+  WRITING
+  QUIZ
+}
+
+enum ExerciseType {
+  MULTIPLE_CHOICE
+  FILL_BLANK
+  MATCHING
+  SENTENCE_ORDER
+  TRUE_FALSE
+}
+
+model User {
+  id               String     @id @default(uuid())
+  email            String     @unique
+  passwordHash     String
+  refreshTokenHash String?
+  firstName        String?
+  lastName         String?
+  avatarUrl        String?
+  role             UserRole   @default(STUDENT)
+  status           UserStatus @default(ACTIVE)
+  emailVerified    Boolean    @default(false)
+  lastLoginAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Course {
+  id               String       @id @default(uuid())
+  slug             String       @unique
+  title            String
+  shortDescription String?
+  description      String?
+  thumbnailUrl     String?
+  level            CourseLevel
+  status           CourseStatus @default(DRAFT)
+  estimatedHours   Int          @default(0)
+  orderIndex       Int          @default(0)
+  publishedAt      DateTime?
+
+  units Unit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([level])
+  @@index([status])
+  @@index([orderIndex])
+  @@map("courses")
+}
+
+model Unit {
+  id          String  @id @default(uuid())
+  courseId    String
+  title       String
+  description String?
+  orderIndex  Int     @default(0)
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, orderIndex])
+  @@index([courseId])
+  @@map("units")
+}
+
+model Lesson {
+  id              String     @id @default(uuid())
+  unitId          String
+  slug            String
+  title           String
+  description     String?
+  type            LessonType
+  orderIndex      Int        @default(0)
+  durationMinutes Int        @default(10)
+  isFree          Boolean    @default(false)
+  content         Json?
+
+  unit         Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  vocabularies Vocabulary[]
+  exercises    Exercise[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([unitId, slug])
+  @@unique([unitId, orderIndex])
+  @@index([unitId])
+  @@index([type])
+  @@map("lessons")
+}
+
+model Vocabulary {
+  id                 String  @id @default(uuid())
+  lessonId           String
+  word               String
+  phonetic           String?
+  partOfSpeech       String?
+  meaning            String
+  example            String?
+  exampleTranslation String?
+  audioUrl           String?
+  imageUrl           String?
+  orderIndex         Int     @default(0)
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lessonId])
+  @@index([word])
+  @@map("vocabularies")
+}
+
+model Exercise {
+  id            String       @id @default(uuid())
+  lessonId      String
+  type          ExerciseType
+  question      String
+  instructions  String?
+  options       Json?
+  correctAnswer Json
+  explanation   String?
+  points        Int          @default(10)
+  orderIndex    Int          @default(0)
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lessonId])
+  @@index([type])
+  @@map("exercises")
+}

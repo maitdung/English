@@ -1,0 +1,5 @@
+*.backup.ts
+*.fixed.ts
+find-error.ts
+*.tmp.ts
+.DS_Store
