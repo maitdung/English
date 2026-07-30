@@ -3,23 +3,23 @@ name: Content Quality
 on:
   push:
     paths:
-      - 'server/prisma/content/**'
-      - 'server/prisma/schema.prisma'
-      - 'server/prisma.config.ts'
-      - 'server/package.json'
-      - 'server/package-lock.json'
-      - 'server/tsconfig.json'
-      - '.github/workflows/content-quality.yml'
+      - "server/prisma/content/**"
+      - "server/prisma/schema.prisma"
+      - "server/prisma.config.ts"
+      - "server/package.json"
+      - "server/package-lock.json"
+      - "server/tsconfig.json"
+      - ".github/workflows/content-quality.yml"
 
   pull_request:
     paths:
-      - 'server/prisma/content/**'
-      - 'server/prisma/schema.prisma'
-      - 'server/prisma.config.ts'
-      - 'server/package.json'
-      - 'server/package-lock.json'
-      - 'server/tsconfig.json'
-      - '.github/workflows/content-quality.yml'
+      - "server/prisma/content/**"
+      - "server/prisma/schema.prisma"
+      - "server/prisma.config.ts"
+      - "server/package.json"
+      - "server/package-lock.json"
+      - "server/tsconfig.json"
+      - ".github/workflows/content-quality.yml"
 
   workflow_dispatch:
 
@@ -35,14 +35,29 @@ jobs:
     name: Validate Content Engine
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: content_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d content_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     defaults:
       run:
         working-directory: server
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/content_ci
-      CONTENT_SEED_VALIDATE: 'true'
-      CONTENT_SEED_VERBOSE: 'false'
+      CONTENT_SEED_VALIDATE: "true"
+      CONTENT_SEED_VERBOSE: "false"
 
     steps:
       - name: Checkout repository
@@ -61,17 +76,17 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Check formatting
-        run: |
-          npx prettier --check \
-            prisma/content \
-            package.json
+      - name: Check Content Engine
+        run: npm run content:check
 
-      - name: Type-check
-        run: npx tsc --noEmit
+      - name: Prepare test database
+        run: npm run content:database:prepare
 
-      - name: Run content tests
-        run: npm run content:test
+      - name: Import content
+        run: npm run content:import
 
-      - name: Run content audit
-        run: npm run content:audit
+      - name: Verify database content
+        run: npm run content:verify
+
+      - name: Show content statistics
+        run: npm run content:stats
