@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { ApiError } from "../../../lib/api/api-client";
 import { getCourseDetailRequest } from "../../../lib/api/courses-api";
+import { enrollCourseRequest } from "../../../lib/api/learning-progress-api";
 import type { CourseDetail } from "../types/course";
 
 const lessonTypeLabels: Record<string, string> = {
@@ -49,6 +50,7 @@ function CourseDetailPage() {
 
         setCourse(response);
         setOpenedUnitId(response.units[0]?.id ?? null);
+        void enrollCourseRequest(courseSlug).catch(() => undefined);
       } catch (error) {
         if (isCancelled) {
           return;

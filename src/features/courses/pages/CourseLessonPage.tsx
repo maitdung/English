@@ -7,6 +7,11 @@ import {
   checkLessonExerciseRequest,
   getLessonDetailRequest,
 } from "../../../lib/api/courses-api";
+import {
+  completeLessonRequest,
+  enrollCourseRequest,
+  recordExerciseAttemptRequest,
+} from "../../../lib/api/learning-progress-api";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
 import type {
   ExerciseCheckResponse,
@@ -201,6 +206,7 @@ function CourseLessonPage() {
   const [checkingExerciseId, setCheckingExerciseId] = useState<string | null>(
     null,
   );
+  const [isSavingLessonProgress, setIsSavingLessonProgress] = useState(false);
   const [exerciseError, setExerciseError] = useState("");
 
   useEffect(() => {
@@ -211,7 +217,10 @@ function CourseLessonPage() {
 
     getLessonDetailRequest(courseSlug, lessonSlug)
       .then((response) => {
-        if (!cancelled) setLesson(response);
+        if (!cancelled) {
+          setLesson(response);
+          void enrollCourseRequest(courseSlug).catch(() => undefined);
+        }
       })
       .catch((reason: unknown) => {
         if (!cancelled) {
@@ -255,6 +264,12 @@ function CourseLessonPage() {
         ...currentResults,
         [exercise.id]: result,
       }));
+      void recordExerciseAttemptRequest(
+        courseSlug,
+        lessonSlug,
+        exercise.id,
+        answer,
+      ).catch(() => undefined);
       recordReview(
         `exercise:${exercise.id}`,
         "lesson",
@@ -273,6 +288,29 @@ function CourseLessonPage() {
       );
     } finally {
       setCheckingExerciseId(null);
+    }
+  };
+
+  const handleCompleteLesson = async () => {
+    if (!lesson) {
+      return;
+    }
+
+    try {
+      setIsSavingLessonProgress(true);
+      await completeLessonRequest(courseSlug, lessonSlug, {
+        progressPercent: 100,
+        score:
+          checkedResults.length > 0
+            ? Math.round((correctAnswers / lesson.exercises.length) * 100)
+            : 0,
+        timeSpentMinutes: lesson.durationMinutes,
+      });
+    } catch {
+      // Server sync is best-effort; local progress still updates below.
+    } finally {
+      completeLesson(lesson.id);
+      setIsSavingLessonProgress(false);
     }
   };
 
@@ -503,7 +541,8 @@ function CourseLessonPage() {
                 type="button"
                 className="mt-4 w-full sm:mt-0 sm:w-auto"
                 disabled={checkedResults.length === 0 || isCompleted}
-                onClick={() => completeLesson(lesson.id)}
+                isLoading={isSavingLessonProgress}
+                onClick={() => void handleCompleteLesson()}
               >
                 {isCompleted ? "Đã hoàn thành ✓" : "Đánh dấu hoàn thành"}
               </Button>
