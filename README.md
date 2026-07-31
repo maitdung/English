@@ -154,6 +154,8 @@ npm run deploy:check
 - Chạy `npm run seed:content`
 - Start: `npm run start:prod`
 
+Xem checklist đầy đủ trong [`docs/DEPLOYMENT_FINAL.md`](/Users/mtd/Downloads/englishpro/mtd-lingo-pro/docs/DEPLOYMENT_FINAL.md).
+
 ## Phân quyền
 
 - `STUDENT`: học, luyện kỹ năng, làm bài, xem tiến độ và quản lý hồ sơ.
