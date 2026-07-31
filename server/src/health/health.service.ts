@@ -18,7 +18,7 @@ export interface HealthResponse {
   uptimeSeconds: number;
   dependencies: {
     postgres: ServiceHealthStatus;
-    redis: ServiceHealthStatus;
+    redis: ServiceHealthStatus | 'skipped';
   };
 }
 
@@ -47,13 +47,21 @@ export class HealthService implements OnModuleDestroy {
   }
 
   async check(): Promise<HealthResponse> {
+    const redisEnabled = this.configService.get<boolean>(
+      'HEALTH_CHECK_REDIS_ENABLED',
+      false,
+    );
+
     const [postgres, redis] = await Promise.all([
       this.checkPostgres(),
-      this.checkRedis(),
+      redisEnabled ? this.checkRedis() : Promise.resolve('skipped' as const),
     ]);
 
     const response: HealthResponse = {
-      status: postgres === 'up' && redis === 'up' ? 'ok' : 'error',
+      status:
+        postgres === 'up' && (redis === 'up' || redis === 'skipped')
+          ? 'ok'
+          : 'error',
       service: 'mtd-lingo-api',
       timestamp: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),

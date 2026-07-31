@@ -15,7 +15,13 @@ VITE_API_URL=https://api.your-domain.com/api
 ## Backend on Render / Railway / Fly / VPS
 
 1. Set environment variables from `server/.env.production.example`.
-2. Run migrations:
+2. If you do not have a production Redis yet, keep:
+
+```env
+HEALTH_CHECK_REDIS_ENABLED=false
+```
+
+3. Run migrations:
 
 ```bash
 cd server
@@ -23,7 +29,7 @@ npx prisma migrate deploy
 npm run seed:content
 ```
 
-3. Start app:
+4. Start app:
 
 ```bash
 npm run start:prod

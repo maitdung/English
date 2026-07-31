@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "deploy:prepare": "node scripts/deploy-preflight.mjs",
     "deploy:check": "npm run build && npm run lint && npm --prefix server run build && npm --prefix server test -- --runInBand src/auth/auth.controller.spec.ts src/users/users.controller.spec.ts"
   },
   "dependencies": {

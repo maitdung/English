@@ -18,10 +18,10 @@ export class HealthController {
     summary: 'Kiểm tra trạng thái API và các dịch vụ phụ thuộc',
   })
   @ApiOkResponse({
-    description: 'API, PostgreSQL và Redis đang hoạt động bình thường.',
+    description: 'API, PostgreSQL đang hoạt động bình thường.',
   })
   @ApiServiceUnavailableResponse({
-    description: 'PostgreSQL hoặc Redis đang không hoạt động.',
+    description: 'PostgreSQL không hoạt động.',
   })
   check(): Promise<HealthResponse> {
     return this.healthService.check();

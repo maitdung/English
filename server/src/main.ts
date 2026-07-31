@@ -18,6 +18,9 @@ async function bootstrap(): Promise<void> {
 
   const port = configService.get<number>('PORT', 3001);
   const apiPrefix = configService.get<string>('API_PREFIX', 'api');
+  const enableSwaggerDocs =
+    configService.get<boolean>('ENABLE_SWAGGER_DOCS', false) ||
+    configService.get<string>('NODE_ENV') !== 'production';
 
   const frontendUrls = configService
     .get<string>('FRONTEND_URL', 'http://localhost:5173')
@@ -63,13 +66,15 @@ async function bootstrap(): Promise<void> {
     )
     .build();
 
-  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  if (enableSwaggerDocs) {
+    const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup(`${apiPrefix}/docs`, app, swaggerDocument, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
+    SwaggerModule.setup(`${apiPrefix}/docs`, app, swaggerDocument, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
+  }
 
   await app.listen(port);
 

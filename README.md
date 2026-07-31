@@ -128,6 +128,12 @@ cp .env.production.example .env.production
 cp server/.env.production.example server/.env.production
 ```
 
+Hoặc chạy:
+
+```bash
+npm run deploy:prepare
+```
+
 2. Chạy kiểm tra trước deploy:
 
 ```bash
