@@ -130,6 +130,15 @@ export function createProgressionLesson(
   level: CEFRLevel,
   seed: ProgressionLessonSeed,
 ): Lesson {
+  const estimatedMinutesByLevel: Record<CEFRLevel, number> = {
+    A1: 55,
+    A2: 70,
+    B1: 85,
+    B2: 100,
+    C1: 115,
+    C2: 130,
+  };
+
   return {
     metadata: {
       id: seed.id,
@@ -138,7 +147,7 @@ export function createProgressionLesson(
       description: seed.description,
       level,
       category: seed.category,
-      estimatedMinutes: level === 'A2' ? 80 : 95,
+      estimatedMinutes: estimatedMinutesByLevel[level],
       tags: [level.toLowerCase(), ...seed.tags],
     },
     objectives: [

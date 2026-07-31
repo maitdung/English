@@ -16,13 +16,17 @@ TRẠNG THÁI
   quyền.
 
 2. HỌC LIỆU VÀ KỸ NĂNG
-- 3 khóa học production: A1 Foundations, A2 Everyday Progress và B1 Connected
-  Skills.
-- Tổng học liệu trong database: 13 bài học, 212 từ vựng, 316 bài tập.
+- 5 khóa học production: A1 Foundations, A2 Everyday Progress, B1 Connected
+  Skills, B2 Critical Communication và C1 Advanced Discourse.
+- Tổng học liệu trong database: 19 bài học, 284 từ vựng, 442 bài tập.
 - A2 thêm 3 chương liên kết: kế hoạch cuối tuần, xử lý sự cố du lịch, thói quen
   sức khỏe và cộng đồng.
 - B1 thêm 3 chương nâng độ khó: cộng tác công sở, media literacy/công nghệ,
   môi trường và thuyết trình giải pháp địa phương.
+- B2 thêm 3 chương nâng cao: đàm phán, chính sách công, đổi mới/rủi ro/đạo
+  đức.
+- C1 thêm 3 chương học thuật: lập luận nghiên cứu, lãnh đạo/chiến lược, văn
+  hóa/bản sắc/diễn giải.
 - Nội dung bao phủ từ vựng, ngữ pháp, đọc, nghe, nói và viết.
 - Thêm kho từ vựng phía frontend có tìm kiếm, lọc level/topic, trạng thái học,
   phát âm và tiến độ riêng theo tài khoản.
@@ -62,7 +66,7 @@ TRẠNG THÁI
 - Đã đối chiếu Prisma schema với database: không còn khác biệt.
 - Đã đồng bộ lịch sử 4 migration; migrate status báo database up to date.
 - Import transaction hiện đã nâng database lên:
-  3 khóa học, 13 bài học, 212 từ vựng và 316 bài tập.
+  5 khóa học, 19 bài học, 284 từ vựng và 442 bài tập.
 - content:verify xác nhận source khớp database.
 
 6. KẾT QUẢ KIỂM TRA ĐÃ XÁC NHẬN
@@ -74,9 +78,9 @@ TRẠNG THÁI
 - Backend typecheck/unit tests/build/lint: PASS (6 suites, 33 tests).
 - Backend e2e: PASS (2 tests).
 - Backend start:prod: PASS; production entrypoint đã được sửa và kiểm tra trực
-  tiếp với API A2/B1.
-- Content check: PASS (7 tests, audit 3 courses/13 lessons/212 vocabulary/
-  316 exercises, 0 lỗi/0 cảnh báo).
+  tiếp với API A2/B1/B2/C1.
+- Content check: PASS (7 tests, audit 5 courses/19 lessons/284 vocabulary/
+  442 exercises, 0 lỗi/0 cảnh báo).
 
 7. VIỆC CẦN CẤU HÌNH NGOÀI MÃ NGUỒN
 - Cần tài khoản nhà cung cấp email giao dịch (SMTP/Resend/SES...) để gửi reset
@@ -87,6 +91,6 @@ TRẠNG THÁI
 
 KẾT QUẢ CUỐI
 - Git branch: develop
-- Git commit nội dung A2/B1: 9c97e8b
+- Git commit nội dung học liệu: 9c97e8b
 - GitHub push: DONE — origin/develop
 - Thời điểm hoàn tất QA: 31/07/2026, sau khi frontend/backend/content/e2e đều PASS
