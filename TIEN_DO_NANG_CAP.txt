@@ -73,6 +73,8 @@ TRẠNG THÁI
 - Frontend build/lint: PASS (67 modules; chỉ còn cảnh báo chunk Vite >500kB).
 - Backend typecheck/unit tests/build/lint: PASS (6 suites, 33 tests).
 - Backend e2e: PASS (2 tests).
+- Backend start:prod: PASS; production entrypoint đã được sửa và kiểm tra trực
+  tiếp với API A2/B1.
 - Content check: PASS (7 tests, audit 3 courses/13 lessons/212 vocabulary/
   316 exercises, 0 lỗi/0 cảnh báo).
 
@@ -85,6 +87,6 @@ TRẠNG THÁI
 
 KẾT QUẢ CUỐI
 - Git branch: develop
-- Git commit: 21b2156 (feat: upgrade english learning platform)
+- Git commit nội dung A2/B1: 9c97e8b
 - GitHub push: DONE — origin/develop
 - Thời điểm hoàn tất QA: 31/07/2026, sau khi frontend/backend/content/e2e đều PASS
