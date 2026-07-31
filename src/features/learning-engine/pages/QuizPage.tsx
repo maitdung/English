@@ -23,8 +23,7 @@ function QuizPage() {
       difficulty === "mixed"
         ? quizQuestions
         : quizQuestions.filter(
-            (question) =>
-              (question.difficulty ?? "foundation") === difficulty,
+            (question) => (question.difficulty ?? "foundation") === difficulty,
           ),
     [difficulty],
   );
@@ -59,21 +58,16 @@ function QuizPage() {
 
     if (isLastQuestion) {
       const correctAnswers = questions.filter(
-        (question) =>
-          selectedAnswers[question.id] === question.correctAnswer,
+        (question) => selectedAnswers[question.id] === question.correctAnswer,
       ).length;
 
-      const score = Math.round(
-        (correctAnswers / questions.length) * 100,
-      );
+      const score = Math.round((correctAnswers / questions.length) * 100);
 
       questions.forEach((question) => {
         recordReview(
           `quiz:${question.id}`,
           "quiz",
-          selectedAnswers[question.id] === question.correctAnswer
-            ? 100
-            : 0,
+          selectedAnswers[question.id] === question.correctAnswer ? 100 : 0,
           2,
         );
       });
@@ -83,7 +77,7 @@ function QuizPage() {
         state: {
           score,
           correctAnswers,
-        totalQuestions: questions.length,
+          totalQuestions: questions.length,
         },
       });
 
@@ -95,22 +89,20 @@ function QuizPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-7 sm:px-8 sm:py-9">
-      <section>
+    <div className="mx-auto max-w-5xl px-5 py-7 sm:px-8 sm:py-9">
+      <section className="reveal-up">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-400">
           Kiểm tra kiến thức
         </p>
 
-        <h1 className="mt-3 text-3xl font-black sm:text-4xl">
-          Quiz tổng hợp
-        </h1>
+        <h1 className="mt-3 text-3xl font-black sm:text-4xl">Quiz tổng hợp</h1>
 
         <p className="mt-3 text-sm text-slate-400">
           Hoàn thành toàn bộ câu hỏi để xem kết quả.
         </p>
       </section>
 
-      <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-8">
+      <section className="premium-surface mt-8 rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-8">
         <div className="mb-6 flex flex-wrap gap-2 border-b border-white/10 pb-5">
           {[
             ["mixed", "Tổng hợp"],
@@ -126,86 +118,114 @@ function QuizPage() {
               className={`rounded-xl border px-4 py-2 text-sm font-black transition ${
                 difficulty === value
                   ? "border-cyan-300 bg-cyan-300 text-slate-950"
-                  : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-white"
+                  : "border-white/10 bg-white/[0.03] text-slate-400 hover:border-white/20 hover:text-white"
               }`}
             >
               {label}
             </button>
           ))}
         </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-bold text-slate-400">
-            Câu {currentQuestionIndex + 1}/{questions.length}
-          </span>
+        <div className="grid gap-6 lg:grid-cols-[1fr_240px] lg:items-start">
+          <div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-bold text-slate-400">
+                Câu {currentQuestionIndex + 1}/{questions.length}
+              </span>
 
-          <span className="font-bold text-cyan-300">
-            {Object.keys(selectedAnswers).length} câu đã trả lời
-          </span>
-        </div>
+              <span className="font-bold text-cyan-300">
+                {Object.keys(selectedAnswers).length} câu đã trả lời
+              </span>
+            </div>
 
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
-          <div
-            className="h-full rounded-full bg-cyan-400 transition-all"
-            style={{
-              width: `${
-                ((currentQuestionIndex + 1) / questions.length) *
-                100
-              }%`,
-            }}
-          />
-        </div>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-400 transition-all"
+                style={{
+                  width: `${
+                    ((currentQuestionIndex + 1) / questions.length) * 100
+                  }%`,
+                }}
+              />
+            </div>
 
-        <h2 className="mt-8 text-xl font-black leading-8 sm:text-2xl">
-          {currentQuestion.question}
-        </h2>
+            <h2 className="mt-8 text-xl font-black leading-8 sm:text-2xl">
+              {currentQuestion.question}
+            </h2>
 
-        <div className="mt-7 space-y-3">
-          {currentQuestion.answers.map((answer, answerIndex) => {
-            const isSelected = selectedAnswer === answerIndex;
-            const isCorrect =
-              currentQuestion.correctAnswer === answerIndex;
+            <div className="mt-7 space-y-3">
+              {currentQuestion.answers.map((answer, answerIndex) => {
+                const isSelected = selectedAnswer === answerIndex;
+                const isCorrect = currentQuestion.correctAnswer === answerIndex;
 
-            let answerClassName =
-              "border-white/10 bg-white/[0.025] hover:border-cyan-400/30";
+                let answerClassName =
+                  "border-white/10 bg-white/[0.025] hover:border-cyan-400/30";
 
-            if (showExplanation && isCorrect) {
-              answerClassName =
-                "border-emerald-400/40 bg-emerald-400/10";
-            } else if (showExplanation && isSelected && !isCorrect) {
-              answerClassName = "border-red-400/40 bg-red-400/10";
-            } else if (isSelected) {
-              answerClassName =
-                "border-cyan-400/50 bg-cyan-400/10";
-            }
+                if (showExplanation && isCorrect) {
+                  answerClassName = "border-emerald-400/40 bg-emerald-400/10";
+                } else if (showExplanation && isSelected && !isCorrect) {
+                  answerClassName = "border-red-400/40 bg-red-400/10";
+                } else if (isSelected) {
+                  answerClassName = "border-cyan-400/50 bg-cyan-400/10";
+                }
 
-            return (
-              <button
-                key={answer}
-                type="button"
-                onClick={() => handleSelectAnswer(answerIndex)}
-                className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${answerClassName}`}
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-sm font-black">
-                  {String.fromCharCode(65 + answerIndex)}
-                </span>
+                return (
+                  <button
+                    key={answer}
+                    type="button"
+                    onClick={() => handleSelectAnswer(answerIndex)}
+                    className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${answerClassName}`}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-sm font-black">
+                      {String.fromCharCode(65 + answerIndex)}
+                    </span>
 
-                <span className="font-semibold">{answer}</span>
-              </button>
-            );
-          })}
-        </div>
+                    <span className="font-semibold">{answer}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-        {showExplanation && (
-          <div className="mt-6 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.07] p-5">
-            <p className="text-sm font-black text-cyan-300">
-              Giải thích
-            </p>
+            {showExplanation && (
+              <div className="mt-6 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.07] p-5">
+                <p className="text-sm font-black text-cyan-300">Giải thích</p>
 
-            <p className="mt-2 text-sm leading-7 text-slate-300">
-              {currentQuestion.explanation}
-            </p>
+                <p className="mt-2 text-sm leading-7 text-slate-300">
+                  {currentQuestion.explanation}
+                </p>
+              </div>
+            )}
           </div>
-        )}
+
+          <aside className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+              Nhịp bài
+            </p>
+            <div className="mt-4 space-y-3">
+              <div className="rounded-2xl bg-white/[0.03] px-4 py-3">
+                <p className="text-xs text-slate-500">Đã trả lời</p>
+                <p className="mt-1 text-2xl font-black text-cyan-300">
+                  {Object.keys(selectedAnswers).length}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white/[0.03] px-4 py-3">
+                <p className="text-xs text-slate-500">Còn lại</p>
+                <p className="mt-1 text-2xl font-black text-white">
+                  {questions.length - Object.keys(selectedAnswers).length}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white/[0.03] px-4 py-3">
+                <p className="text-xs text-slate-500">Chế độ</p>
+                <p className="mt-1 text-lg font-black text-violet-300">
+                  {difficulty === "mixed"
+                    ? "Tổng hợp"
+                    : difficulty === "foundation"
+                      ? "Nền tảng"
+                      : "Nâng cao"}
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
 
         <div className="mt-8 flex justify-end border-t border-white/10 pt-6">
           <Button

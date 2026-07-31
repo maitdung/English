@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
@@ -92,10 +87,7 @@ function getAdminErrorMessage(error: unknown): string {
 
 function AdminLoadingState() {
   return (
-    <div
-      aria-label="Đang tải dữ liệu quản trị"
-      className="animate-pulse"
-    >
+    <div aria-label="Đang tải dữ liệu quản trị" className="animate-pulse">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
           <div
@@ -109,10 +101,7 @@ function AdminLoadingState() {
         <div className="h-14 rounded-2xl bg-white/[0.04]" />
         <div className="mt-6 space-y-3">
           {Array.from({ length: 6 }, (_, index) => (
-            <div
-              key={index}
-              className="h-16 rounded-2xl bg-white/[0.035]"
-            />
+            <div key={index} className="h-16 rounded-2xl bg-white/[0.035]" />
           ))}
         </div>
       </div>
@@ -121,39 +110,27 @@ function AdminLoadingState() {
 }
 
 function AdminDashboardPage() {
-  const {
-    user,
-    isLoading: isAuthLoading,
-    refreshCurrentUser,
-  } = useAuth();
+  const { user, isLoading: isAuthLoading, refreshCurrentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(
-    null,
-  );
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] =
-    useState<AdminRoleFilter>("ALL");
-  const [statusFilter, setStatusFilter] =
-    useState<AdminStatusFilter>("ALL");
-  const [sortBy, setSortBy] =
-    useState<AdminUserSort>("NEWEST");
+  const [roleFilter, setRoleFilter] = useState<AdminRoleFilter>("ALL");
+  const [statusFilter, setStatusFilter] = useState<AdminStatusFilter>("ALL");
+  const [sortBy, setSortBy] = useState<AdminUserSort>("NEWEST");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [editingUser, setEditingUser] =
-    useState<AdminUser | null>(null);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [isSavingRole, setIsSavingRole] = useState(false);
   const [roleErrorMessage, setRoleErrorMessage] = useState("");
 
   const isAdmin = user?.role === "ADMIN";
 
   const runWithSessionRetry = useCallback(
-    async <Result,>(
-      request: () => Promise<Result>,
-    ): Promise<Result> => {
+    async <Result,>(request: () => Promise<Result>): Promise<Result> => {
       try {
         return await request();
       } catch (error) {
@@ -179,9 +156,7 @@ function AdminDashboardPage() {
     setErrorMessage("");
 
     try {
-      const response = await runWithSessionRetry(
-        getAdminUsersRequest,
-      );
+      const response = await runWithSessionRetry(getAdminUsersRequest);
       setUsers(response);
       setLastSyncedAt(new Date());
     } catch (error) {
@@ -203,22 +178,16 @@ function AdminDashboardPage() {
       (adminUser) => adminUser.status === "ACTIVE",
     ).length;
     const staffUsers = users.filter(
-      (adminUser) =>
-        adminUser.role === "TEACHER" ||
-        adminUser.role === "ADMIN",
+      (adminUser) => adminUser.role === "TEACHER" || adminUser.role === "ADMIN",
     ).length;
     const verifiedUsers = users.filter(
       (adminUser) => adminUser.emailVerified,
     ).length;
 
     const activePercent =
-      totalUsers > 0
-        ? Math.round((activeUsers / totalUsers) * 100)
-        : 0;
+      totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0;
     const verifiedPercent =
-      totalUsers > 0
-        ? Math.round((verifiedUsers / totalUsers) * 100)
-        : 0;
+      totalUsers > 0 ? Math.round((verifiedUsers / totalUsers) * 100) : 0;
 
     return [
       {
@@ -253,9 +222,7 @@ function AdminDashboardPage() {
   }, [users]);
 
   const filteredUsers = useMemo(() => {
-    const normalizedQuery = searchQuery
-      .trim()
-      .toLocaleLowerCase("vi-VN");
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase("vi-VN");
 
     return users
       .filter((adminUser) => {
@@ -264,14 +231,11 @@ function AdminDashboardPage() {
           createDisplayName(adminUser)
             .toLocaleLowerCase("vi-VN")
             .includes(normalizedQuery) ||
-          adminUser.email
-            .toLocaleLowerCase("vi-VN")
-            .includes(normalizedQuery);
+          adminUser.email.toLocaleLowerCase("vi-VN").includes(normalizedQuery);
         const matchesRole =
           roleFilter === "ALL" || adminUser.role === roleFilter;
         const matchesStatus =
-          statusFilter === "ALL" ||
-          adminUser.status === statusFilter;
+          statusFilter === "ALL" || adminUser.status === statusFilter;
 
         return matchesSearch && matchesRole && matchesStatus;
       })
@@ -279,8 +243,7 @@ function AdminDashboardPage() {
         switch (sortBy) {
           case "LAST_ACTIVE":
             return (
-              parseDate(rightUser.lastLoginAt) -
-              parseDate(leftUser.lastLoginAt)
+              parseDate(rightUser.lastLoginAt) - parseDate(leftUser.lastLoginAt)
             );
           case "NAME_ASC":
             return createDisplayName(leftUser).localeCompare(
@@ -290,23 +253,16 @@ function AdminDashboardPage() {
           case "NEWEST":
           default:
             return (
-              parseDate(rightUser.createdAt) -
-              parseDate(leftUser.createdAt)
+              parseDate(rightUser.createdAt) - parseDate(leftUser.createdAt)
             );
         }
       });
   }, [roleFilter, searchQuery, sortBy, statusFilter, users]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredUsers.length / PAGE_SIZE),
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
   const visiblePage = Math.min(currentPage, totalPages);
   const pageStart = (visiblePage - 1) * PAGE_SIZE;
-  const paginatedUsers = filteredUsers.slice(
-    pageStart,
-    pageStart + PAGE_SIZE,
-  );
+  const paginatedUsers = filteredUsers.slice(pageStart, pageStart + PAGE_SIZE);
   const hasActiveFilters =
     Boolean(searchQuery.trim()) ||
     roleFilter !== "ALL" ||
@@ -354,9 +310,7 @@ function AdminDashboardPage() {
 
       setUsers((currentUsers) =>
         currentUsers.map((currentUser) =>
-          currentUser.id === updatedUser.id
-            ? updatedUser
-            : currentUser,
+          currentUser.id === updatedUser.id ? updatedUser : currentUser,
         ),
       );
       setSuccessMessage(
@@ -392,8 +346,8 @@ function AdminDashboardPage() {
             Bạn không có quyền truy cập
           </h1>
           <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-slate-400">
-            Trang này chỉ dành cho quản trị viên hệ thống. Nếu bạn cho
-            rằng đây là nhầm lẫn, hãy liên hệ người quản trị tài khoản.
+            Trang này chỉ dành cho quản trị viên hệ thống. Nếu bạn cho rằng đây
+            là nhầm lẫn, hãy liên hệ người quản trị tài khoản.
           </p>
           <Link
             to="/dashboard"
@@ -449,7 +403,7 @@ function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9">
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900/80 to-violet-500/10 p-6 sm:p-8">
+      <section className="premium-surface relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900/80 to-violet-500/10 p-6 sm:p-8">
         <div
           aria-hidden="true"
           className="absolute -right-16 -top-24 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl"
@@ -470,8 +424,8 @@ function AdminDashboardPage() {
               Quản lý người dùng
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-              Theo dõi trạng thái tài khoản, mức độ xác minh và phân
-              quyền cho đội ngũ trên toàn hệ thống.
+              Theo dõi trạng thái tài khoản, mức độ xác minh và phân quyền cho
+              đội ngũ trên toàn hệ thống.
             </p>
           </div>
 
@@ -541,7 +495,7 @@ function AdminDashboardPage() {
         ))}
       </section>
 
-      <section className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/65 shadow-2xl shadow-black/10">
+      <section className="premium-surface mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/65 shadow-2xl shadow-black/10">
         <div className="border-b border-white/10 p-5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -549,8 +503,7 @@ function AdminDashboardPage() {
                 Danh sách tài khoản
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                {filteredUsers.length.toLocaleString("vi-VN")} kết quả
-                phù hợp
+                {filteredUsers.length.toLocaleString("vi-VN")} kết quả phù hợp
               </p>
             </div>
             <p className="text-xs font-semibold text-slate-600">
@@ -610,9 +563,7 @@ function AdminDashboardPage() {
               aria-label="Lọc theo trạng thái"
               value={statusFilter}
               onChange={(event) => {
-                setStatusFilter(
-                  event.target.value as AdminStatusFilter,
-                );
+                setStatusFilter(event.target.value as AdminStatusFilter);
                 setCurrentPage(1);
               }}
               className="min-h-12 rounded-2xl border border-white/10 bg-slate-950 px-4 text-sm font-bold text-slate-300 outline-none transition focus:border-cyan-400/60"
@@ -691,19 +642,14 @@ function AdminDashboardPage() {
           <footer className="flex flex-col gap-4 border-t border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p className="text-xs font-semibold text-slate-500">
               Hiển thị {pageStart + 1}–
-              {Math.min(
-                pageStart + PAGE_SIZE,
-                filteredUsers.length,
-              )}{" "}
-              trong {filteredUsers.length} tài khoản
+              {Math.min(pageStart + PAGE_SIZE, filteredUsers.length)} trong{" "}
+              {filteredUsers.length} tài khoản
             </p>
 
             <div className="flex items-center justify-between gap-3 sm:justify-end">
               <button
                 type="button"
-                onClick={() =>
-                  setCurrentPage(Math.max(1, visiblePage - 1))
-                }
+                onClick={() => setCurrentPage(Math.max(1, visiblePage - 1))}
                 disabled={visiblePage === 1}
                 className="min-h-10 rounded-xl border border-white/10 bg-white/5 px-4 text-xs font-black text-slate-300 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -715,9 +661,7 @@ function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() =>
-                  setCurrentPage(
-                    Math.min(totalPages, visiblePage + 1),
-                  )
+                  setCurrentPage(Math.min(totalPages, visiblePage + 1))
                 }
                 disabled={visiblePage === totalPages}
                 className="min-h-10 rounded-xl border border-white/10 bg-white/5 px-4 text-xs font-black text-slate-300 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"

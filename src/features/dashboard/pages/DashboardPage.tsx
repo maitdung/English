@@ -8,10 +8,7 @@ import {
   getTodayActivity,
 } from "../../learning-engine/data/dailyLearning";
 import { useAuth } from "../../auth/context/AuthContext";
-import {
-  flashcards,
-  lessons,
-} from "../../learning-engine/data/lessonCatalog";
+import { flashcards, lessons } from "../../learning-engine/data/lessonCatalog";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
 
 const trackedSkillIds = [
@@ -32,10 +29,7 @@ function DashboardPage() {
   const { progress } = useLearningProgress();
   const [backendLessonCount, setBackendLessonCount] = useState(0);
   const todayPlan = useMemo(() => getDailyPlan(progress), [progress]);
-  const todayActivity = useMemo(
-    () => getTodayActivity(progress),
-    [progress],
-  );
+  const todayActivity = useMemo(() => getTodayActivity(progress), [progress]);
   const weeklyActivity = useMemo(() => {
     const items: Array<{ day: string; value: number }> = [];
     const now = new Date();
@@ -55,10 +49,7 @@ function DashboardPage() {
         })
           .format(date)
           .replace(".", ""),
-        value: Math.min(
-          100,
-          activity ? Math.max(activity.minutes * 2, 4) : 4,
-        ),
+        value: Math.min(100, activity ? Math.max(activity.minutes * 2, 4) : 4),
       });
     }
 
@@ -96,10 +87,7 @@ function DashboardPage() {
   );
 
   const completedLessons = useMemo(
-    () =>
-      lessons.filter((lesson) =>
-        completedLessonIds.includes(lesson.id),
-      ),
+    () => lessons.filter((lesson) => completedLessonIds.includes(lesson.id)),
     [completedLessonIds],
   );
 
@@ -116,10 +104,7 @@ function DashboardPage() {
     (lessonId) => !staticLessonIds.has(lessonId),
   ).length;
   const totalLessonCount = lessons.length + backendLessonCount;
-  const safeTotalLessonCount = Math.max(
-    totalLessonCount,
-    completedLessonCount,
-  );
+  const safeTotalLessonCount = Math.max(totalLessonCount, completedLessonCount);
   const reviewedFlashcardCount = reviewedFlashcards.length;
 
   const totalLearningMinutes = completedLessons.reduce(
@@ -128,10 +113,7 @@ function DashboardPage() {
   );
 
   const totalLearningItems =
-    safeTotalLessonCount +
-    flashcards.length +
-    trackedSkillIds.length +
-    1;
+    safeTotalLessonCount + flashcards.length + trackedSkillIds.length + 1;
 
   const completedSkillCount = trackedSkillIds.filter((skillId) =>
     progress.completedSkillIds.includes(skillId),
@@ -147,9 +129,7 @@ function DashboardPage() {
     totalLearningItems > 0
       ? Math.min(
           100,
-          Math.round(
-            (completedLearningItems / totalLearningItems) * 100,
-          ),
+          Math.round((completedLearningItems / totalLearningItems) * 100),
         )
       : 0;
 
@@ -196,10 +176,7 @@ function DashboardPage() {
     },
     {
       label: "Điểm Quiz cao nhất",
-      value:
-        progress.quizHighScore > 0
-          ? `${progress.quizHighScore}%`
-          : "0%",
+      value: progress.quizHighScore > 0 ? `${progress.quizHighScore}%` : "0%",
       detail:
         progress.quizHighScore >= 80
           ? "Kết quả rất tốt"
@@ -277,8 +254,7 @@ function DashboardPage() {
 
   const handleContinueLearning = () => {
     const nextLesson = lessons.find(
-      (lesson) =>
-        !progress.completedLessonIds.includes(lesson.id),
+      (lesson) => !progress.completedLessonIds.includes(lesson.id),
     );
 
     if (nextLesson) {
@@ -300,7 +276,7 @@ function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9">
-      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+      <section className="reveal-up flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-400">
             Tổng quan học tập
@@ -325,9 +301,7 @@ function DashboardPage() {
           onClick={handleContinueLearning}
           className="w-full sm:w-auto"
         >
-          {completedLearningItems === 0
-            ? "Bắt đầu học →"
-            : "Tiếp tục học →"}
+          {completedLearningItems === 0 ? "Bắt đầu học →" : "Tiếp tục học →"}
         </Button>
       </section>
 
@@ -335,15 +309,13 @@ function DashboardPage() {
         {overviewCards.map((card) => (
           <article
             key={card.label}
-            className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 transition hover:-translate-y-1 hover:border-cyan-400/20 hover:bg-slate-900/80"
+            className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 transition"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-400">{card.label}</p>
 
-                <p className="mt-2 text-3xl font-black">
-                  {card.value}
-                </p>
+                <p className="mt-2 text-3xl font-black">{card.value}</p>
               </div>
 
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/5 text-xl">
@@ -411,12 +383,10 @@ function DashboardPage() {
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-black">
-                Hoạt động tuần này
-              </h2>
+              <h2 className="text-xl font-black">Hoạt động tuần này</h2>
 
               <p className="mt-1 text-sm text-slate-500">
                 Biểu đồ hoạt động sẽ được cập nhật khi có lịch sử học
@@ -438,10 +408,7 @@ function DashboardPage() {
                   <div
                     className="w-full rounded-xl bg-gradient-to-t from-blue-600 to-cyan-300 transition"
                     style={{
-                      height:
-                        item.value > 0
-                          ? `${item.value}%`
-                          : "4px",
+                      height: item.value > 0 ? `${item.value}%` : "4px",
                     }}
                   />
 
@@ -476,40 +443,28 @@ function DashboardPage() {
               aria-valuenow={goalProgress}
             >
               <div className="flex h-36 w-36 flex-col items-center justify-center rounded-full bg-slate-900">
-                <p className="text-4xl font-black">
-                  {goalProgress}%
-                </p>
+                <p className="text-4xl font-black">{goalProgress}%</p>
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Hoàn thành
-                </p>
+                <p className="mt-1 text-xs text-slate-500">Hoàn thành</p>
               </div>
             </div>
           </div>
 
           <div className="mt-7 space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
-                Hoàn thành bài học
-              </span>
+              <span className="text-slate-400">Hoàn thành bài học</span>
 
               <span className="font-bold">{lessonGoal} / 1</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
-                Ghi nhớ từ vựng
-              </span>
+              <span className="text-slate-400">Ghi nhớ từ vựng</span>
 
-              <span className="font-bold">
-                {vocabularyGoal} / 5
-              </span>
+              <span className="font-bold">{vocabularyGoal} / 5</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
-                Quiz đạt ít nhất 60%
-              </span>
+              <span className="text-slate-400">Quiz đạt ít nhất 60%</span>
 
               <span className="font-bold">{quizGoal} / 1</span>
             </div>
@@ -518,12 +473,10 @@ function DashboardPage() {
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black">
-                Bài học đã hoàn thành
-              </h2>
+              <h2 className="text-xl font-black">Bài học đã hoàn thành</h2>
 
               <p className="mt-1 text-sm text-slate-500">
                 Danh sách bài học của tài khoản hiện tại
@@ -547,12 +500,10 @@ function DashboardPage() {
                     🎓
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold">
-                      Khóa học theo cấp độ
-                    </p>
+                    <p className="font-bold">Khóa học theo cấp độ</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {completedBackendLessonCount} bài học đã được ghi
-                      nhận từ thư viện khóa học
+                      {completedBackendLessonCount} bài học đã được ghi nhận từ
+                      thư viện khóa học
                     </p>
                   </div>
                   <Button
@@ -575,9 +526,7 @@ function DashboardPage() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold">
-                      {lesson.title}
-                    </p>
+                    <p className="truncate font-bold">{lesson.title}</p>
 
                     <p className="mt-1 text-xs text-slate-500">
                       {lesson.category} · {lesson.duration} phút
@@ -589,9 +538,7 @@ function DashboardPage() {
                   </div>
 
                   <div className="flex items-center justify-between gap-4 sm:block sm:text-right">
-                    <p className="text-sm font-black text-emerald-300">
-                      100%
-                    </p>
+                    <p className="text-sm font-black text-emerald-300">100%</p>
 
                     <Button
                       type="button"
@@ -629,7 +576,7 @@ function DashboardPage() {
           )}
         </article>
 
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <h2 className="text-xl font-black">Thành tích</h2>
 
           <p className="mt-1 text-sm text-slate-500">
@@ -648,9 +595,7 @@ function DashboardPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-bold">
-                      {achievement.title}
-                    </p>
+                    <p className="text-sm font-bold">{achievement.title}</p>
 
                     <p className="mt-1 text-xs leading-5 text-slate-500">
                       {achievement.detail}
@@ -663,13 +608,11 @@ function DashboardPage() {
             <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-10 text-center">
               <div className="text-5xl">🔒</div>
 
-              <h3 className="mt-4 font-black">
-                Chưa mở khóa thành tích
-              </h3>
+              <h3 className="mt-4 font-black">Chưa mở khóa thành tích</h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Học bài, ghi nhớ Flashcard hoặc làm Quiz để nhận thành
-                tích đầu tiên.
+                Học bài, ghi nhớ Flashcard hoặc làm Quiz để nhận thành tích đầu
+                tiên.
               </p>
             </div>
           )}

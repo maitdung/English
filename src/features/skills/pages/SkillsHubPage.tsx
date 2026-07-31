@@ -1,14 +1,5 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  Link,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
@@ -131,8 +122,7 @@ const grammarQuestion = {
 const writingPrompt =
   "Write a short email to your manager asking to reschedule a meeting. Include a reason and suggest two alternative times.";
 
-const speakingPhrase =
-  "I understand your point. Could you give me an example?";
+const speakingPhrase = "I understand your point. Could you give me an example?";
 
 function colorClasses(color: string) {
   const colors: Record<string, string> = {
@@ -170,16 +160,14 @@ function SkillsHubPage() {
   )
     ? (requestedSkill as SkillId)
     : "vocabulary";
-  const [selectedSkill, setSelectedSkill] =
-    useState<SkillId>(initialSkill);
+  const [selectedSkill, setSelectedSkill] = useState<SkillId>(initialSkill);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [checkedAnswer, setCheckedAnswer] = useState<number | null>(null);
   const [readingIndex, setReadingIndex] = useState(0);
   const [writingText, setWritingText] = useState("");
   const [writingChecked, setWritingChecked] = useState(false);
   const [isShadowing, setIsShadowing] = useState(false);
-  const [isTranscriptVisible, setIsTranscriptVisible] =
-    useState(false);
+  const [isTranscriptVisible, setIsTranscriptVisible] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("B1");
   const shadowingTimeoutRef = useRef<number | null>(null);
 
@@ -264,7 +252,7 @@ function SkillsHubPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9">
-      <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-950/80 to-violet-500/15 p-6 shadow-2xl shadow-black/20 sm:p-9">
+      <section className="premium-surface relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-950/80 to-violet-500/15 p-6 shadow-2xl shadow-black/20 sm:p-9">
         <div className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-cyan-300/10 blur-3xl" />
         <div className="relative flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
@@ -276,8 +264,9 @@ function SkillsHubPage() {
               Một phòng tập cho mọi kỹ năng
             </h1>
             <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-              Chọn kỹ năng, làm một bài ngắn, nhận phản hồi và quay lại lộ trình.
-              Mỗi phiên chỉ 10–15 phút nhưng được thiết kế để tạo tiến bộ thật.
+              Chọn kỹ năng, làm một bài ngắn, nhận phản hồi và quay lại lộ
+              trình. Mỗi phiên chỉ 10–15 phút nhưng được thiết kế để tạo tiến bộ
+              thật.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
@@ -298,8 +287,8 @@ function SkillsHubPage() {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[310px_1fr]">
-        <aside className="h-fit rounded-3xl border border-white/10 bg-slate-900/65 p-4 shadow-xl shadow-black/10 xl:sticky xl:top-24">
+      <section className="mt-6 grid gap-6 xl:grid-cols-[320px_1fr]">
+        <aside className="premium-surface h-fit rounded-3xl border border-white/10 bg-slate-900/65 p-4 shadow-xl shadow-black/10 xl:sticky xl:top-24">
           <div className="px-3 pb-3">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">
               Chọn kỹ năng
@@ -321,7 +310,9 @@ function SkillsHubPage() {
                   {module.icon}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-black">{module.label}</span>
+                  <span className="block text-sm font-black">
+                    {module.label}
+                  </span>
                   <span className="mt-0.5 block truncate text-[11px] opacity-60">
                     {module.eyebrow}
                   </span>
@@ -343,10 +334,12 @@ function SkillsHubPage() {
           </div>
         </aside>
 
-        <main className="min-w-0 rounded-3xl border border-white/10 bg-slate-900/65 p-5 shadow-xl shadow-black/10 sm:p-8">
+        <main className="premium-surface min-w-0 rounded-3xl border border-white/10 bg-slate-900/65 p-5 shadow-xl shadow-black/10 sm:p-8">
           <header className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className={`text-xs font-black uppercase tracking-[0.18em] ${colorClasses(activeModule.color).split(" ").at(-1)}`}>
+              <p
+                className={`text-xs font-black uppercase tracking-[0.18em] ${colorClasses(activeModule.color).split(" ").at(-1)}`}
+              >
                 {activeModule.eyebrow}
               </p>
               <h2 className="mt-2 text-2xl font-black sm:text-3xl">
@@ -403,7 +396,9 @@ function SkillsHubPage() {
                         🔊
                       </button>
                     </div>
-                    <p className="mt-3 text-sm text-slate-300">{word.meaning}</p>
+                    <p className="mt-3 text-sm text-slate-300">
+                      {word.meaning}
+                    </p>
                     <p className="mt-2 text-xs italic leading-5 text-slate-500">
                       {word.example}
                     </p>
@@ -477,9 +472,7 @@ function SkillsHubPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      setIsTranscriptVisible(
-                        (currentValue) => !currentValue,
-                      )
+                      setIsTranscriptVisible((currentValue) => !currentValue)
                     }
                     className="mt-3 text-xs font-black text-blue-300 hover:text-blue-200"
                   >
@@ -589,9 +582,7 @@ function SkillsHubPage() {
                     onClick={() => {
                       if (isShadowing) {
                         if (shadowingTimeoutRef.current !== null) {
-                          window.clearTimeout(
-                            shadowingTimeoutRef.current,
-                          );
+                          window.clearTimeout(shadowingTimeoutRef.current);
                           shadowingTimeoutRef.current = null;
                         }
 
@@ -652,7 +643,9 @@ function SkillsHubPage() {
                   className="mt-6 w-full resize-y rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-sm leading-7 text-white outline-none transition placeholder:text-slate-600 focus:border-amber-300/50"
                 />
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                  <span>{writingScore.wordCount} từ · mục tiêu tối thiểu 35 từ</span>
+                  <span>
+                    {writingScore.wordCount} từ · mục tiêu tối thiểu 35 từ
+                  </span>
                   <button
                     type="button"
                     onClick={() =>
@@ -671,9 +664,7 @@ function SkillsHubPage() {
                   onClick={() => {
                     setWritingChecked(true);
 
-                    if (
-                      writingScore.checks.filter(Boolean).length >= 3
-                    ) {
+                    if (writingScore.checks.filter(Boolean).length >= 3) {
                       completeSkill("writing");
                     }
                   }}
@@ -741,8 +732,12 @@ function SkillsHubPage() {
                     🧪
                   </span>
                   <h3 className="mt-5 text-xl font-black">{title}</h3>
-                  <p className="mt-2 text-sm font-bold text-orange-200">{meta}</p>
-                  <p className="mt-3 text-sm leading-6 text-slate-500">{detail}</p>
+                  <p className="mt-2 text-sm font-bold text-orange-200">
+                    {meta}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-500">
+                    {detail}
+                  </p>
                   <Button
                     type="button"
                     variant="secondary"

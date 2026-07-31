@@ -29,13 +29,9 @@ function CourseDetailPage() {
   const { courseSlug = "" } = useParams();
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [openedUnitId, setOpenedUnitId] = useState<string | null>(
-    null,
-  );
+  const [openedUnitId, setOpenedUnitId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(
-    null,
-  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let isCancelled = false;
@@ -114,9 +110,7 @@ function CourseDetailPage() {
     );
   }, [course]);
 
-  const firstLesson = course?.units
-    .flatMap((unit) => unit.lessons)
-    .at(0);
+  const firstLesson = course?.units.flatMap((unit) => unit.lessons).at(0);
 
   if (isLoading) {
     return (
@@ -137,9 +131,7 @@ function CourseDetailPage() {
         <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/60 p-8 text-center">
           <div className="text-6xl">📭</div>
 
-          <h1 className="mt-6 text-3xl font-black">
-            Không tìm thấy khóa học
-          </h1>
+          <h1 className="mt-6 text-3xl font-black">Không tìm thấy khóa học</h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
             {errorMessage ??
@@ -161,12 +153,12 @@ function CourseDetailPage() {
     <div className="mx-auto max-w-[1500px] px-5 py-7 sm:px-8 sm:py-9">
       <Link
         to="/dashboard/courses"
-        className="text-sm font-bold text-slate-400 transition hover:text-cyan-300"
+        className="inline-flex text-sm font-bold text-slate-400 transition hover:text-cyan-300"
       >
         ← Quay lại danh sách khóa học
       </Link>
 
-      <section className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900 to-violet-500/10">
+      <section className="premium-surface mt-6 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900 to-violet-500/10">
         <div className="grid lg:grid-cols-[1fr_360px]">
           <div className="p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap gap-2">
@@ -199,7 +191,7 @@ function CourseDetailPage() {
             {firstLesson && (
               <Link
                 to={`/dashboard/courses/${course.slug}/lessons/${firstLesson.slug}`}
-                className="mt-8 inline-flex rounded-2xl bg-cyan-400 px-7 py-4 text-base font-black text-slate-950 transition hover:bg-cyan-300"
+                className="premium-button mt-8 inline-flex rounded-2xl bg-cyan-400 px-7 py-4 text-base font-black text-slate-950 transition hover:bg-cyan-300"
               >
                 Bắt đầu bài học đầu tiên →
               </Link>
@@ -221,15 +213,13 @@ function CourseDetailPage() {
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_340px]">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-400">
               Nội dung khóa học
             </p>
 
-            <h2 className="mt-2 text-2xl font-black">
-              Lộ trình học
-            </h2>
+            <h2 className="mt-2 text-2xl font-black">Lộ trình học</h2>
           </div>
 
           <div className="mt-6 space-y-4">
@@ -243,19 +233,15 @@ function CourseDetailPage() {
                 >
                   <button
                     type="button"
-                    onClick={() =>
-                      setOpenedUnitId(isOpened ? null : unit.id)
-                    }
-                    className="flex w-full items-center justify-between gap-5 p-5 text-left transition hover:bg-white/[0.03]"
+                    onClick={() => setOpenedUnitId(isOpened ? null : unit.id)}
+                    className="flex w-full items-center justify-between gap-5 p-5 text-left transition hover:bg-white/[0.05]"
                   >
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
                         Unit {unitIndex + 1}
                       </p>
 
-                      <h3 className="mt-2 text-lg font-black">
-                        {unit.title}
-                      </h3>
+                      <h3 className="mt-2 text-lg font-black">{unit.title}</h3>
 
                       {unit.description && (
                         <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -296,21 +282,14 @@ function CourseDetailPage() {
 
                             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                               <span>
-                                {lessonTypeLabels[lesson.type] ??
-                                  lesson.type}
+                                {lessonTypeLabels[lesson.type] ?? lesson.type}
                               </span>
 
-                              <span>
-                                ⏱️ {lesson.durationMinutes} phút
-                              </span>
+                              <span>⏱️ {lesson.durationMinutes} phút</span>
 
-                              <span>
-                                📚 {lesson.vocabularyCount} từ
-                              </span>
+                              <span>📚 {lesson.vocabularyCount} từ</span>
 
-                              <span>
-                                ✅ {lesson.exerciseCount} bài tập
-                              </span>
+                              <span>✅ {lesson.exerciseCount} bài tập</span>
                             </div>
                           </div>
 
@@ -335,51 +314,37 @@ function CourseDetailPage() {
           </div>
         </article>
 
-        <aside className="h-fit rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-6 xl:sticky xl:top-24">
-          <h2 className="text-xl font-black">
-            Tổng quan khóa học
-          </h2>
+        <aside className="premium-surface h-fit rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-6 xl:sticky xl:top-24">
+          <h2 className="text-xl font-black">Tổng quan khóa học</h2>
 
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Trình độ</span>
-              <span className="font-black text-cyan-300">
-                {course.level}
-              </span>
+              <span className="font-black text-cyan-300">{course.level}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Unit</span>
-              <span className="font-black">
-                {course.units.length}
-              </span>
+              <span className="font-black">{course.units.length}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Bài học</span>
-              <span className="font-black">
-                {statistics.lessonCount}
-              </span>
+              <span className="font-black">{statistics.lessonCount}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Từ vựng</span>
-              <span className="font-black">
-                {statistics.vocabularyCount}
-              </span>
+              <span className="font-black">{statistics.vocabularyCount}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Bài tập</span>
-              <span className="font-black">
-                {statistics.exerciseCount}
-              </span>
+              <span className="font-black">{statistics.exerciseCount}</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">
-                Thời lượng nội dung
-              </span>
+              <span className="text-slate-500">Thời lượng nội dung</span>
               <span className="font-black">
                 {statistics.durationMinutes} phút
               </span>
@@ -389,7 +354,7 @@ function CourseDetailPage() {
           {firstLesson && (
             <Link
               to={`/dashboard/courses/${course.slug}/lessons/${firstLesson.slug}`}
-              className="mt-7 flex w-full items-center justify-center rounded-2xl bg-cyan-400 px-6 py-4 font-black text-slate-950 transition hover:bg-cyan-300"
+              className="premium-button mt-7 flex w-full items-center justify-center rounded-2xl bg-cyan-400 px-6 py-4 font-black text-slate-950 transition hover:bg-cyan-300"
             >
               Bắt đầu học
             </Link>
