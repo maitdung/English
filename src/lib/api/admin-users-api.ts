@@ -1,5 +1,9 @@
-import type { UserRole } from "../../features/auth/types/auth";
-import type { AdminUser } from "../../features/admin/types/admin";
+import type { UserRole, UserStatus } from "../../features/auth/types/auth";
+import type {
+  AdminCreateUserPayload,
+  AdminUpdateUserPayload,
+  AdminUser,
+} from "../../features/admin/types/admin";
 import { ApiError, apiRequest } from "./api-client";
 
 const SESSION_STORAGE_KEY = "mtd-lingo-auth-session";
@@ -20,10 +24,7 @@ function getStoredAccessToken(): string {
 
     const session = JSON.parse(storedSession) as StoredAuthSession;
 
-    if (
-      typeof session.accessToken !== "string" ||
-      !session.accessToken
-    ) {
+    if (typeof session.accessToken !== "string" || !session.accessToken) {
       throw new Error("Missing access token");
     }
 
@@ -44,18 +45,47 @@ export function getAdminUsersRequest(): Promise<AdminUser[]> {
   });
 }
 
+export function createAdminUserRequest(
+  payload: AdminCreateUserPayload,
+): Promise<AdminUser> {
+  return apiRequest<AdminUser>("/users", {
+    method: "POST",
+    accessToken: getStoredAccessToken(),
+    body: {
+      ...payload,
+      email: payload.email.trim().toLowerCase(),
+    },
+  });
+}
+
 export function updateAdminUserRoleRequest(
   userId: string,
   role: UserRole,
 ): Promise<AdminUser> {
-  return apiRequest<AdminUser>(
-    `/users/${encodeURIComponent(userId)}`,
-    {
-      method: "PATCH",
-      accessToken: getStoredAccessToken(),
-      body: {
-        role,
-      },
-    },
-  );
+  return updateAdminUserRequest(userId, { role });
+}
+
+export function updateAdminUserStatusRequest(
+  userId: string,
+  status: UserStatus,
+): Promise<AdminUser> {
+  return updateAdminUserRequest(userId, { status });
+}
+
+export function updateAdminUserRequest(
+  userId: string,
+  payload: AdminUpdateUserPayload,
+): Promise<AdminUser> {
+  return apiRequest<AdminUser>(`/users/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    accessToken: getStoredAccessToken(),
+    body: payload,
+  });
+}
+
+export function deleteAdminUserRequest(userId: string): Promise<void> {
+  return apiRequest<void>(`/users/${encodeURIComponent(userId)}`, {
+    method: "DELETE",
+    accessToken: getStoredAccessToken(),
+  });
 }

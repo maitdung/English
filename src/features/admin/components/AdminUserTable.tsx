@@ -7,6 +7,8 @@ type AdminUserTableProps = {
   users: AdminUser[];
   currentUserId: string;
   onEditRole: (user: AdminUser) => void;
+  onToggleStatus: (user: AdminUser) => void;
+  onDeleteUser: (user: AdminUser) => void;
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -16,10 +18,8 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 const roleClasses: Record<UserRole, string> = {
-  STUDENT:
-    "border-slate-400/20 bg-slate-400/10 text-slate-300",
-  TEACHER:
-    "border-violet-400/20 bg-violet-400/10 text-violet-300",
+  STUDENT: "border-slate-400/20 bg-slate-400/10 text-slate-300",
+  TEACHER: "border-violet-400/20 bg-violet-400/10 text-violet-300",
   ADMIN: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
 };
 
@@ -30,10 +30,8 @@ const statusLabels: Record<UserStatus, string> = {
 };
 
 const statusClasses: Record<UserStatus, string> = {
-  ACTIVE:
-    "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
-  INACTIVE:
-    "border-amber-400/20 bg-amber-400/10 text-amber-300",
+  ACTIVE: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
+  INACTIVE: "border-amber-400/20 bg-amber-400/10 text-amber-300",
   SUSPENDED: "border-red-400/20 bg-red-400/10 text-red-300",
 };
 
@@ -83,10 +81,7 @@ function formatLastActivity(value: string | null): string {
   }
 
   const elapsedMilliseconds = Date.now() - date.getTime();
-  const elapsedMinutes = Math.max(
-    0,
-    Math.floor(elapsedMilliseconds / 60_000),
-  );
+  const elapsedMinutes = Math.max(0, Math.floor(elapsedMilliseconds / 60_000));
 
   if (elapsedMinutes < 1) {
     return "Vừa xong";
@@ -163,10 +158,14 @@ function EditRoleButton({
   user,
   currentUserId,
   onEditRole,
+  onToggleStatus,
+  onDeleteUser,
 }: {
   user: AdminUser;
   currentUserId: string;
   onEditRole: (user: AdminUser) => void;
+  onToggleStatus: (user: AdminUser) => void;
+  onDeleteUser: (user: AdminUser) => void;
 }) {
   const isCurrentUser = user.id === currentUserId;
 
@@ -179,13 +178,29 @@ function EditRoleButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => onEditRole(user)}
-      className="inline-flex min-h-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-black text-slate-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
-    >
-      Đổi quyền
-    </button>
+    <div className="flex flex-wrap justify-end gap-2">
+      <button
+        type="button"
+        onClick={() => onEditRole(user)}
+        className="inline-flex min-h-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-black text-slate-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+      >
+        Đổi quyền
+      </button>
+      <button
+        type="button"
+        onClick={() => onToggleStatus(user)}
+        className="inline-flex min-h-9 items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10 px-3 text-xs font-black text-amber-200 transition hover:bg-amber-400/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+      >
+        {user.status === "SUSPENDED" ? "Mở khóa" : "Tạm khóa"}
+      </button>
+      <button
+        type="button"
+        onClick={() => onDeleteUser(user)}
+        className="inline-flex min-h-9 items-center justify-center rounded-xl border border-red-400/20 bg-red-400/10 px-3 text-xs font-black text-red-200 transition hover:bg-red-400/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+      >
+        Xóa
+      </button>
+    </div>
   );
 }
 
@@ -193,6 +208,8 @@ function AdminUserTable({
   users,
   currentUserId,
   onEditRole,
+  onToggleStatus,
+  onDeleteUser,
 }: AdminUserTableProps) {
   return (
     <>
@@ -258,6 +275,8 @@ function AdminUserTable({
                 user={user}
                 currentUserId={currentUserId}
                 onEditRole={onEditRole}
+                onToggleStatus={onToggleStatus}
+                onDeleteUser={onDeleteUser}
               />
             </div>
           </article>
@@ -268,18 +287,10 @@ function AdminUserTable({
         <table className="w-full min-w-[1000px] border-separate border-spacing-0 text-left">
           <thead>
             <tr className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
-              <th className="border-b border-white/10 px-5 py-4">
-                Người dùng
-              </th>
-              <th className="border-b border-white/10 px-4 py-4">
-                Quyền
-              </th>
-              <th className="border-b border-white/10 px-4 py-4">
-                Trạng thái
-              </th>
-              <th className="border-b border-white/10 px-4 py-4">
-                Xác minh
-              </th>
+              <th className="border-b border-white/10 px-5 py-4">Người dùng</th>
+              <th className="border-b border-white/10 px-4 py-4">Quyền</th>
+              <th className="border-b border-white/10 px-4 py-4">Trạng thái</th>
+              <th className="border-b border-white/10 px-4 py-4">Xác minh</th>
               <th className="border-b border-white/10 px-4 py-4">
                 Hoạt động gần nhất
               </th>
@@ -328,14 +339,10 @@ function AdminUserTable({
                 <td className="border-b border-white/[0.06] px-4 py-4">
                   <span
                     className={`text-xs font-bold ${
-                      user.emailVerified
-                        ? "text-sky-300"
-                        : "text-slate-600"
+                      user.emailVerified ? "text-sky-300" : "text-slate-600"
                     }`}
                   >
-                    {user.emailVerified
-                      ? "✓ Đã xác minh"
-                      : "Chưa xác minh"}
+                    {user.emailVerified ? "✓ Đã xác minh" : "Chưa xác minh"}
                   </span>
                 </td>
                 <td className="border-b border-white/[0.06] px-4 py-4 text-sm font-semibold text-slate-300">
@@ -349,6 +356,8 @@ function AdminUserTable({
                     user={user}
                     currentUserId={currentUserId}
                     onEditRole={onEditRole}
+                    onToggleStatus={onToggleStatus}
+                    onDeleteUser={onDeleteUser}
                   />
                 </td>
               </tr>

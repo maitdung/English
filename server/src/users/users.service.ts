@@ -235,6 +235,13 @@ export class UsersService {
       data.role = updateUserDto.role;
     }
 
+    if (updateUserDto.status !== undefined) {
+      data.status = updateUserDto.status;
+      if (updateUserDto.status !== UserStatus.ACTIVE) {
+        data.refreshTokenHash = null;
+      }
+    }
+
     try {
       const user = await this.prisma.user.update({
         where: {

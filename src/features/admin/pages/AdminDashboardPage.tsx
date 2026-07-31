@@ -5,15 +5,21 @@ import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
 import { ApiError } from "../../../lib/api/api-client";
 import {
+  createAdminUserRequest,
+  deleteAdminUserRequest,
   getAdminUsersRequest,
   updateAdminUserRoleRequest,
+  updateAdminUserStatusRequest,
 } from "../../../lib/api/admin-users-api";
-import type { UserRole } from "../../auth/types/auth";
+import type { UserRole, UserStatus } from "../../auth/types/auth";
 import { useAuth } from "../../auth/context/AuthContext";
+import AdminCreateUserDialog from "../components/AdminCreateUserDialog";
 import AdminMetricCard from "../components/AdminMetricCard";
 import AdminRoleDialog from "../components/AdminRoleDialog";
 import AdminUserTable from "../components/AdminUserTable";
+import AdminWebsiteSettings from "../components/AdminWebsiteSettings";
 import type {
+  AdminCreateUserPayload,
   AdminRoleFilter,
   AdminStatusFilter,
   AdminUser,
@@ -149,6 +155,10 @@ function AdminDashboardPage() {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [isSavingRole, setIsSavingRole] = useState(false);
   const [roleErrorMessage, setRoleErrorMessage] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [createUserErrorMessage, setCreateUserErrorMessage] = useState("");
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const isAdmin = user?.role === "ADMIN";
 
@@ -343,6 +353,43 @@ function AdminDashboardPage() {
     setCurrentPage(1);
   };
 
+  const exportUsersCsv = () => {
+    const header = [
+      "email",
+      "firstName",
+      "lastName",
+      "role",
+      "status",
+      "emailVerified",
+      "lastLoginAt",
+      "createdAt",
+    ];
+    const rows = filteredUsers.map((adminUser) =>
+      [
+        adminUser.email,
+        adminUser.firstName ?? "",
+        adminUser.lastName ?? "",
+        adminUser.role,
+        adminUser.status,
+        String(adminUser.emailVerified),
+        adminUser.lastLoginAt ?? "",
+        adminUser.createdAt,
+      ]
+        .map((value) => `"${value.replaceAll('"', '""')}"`)
+        .join(","),
+    );
+    const blob = new Blob([[header.join(","), ...rows].join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mtd-lingo-users-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setSuccessMessage(`Đã xuất ${filteredUsers.length} tài khoản ra CSV.`);
+  };
+
   const handleOpenRoleEditor = (adminUser: AdminUser) => {
     if (adminUser.id === user?.id) {
       return;
@@ -360,6 +407,56 @@ function AdminDashboardPage() {
     setRoleErrorMessage("");
     setEditingUser(null);
   }, [isSavingRole]);
+
+  const handleCreateUser = async (payload: AdminCreateUserPayload) => {
+    setIsCreatingUser(true);
+    setCreateUserErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const createdUser = await runWithSessionRetry(() =>
+        createAdminUserRequest(payload),
+      );
+
+      setUsers((currentUsers) => [createdUser, ...currentUsers]);
+      setIsCreateDialogOpen(false);
+      setSuccessMessage(`Đã tạo tài khoản ${createdUser.email}.`);
+    } catch (error) {
+      setCreateUserErrorMessage(getAdminErrorMessage(error));
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (adminUser: AdminUser) => {
+    if (adminUser.id === user?.id) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Xóa tài khoản ${adminUser.email}? Hành động này không thể hoàn tác.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingUserId(adminUser.id);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      await runWithSessionRetry(() => deleteAdminUserRequest(adminUser.id));
+      setUsers((currentUsers) =>
+        currentUsers.filter((currentUser) => currentUser.id !== adminUser.id),
+      );
+      setSuccessMessage(`Đã xóa tài khoản ${adminUser.email}.`);
+    } catch (error) {
+      setErrorMessage(getAdminErrorMessage(error));
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
 
   const handleUpdateRole = async (role: UserRole) => {
     if (!editingUser || editingUser.id === user?.id) {
@@ -388,6 +485,41 @@ function AdminDashboardPage() {
       setRoleErrorMessage(getAdminErrorMessage(error));
     } finally {
       setIsSavingRole(false);
+    }
+  };
+
+  const handleToggleStatus = async (adminUser: AdminUser) => {
+    if (adminUser.id === user?.id) {
+      return;
+    }
+
+    const nextStatus: UserStatus =
+      adminUser.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+    const actionLabel = nextStatus === "SUSPENDED" ? "tạm khóa" : "mở khóa";
+    const confirmed = window.confirm(
+      `Bạn muốn ${actionLabel} tài khoản ${adminUser.email}?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      const updatedUser = await runWithSessionRetry(() =>
+        updateAdminUserStatusRequest(adminUser.id, nextStatus),
+      );
+
+      setUsers((currentUsers) =>
+        currentUsers.map((currentUser) =>
+          currentUser.id === updatedUser.id ? updatedUser : currentUser,
+        ),
+      );
+      setSuccessMessage(`Đã ${actionLabel} tài khoản ${updatedUser.email}.`);
+    } catch (error) {
+      setErrorMessage(getAdminErrorMessage(error));
     }
   };
 
@@ -515,6 +647,13 @@ function AdminDashboardPage() {
             >
               ↻ Làm mới dữ liệu
             </Button>
+            <Button
+              type="button"
+              size="small"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              + Tạo tài khoản
+            </Button>
           </div>
         </div>
       </section>
@@ -632,6 +771,8 @@ function AdminDashboardPage() {
         </article>
       </section>
 
+      <AdminWebsiteSettings />
+
       <section className="premium-surface mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/65 shadow-2xl shadow-black/10">
         <div className="border-b border-white/10 p-5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -644,7 +785,7 @@ function AdminDashboardPage() {
               </p>
             </div>
             <p className="text-xs font-semibold text-slate-600">
-              Trạng thái hiện chỉ có thể xem và lọc
+              Có thể tạo, phân quyền, export CSV và xóa tài khoản
             </p>
           </div>
 
@@ -737,6 +878,14 @@ function AdminDashboardPage() {
             >
               Đặt lại
             </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={exportUsersCsv}
+              className="min-h-12 whitespace-nowrap"
+            >
+              Export CSV
+            </Button>
           </div>
         </div>
 
@@ -745,6 +894,8 @@ function AdminDashboardPage() {
             users={paginatedUsers}
             currentUserId={user.id}
             onEditRole={handleOpenRoleEditor}
+            onToggleStatus={handleToggleStatus}
+            onDeleteUser={handleDeleteUser}
           />
         ) : (
           <div className="px-5 py-16 text-center sm:py-20">
@@ -819,6 +970,24 @@ function AdminDashboardPage() {
           onClose={handleCloseRoleEditor}
           onConfirm={(role) => void handleUpdateRole(role)}
         />
+      )}
+      {isCreateDialogOpen && (
+        <AdminCreateUserDialog
+          isSaving={isCreatingUser}
+          errorMessage={createUserErrorMessage}
+          onClose={() => {
+            if (!isCreatingUser) {
+              setIsCreateDialogOpen(false);
+              setCreateUserErrorMessage("");
+            }
+          }}
+          onConfirm={(payload) => void handleCreateUser(payload)}
+        />
+      )}
+      {deletingUserId && (
+        <p className="sr-only" role="status">
+          Đang xóa tài khoản
+        </p>
       )}
     </div>
   );
