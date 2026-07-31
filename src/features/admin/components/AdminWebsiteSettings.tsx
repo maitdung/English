@@ -1,44 +1,50 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
+import { ApiError } from "../../../lib/api/api-client";
+import {
+  getAdminWebsiteSettingsRequest,
+  updateAdminWebsiteSettingsRequest,
+  type AdminWebsiteSettings as AdminWebsiteSettingsPayload,
+} from "../../../lib/api/admin-settings-api";
 
-const STORAGE_KEY = "mtd-lingo-admin-website-settings";
-
-type WebsiteSettings = {
-  frontendUrl: string;
-  apiUrl: string;
-  buildCommand: string;
-  backendCommand: string;
-};
-
-const defaultSettings: WebsiteSettings = {
+const defaultSettings: AdminWebsiteSettingsPayload = {
   frontendUrl: "https://your-domain.com",
   apiUrl: "https://api.your-domain.com/api",
   buildCommand: "npm run build",
   backendCommand: "cd server && npm run build && npm run start:prod",
 };
 
-function readSettings(): WebsiteSettings {
-  try {
-    const rawValue = window.localStorage.getItem(STORAGE_KEY);
-
-    if (!rawValue) {
-      return defaultSettings;
-    }
-
-    return {
-      ...defaultSettings,
-      ...(JSON.parse(rawValue) as Partial<WebsiteSettings>),
-    };
-  } catch {
-    return defaultSettings;
-  }
-}
-
-function AdminWebsiteSettings() {
-  const [settings, setSettings] = useState<WebsiteSettings>(readSettings);
+function AdminWebsiteSettingsPanel() {
+  const [settings, setSettings] = useState<AdminWebsiteSettingsPayload>(defaultSettings);
   const [statusMessage, setStatusMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getAdminWebsiteSettingsRequest()
+      .then((response) => {
+        if (!cancelled) setSettings(response);
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) {
+          setStatusMessage(
+            reason instanceof ApiError
+              ? reason.message
+              : "Không tải được cấu hình admin.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const envPreview = useMemo(
     () => `VITE_API_URL=${settings.apiUrl.replace(/\/$/, "")}`,
@@ -53,7 +59,7 @@ function AdminWebsiteSettings() {
     ["Verify health", `${settings.apiUrl.replace(/\/api$/, "")}/api/health`],
   ];
 
-  const updateSetting = (key: keyof WebsiteSettings, value: string) => {
+  const updateSetting = (key: keyof AdminWebsiteSettingsPayload, value: string) => {
     setSettings((currentSettings) => ({
       ...currentSettings,
       [key]: value,
@@ -62,8 +68,8 @@ function AdminWebsiteSettings() {
   };
 
   const saveSettings = async () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    setStatusMessage("Đã lưu cấu hình upload website trên thiết bị này.");
+    await updateAdminWebsiteSettingsRequest(settings);
+    setStatusMessage("Đã lưu cấu hình website lên server.");
   };
 
   const copyEnv = async () => {
@@ -95,11 +101,15 @@ function AdminWebsiteSettings() {
           >
             Copy .env
           </Button>
-          <Button type="button" size="small" onClick={saveSettings}>
+          <Button type="button" size="small" onClick={() => void saveSettings()}>
             Lưu setting
           </Button>
         </div>
       </div>
+
+      {isLoading && (
+        <p className="mt-4 text-sm text-slate-500">Đang tải cấu hình...</p>
+      )}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <Input
@@ -173,4 +183,4 @@ function AdminWebsiteSettings() {
   );
 }
 
-export default AdminWebsiteSettings;
+export default AdminWebsiteSettingsPanel;

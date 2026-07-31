@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AuthModule } from './auth/auth.module';
+import { AdminSettingsModule } from './admin-settings/admin-settings.module';
 import { CoursesModule } from './courses/courses.module';
 import { HealthModule } from './health/health.module';
 import { LearningProgressModule } from './learning-progress/learning-progress.module';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     HealthModule,
     UsersModule,
     AuthModule,
+    AdminSettingsModule,
     CoursesModule,
     LearningProgressModule,
   ],
