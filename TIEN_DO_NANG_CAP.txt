@@ -16,9 +16,9 @@ TRẠNG THÁI
   quyền.
 
 2. HỌC LIỆU VÀ KỸ NĂNG
-- 5 khóa học production: A1 Foundations, A2 Everyday Progress, B1 Connected
-  Skills, B2 Critical Communication và C1 Advanced Discourse.
-- Tổng học liệu trong database: 19 bài học, 284 từ vựng, 442 bài tập.
+- 6 khóa học production: A1 Foundations, A2 Everyday Progress, B1 Connected
+  Skills, B2 Critical Communication, C1 Advanced Discourse và C2 Mastery.
+- Tổng học liệu trong database: 22 bài học, 320 từ vựng, 505 bài tập.
 - A2 thêm 3 chương liên kết: kế hoạch cuối tuần, xử lý sự cố du lịch, thói quen
   sức khỏe và cộng đồng.
 - B1 thêm 3 chương nâng độ khó: cộng tác công sở, media literacy/công nghệ,
@@ -27,6 +27,8 @@ TRẠNG THÁI
   đức.
 - C1 thêm 3 chương học thuật: lập luận nghiên cứu, lãnh đạo/chiến lược, văn
   hóa/bản sắc/diễn giải.
+- C2 thêm 3 chương hoàn thiện: sắc thái và lập trường, tổng hợp bằng chứng,
+  điều chỉnh ngữ vực/phong cách.
 - Nội dung bao phủ từ vựng, ngữ pháp, đọc, nghe, nói và viết.
 - Thêm kho từ vựng phía frontend có tìm kiếm, lọc level/topic, trạng thái học,
   phát âm và tiến độ riêng theo tài khoản.
@@ -66,7 +68,7 @@ TRẠNG THÁI
 - Đã đối chiếu Prisma schema với database: không còn khác biệt.
 - Đã đồng bộ lịch sử 4 migration; migrate status báo database up to date.
 - Import transaction hiện đã nâng database lên:
-  5 khóa học, 19 bài học, 284 từ vựng và 442 bài tập.
+  6 khóa học, 22 bài học, 320 từ vựng và 505 bài tập.
 - content:verify xác nhận source khớp database.
 
 6. KẾT QUẢ KIỂM TRA ĐÃ XÁC NHẬN
@@ -78,9 +80,9 @@ TRẠNG THÁI
 - Backend typecheck/unit tests/build/lint: PASS (6 suites, 33 tests).
 - Backend e2e: PASS (2 tests).
 - Backend start:prod: PASS; production entrypoint đã được sửa và kiểm tra trực
-  tiếp với API A2/B1/B2/C1.
-- Content check: PASS (7 tests, audit 5 courses/19 lessons/284 vocabulary/
-  442 exercises, 0 lỗi/0 cảnh báo).
+  tiếp với API A2/B1/B2/C1/C2.
+- Content check: PASS (7 tests, audit 6 courses/22 lessons/320 vocabulary/
+  505 exercises, 0 lỗi/0 cảnh báo).
 
 7. VIỆC CẦN CẤU HÌNH NGOÀI MÃ NGUỒN
 - Cần tài khoản nhà cung cấp email giao dịch (SMTP/Resend/SES...) để gửi reset

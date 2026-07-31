@@ -8,8 +8,8 @@ và khu vực quản trị người dùng.
 
 - Giao diện responsive phong cách premium, có animation, trạng thái loading,
   feedback tương tác và hỗ trợ `prefers-reduced-motion`.
-- Kho học liệu A1–C1 đã chuẩn hóa: **5 khóa học, 19 bài học, 284 từ vựng,
-  442 bài tập**.
+- Kho học liệu A1–C2 đã chuẩn hóa: **6 khóa học, 22 bài học, 320 từ vựng,
+  505 bài tập**.
 - A2 gồm Plans & Weekend Activities, Travel Problems & Solutions, Healthy
   Routines & Community.
 - B1 gồm Workplace Collaboration, Media & Digital Habits, Environment & Local
@@ -18,6 +18,8 @@ và khu vực quản trị người dùng.
   Innovation, Risk & Ethics.
 - C1 gồm Research, Evidence & Academic Argument, Leadership, Strategy &
   Nuanced Communication, Culture, Identity & Interpretation.
+- C2 gồm Precision, Nuance & Stance, Synthesis, Evidence & Critique, Style,
+  Rhetoric & Adaptation.
 - Phòng luyện kỹ năng theo cấp độ A1–C2: từ vựng, nghe, nói, đọc, viết, ngữ
   pháp và kiểm tra.
 - Quiz có chế độ Nền tảng/Tổng hợp/Nâng cao, câu hỏi B2–C1 và giải thích sau
