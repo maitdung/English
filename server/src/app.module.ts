@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { CoursesModule } from './courses/courses.module';
 import { HealthModule } from './health/health.module';
+import { LearningProgressModule } from './learning-progress/learning-progress.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { validateEnv } from './config/env.validation';
 import { UsersModule } from './users/users.module';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     CoursesModule,
+    LearningProgressModule,
   ],
 })
 export class AppModule {}

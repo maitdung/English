@@ -53,6 +53,12 @@ enum ExerciseType {
   TRUE_FALSE
 }
 
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
   id               String     @id @default(uuid())
   email            String     @unique
@@ -67,6 +73,12 @@ model User {
   status           UserStatus @default(ACTIVE)
   emailVerified    Boolean    @default(false)
   lastLoginAt      DateTime?
+
+  enrollments          Enrollment[]
+  lessonProgresses     LessonProgress[]
+  exerciseAttempts     ExerciseAttempt[]
+  dailyLearningActivity DailyLearningActivity[]
+  vocabularyReviews    VocabularyReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,6 +103,7 @@ model Course {
   publishedAt      DateTime?
 
   units Unit[]
+  enrollments Enrollment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -134,6 +147,8 @@ model Lesson {
   unit         Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
   vocabularies Vocabulary[]
   exercises    Exercise[]
+  lessonProgresses LessonProgress[]
+  exerciseAttempts ExerciseAttempt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -159,6 +174,7 @@ model Vocabulary {
   orderIndex         Int     @default(0)
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  vocabularyReviews VocabularyReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,6 +197,7 @@ model Exercise {
   orderIndex    Int          @default(0)
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  attempts ExerciseAttempt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -188,4 +205,152 @@ model Exercise {
   @@index([lessonId])
   @@index([type])
   @@map("exercises")
+}
+
+model Enrollment {
+  id              String   @id @default(uuid())
+  userId          String
+  courseId        String
+  progressPercent Int      @default(0)
+  enrolledAt      DateTime @default(now())
+  lastAccessedAt  DateTime?
+  completedAt     DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id                 String         @id @default(uuid())
+  userId             String
+  lessonId           String
+  status             ProgressStatus @default(NOT_STARTED)
+  progressPercent    Int            @default(0)
+  bestScore          Int?
+  lastScore          Int?
+  timeSpentMinutes   Int            @default(0)
+  startedAt          DateTime?
+  completedAt        DateTime?
+  lastAccessedAt     DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@index([status])
+  @@map("lesson_progress")
+}
+
+model ExerciseAttempt {
+  id           String   @id @default(uuid())
+  userId       String
+  exerciseId   String
+  lessonId     String
+  attemptNumber Int      @default(1)
+  answer       Json
+  isCorrect    Boolean
+  score        Int      @default(0)
+  submittedAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([exerciseId])
+  @@index([lessonId])
+  @@index([submittedAt])
+  @@map("exercise_attempts")
+}
+
+model DailyLearningActivity {
+  id                 String   @id @default(uuid())
+  userId             String
+  date               DateTime
+  minutes            Int      @default(0)
+  lessonsCompleted   Int      @default(0)
+  exercisesCompleted Int      @default(0)
+  vocabularyReviewed Int      @default(0)
+  score              Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+  @@map("daily_learning_activity")
+}
+
+model VocabularyReview {
+  id              String   @id @default(uuid())
+  userId          String
+  vocabularyId    String
+  intervalDays    Int      @default(1)
+  easeFactor      Float    @default(2.5)
+  repetitions     Int      @default(0)
+  attempts        Int      @default(0)
+  correctAttempts Int      @default(0)
+  lastReviewedAt  DateTime?
+  nextReviewAt    DateTime?
+  lastScore       Int      @default(0)
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary  @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, vocabularyId])
+  @@index([userId])
+  @@index([vocabularyId])
+  @@index([nextReviewAt])
+  @@map("vocabulary_reviews")
+}
+
+model AdminSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@map("admin_settings")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String?
+  targetUserId String?
+  action       String
+  metadata     Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetUserId])
+  @@index([action])
+  @@map("audit_logs")
 }
