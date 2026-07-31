@@ -34,7 +34,7 @@ export type QuizQuestion = {
   answers: string[];
   correctAnswer: number;
   explanation: string;
-  difficulty?: "foundation" | "advanced";
+  difficulty?: "foundation" | "intermediate" | "advanced";
   level?: string;
   topic?: string;
 };
@@ -50,11 +50,7 @@ export type LearningProgress = {
   lastActivityDate: string | null;
 };
 
-export type ReviewItemType =
-  | "vocabulary"
-  | "flashcard"
-  | "lesson"
-  | "quiz";
+export type ReviewItemType = "vocabulary" | "flashcard" | "lesson" | "quiz";
 
 export type ReviewRecord = {
   itemType: ReviewItemType;

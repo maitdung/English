@@ -230,9 +230,264 @@ const listeningLessons: ListeningLesson[] = [
       },
     ],
   },
+  {
+    id: 7,
+    title: "Shopping and Returns",
+    description:
+      "Nghe tình huống mua sắm, đổi trả hàng và hỏi thông tin sản phẩm.",
+    level: "A2",
+    duration: 14,
+    progress: 35,
+    category: "Mua sắm",
+    icon: "🛍️",
+    estimatedSeconds: 74,
+    speechRate: 0.82,
+    transcript:
+      "Excuse me, I bought this jacket yesterday, but the size is too small. Do you have a medium in blue? Let me check. Yes, we have one left. Would you like to exchange it or get a refund? I would like to exchange it, please. No problem. May I see your receipt?",
+    focusWords: ["jacket", "medium", "exchange", "refund", "receipt"],
+    questions: [
+      {
+        question: "What did the customer buy?",
+        answers: ["A jacket", "A receipt", "A blue bag"],
+        correct: 0,
+      },
+      {
+        question: "What size does the customer want?",
+        answers: ["Small", "Medium", "Large"],
+        correct: 1,
+      },
+      {
+        question: "What does the shop assistant ask to see?",
+        answers: ["A passport", "A receipt", "A credit card"],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: 8,
+    title: "Doctor Appointment",
+    description: "Nghe hội thoại đặt lịch khám và mô tả triệu chứng cơ bản.",
+    level: "B1",
+    duration: 17,
+    progress: 15,
+    category: "Sức khỏe",
+    icon: "🩺",
+    estimatedSeconds: 86,
+    speechRate: 0.86,
+    transcript:
+      "Good afternoon. I would like to make an appointment with Dr. Evans. I have had a sore throat and a mild fever since Monday. The earliest appointment is tomorrow at ten forty-five. Does that work for you? Yes, that is fine. Please arrive ten minutes early and bring your health insurance card.",
+    focusWords: ["appointment", "sore throat", "mild fever", "insurance"],
+    questions: [
+      {
+        question: "What symptoms does the caller have?",
+        answers: ["A sore throat and fever", "A broken arm", "Back pain"],
+        correct: 0,
+      },
+      {
+        question: "When is the appointment?",
+        answers: [
+          "Today at ten",
+          "Tomorrow at ten forty-five",
+          "Monday morning",
+        ],
+        correct: 1,
+      },
+      {
+        question: "What should the caller bring?",
+        answers: ["A report", "A receipt", "An insurance card"],
+        correct: 2,
+      },
+    ],
+  },
+  {
+    id: 9,
+    title: "University Seminar",
+    description: "Nghe thông báo học thuật, lịch seminar và yêu cầu chuẩn bị.",
+    level: "B2",
+    duration: 24,
+    progress: 0,
+    category: "Giáo dục",
+    icon: "🎓",
+    estimatedSeconds: 110,
+    speechRate: 0.9,
+    transcript:
+      "This Friday's seminar will focus on sustainable urban design. Students are expected to read the assigned article before attending and prepare two questions for discussion. The guest speaker is an architect who has worked on public transport projects in three countries. Attendance will count toward your participation grade.",
+    focusWords: ["seminar", "sustainable", "assigned", "attendance"],
+    questions: [
+      {
+        question: "What is the seminar about?",
+        answers: ["Urban design", "Ancient history", "Online marketing"],
+        correct: 0,
+      },
+      {
+        question: "What should students prepare?",
+        answers: ["Two questions", "A full essay", "A presentation slide"],
+        correct: 0,
+      },
+      {
+        question: "What will attendance affect?",
+        answers: [
+          "The final exam date",
+          "Participation grade",
+          "Library access",
+        ],
+        correct: 1,
+      },
+    ],
+  },
+  {
+    id: 10,
+    title: "Product Strategy Meeting",
+    description: "Nghe thảo luận công việc có nhiều ý kiến, ưu tiên và rủi ro.",
+    level: "C1",
+    duration: 28,
+    progress: 0,
+    category: "Công việc",
+    icon: "📊",
+    estimatedSeconds: 126,
+    speechRate: 0.93,
+    transcript:
+      "Before we commit to the new release date, we need to consider two constraints. First, the engineering team is still resolving a security issue that affects account recovery. Second, customer support needs at least one week to update the help centre and train agents. If we launch too early, we may create more confusion than momentum.",
+    focusWords: ["commit", "constraints", "account recovery", "momentum"],
+    questions: [
+      {
+        question: "What issue is engineering resolving?",
+        answers: ["A security issue", "A hiring issue", "A payment delay"],
+        correct: 0,
+      },
+      {
+        question: "Why does support need one week?",
+        answers: [
+          "To update help materials and train agents",
+          "To hire new designers",
+          "To translate the website into French",
+        ],
+        correct: 0,
+      },
+      {
+        question: "What risk does the speaker mention?",
+        answers: [
+          "Creating confusion",
+          "Losing the office",
+          "Missing a flight",
+        ],
+        correct: 0,
+      },
+    ],
+  },
+  {
+    id: 11,
+    title: "Climate Policy Interview",
+    description: "Nghe phỏng vấn nâng cao về chính sách khí hậu và kinh tế.",
+    level: "C1",
+    duration: 30,
+    progress: 0,
+    category: "Môi trường",
+    icon: "🌿",
+    estimatedSeconds: 132,
+    speechRate: 0.94,
+    transcript:
+      "The challenge is not simply persuading people that climate change is real. The harder question is how to design policies that are both effective and politically durable. A carbon tax, for example, may reduce emissions, but without careful redistribution it can place a disproportionate burden on lower income households.",
+    focusWords: ["durable", "carbon tax", "emissions", "redistribution"],
+    questions: [
+      {
+        question: "What does the speaker say is the harder question?",
+        answers: [
+          "Designing effective and durable policies",
+          "Finding colder weather",
+          "Building more airports",
+        ],
+        correct: 0,
+      },
+      {
+        question: "What can a carbon tax reduce?",
+        answers: ["Emissions", "Education", "Household size"],
+        correct: 0,
+      },
+      {
+        question: "Who may be affected without redistribution?",
+        answers: [
+          "Lower income households",
+          "Only tourists",
+          "University professors",
+        ],
+        correct: 0,
+      },
+    ],
+  },
+  {
+    id: 12,
+    title: "Cultural Commentary",
+    description:
+      "Nghe bình luận C2 với lập luận trừu tượng và sắc thái ngôn ngữ.",
+    level: "C2",
+    duration: 34,
+    progress: 0,
+    category: "Xã hội",
+    icon: "🧠",
+    estimatedSeconds: 145,
+    speechRate: 0.96,
+    transcript:
+      "What makes a city memorable is rarely its skyline alone. It is the accumulation of small rituals: the vendor who remembers your order, the square where strangers linger without suspicion, the library that becomes a refuge during rain. Urban identity is produced less by monuments than by repeated acts of belonging.",
+    focusWords: ["accumulation", "rituals", "refuge", "belonging"],
+    questions: [
+      {
+        question: "What does the speaker say makes a city memorable?",
+        answers: ["Small rituals", "Only its skyline", "Expensive apartments"],
+        correct: 0,
+      },
+      {
+        question: "What is the library described as?",
+        answers: ["A refuge during rain", "A private office", "A monument"],
+        correct: 0,
+      },
+      {
+        question: "Urban identity is produced mostly by what?",
+        answers: [
+          "Repeated acts of belonging",
+          "Traffic rules",
+          "Tall buildings",
+        ],
+        correct: 0,
+      },
+    ],
+  },
+  {
+    id: 13,
+    title: "Academic Debate",
+    description:
+      "Nghe tranh luận học thuật C2 về công nghệ, tri thức và xã hội.",
+    level: "C2",
+    duration: 36,
+    progress: 0,
+    category: "Công nghệ",
+    icon: "🔬",
+    estimatedSeconds: 152,
+    speechRate: 0.96,
+    transcript:
+      "The question is not whether artificial intelligence can produce fluent language; it plainly can. The more consequential issue is whether institutions can cultivate the judgement required to evaluate that fluency. Without such judgement, eloquence may be mistaken for evidence and speed for understanding.",
+    focusWords: ["consequential", "cultivate", "judgement", "eloquence"],
+    questions: [
+      {
+        question: "What can artificial intelligence plainly produce?",
+        answers: ["Fluent language", "Physical buildings", "Weather patterns"],
+        correct: 0,
+      },
+      {
+        question: "What must institutions cultivate?",
+        answers: ["Judgement", "Silence", "More traffic"],
+        correct: 0,
+      },
+      {
+        question: "What may be mistaken for evidence?",
+        answers: ["Eloquence", "Rain", "A calendar"],
+        correct: 0,
+      },
+    ],
+  },
 ];
 
-const levels = ["Tất cả", "A1", "A2", "B1", "B2"];
+const levels = ["Tất cả", "A1", "A2", "B1", "B2", "C1", "C2"];
 
 function formatTime(seconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(seconds));
@@ -295,6 +550,12 @@ function ListeningPage() {
     (total, lesson) => total + lesson.duration,
     0,
   );
+  const totalQuestions = listeningLessons.reduce(
+    (total, lesson) => total + lesson.questions.length,
+    0,
+  );
+  const levelCount = new Set(listeningLessons.map((lesson) => lesson.level))
+    .size;
 
   const activeProgressPercent = Math.min(
     100,
@@ -435,42 +696,70 @@ function ListeningPage() {
 
   return (
     <div className="mx-auto max-w-[1500px] px-5 py-7 sm:px-8 sm:py-9">
-      <section className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-400">
-            Luyện nghe
-          </p>
+      <section className="premium-surface relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-950 to-violet-500/15 p-6 shadow-2xl shadow-cyan-950/20 sm:p-8">
+        <div
+          aria-hidden="true"
+          className="absolute -right-16 -top-20 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl"
+        />
 
-          <h1 className="mt-3 text-3xl font-black sm:text-4xl">
-            Nghe hiểu tiếng Anh tự nhiên
-          </h1>
+        <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-300">
+                Listening Lab
+              </p>
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-emerald-300">
+                Real browser audio
+              </span>
+            </div>
 
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-            Luyện nghe theo cấp độ, phát âm trực tiếp trong trình duyệt, có
-            transcript, từ khóa và câu hỏi kiểm tra sau mỗi bài.
-          </p>
+            <h1 className="mt-4 max-w-4xl text-3xl font-black tracking-tight text-white sm:text-5xl">
+              Nghe hiểu tiếng Anh tự nhiên, từ A1 đến C2
+            </h1>
+
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400">
+              Luyện nghe theo cấp độ, phát âm trực tiếp trong trình duyệt, có
+              transcript, từ khóa, câu hỏi kiểm tra và phản hồi đúng/sai sau mỗi
+              bài.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[360px]">
+            <Button
+              type="button"
+              size="large"
+              className="w-full"
+              onClick={() => handleSelectLesson(listeningLessons[1])}
+            >
+              Tiếp tục luyện nghe →
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="large"
+              className="w-full"
+              onClick={() => setIsTranscriptVisible(true)}
+            >
+              Mở transcript
+            </Button>
+          </div>
         </div>
-
-        <Button
-          type="button"
-          size="large"
-          className="w-full sm:w-auto"
-          onClick={() => handleSelectLesson(listeningLessons[1])}
-        >
-          Tiếp tục luyện nghe →
-        </Button>
       </section>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
+        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 shadow-xl shadow-black/10">
           <p className="text-sm text-slate-400">Bài nghe</p>
           <p className="mt-2 text-3xl font-black">{listeningLessons.length}</p>
           <p className="mt-5 text-xs font-semibold text-cyan-300">
-            Đủ 4 cấp độ
+            Đủ {levelCount} cấp độ
           </p>
         </article>
 
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
+        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 shadow-xl shadow-black/10">
           <p className="text-sm text-slate-400">Đã hoàn thành</p>
           <p className="mt-2 text-3xl font-black">{completedLessons}</p>
           <p className="mt-5 text-xs font-semibold text-emerald-300">
@@ -478,7 +767,7 @@ function ListeningPage() {
           </p>
         </article>
 
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
+        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 shadow-xl shadow-black/10">
           <p className="text-sm text-slate-400">Tổng thời lượng</p>
           <p className="mt-2 text-3xl font-black">{totalMinutes} phút</p>
           <p className="mt-5 text-xs font-semibold text-violet-300">
@@ -486,13 +775,57 @@ function ListeningPage() {
           </p>
         </article>
 
-        <article className="rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900 to-blue-500/10 p-5">
-          <p className="text-sm text-slate-400">Chuỗi luyện nghe</p>
-          <p className="mt-2 text-3xl font-black">7 ngày</p>
+        <article className="rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900 to-blue-500/10 p-5 shadow-xl shadow-cyan-950/10">
+          <p className="text-sm text-slate-400">Câu hỏi luyện tập</p>
+          <p className="mt-2 text-3xl font-black">{totalQuestions}</p>
           <p className="mt-5 text-xs font-semibold text-amber-300">
-            Kỷ lục 12 ngày
+            Nghe · hiểu ý · bắt chi tiết
           </p>
         </article>
+      </section>
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-3">
+        {[
+          {
+            title: "1. Nghe lấy ý chính",
+            detail:
+              "Bấm Play, chưa nhìn transcript, cố gắng nắm ai đang nói và mục đích là gì.",
+            tone: "cyan",
+          },
+          {
+            title: "2. Bắt từ khóa",
+            detail:
+              "Nghe lại và đánh dấu các cụm quan trọng trong phần từ khóa cần nghe.",
+            tone: "violet",
+          },
+          {
+            title: "3. Kiểm tra chi tiết",
+            detail:
+              "Trả lời câu hỏi, mở transcript để đối chiếu và nghe lại phần bị hụt.",
+            tone: "emerald",
+          },
+        ].map((step) => (
+          <article
+            key={step.title}
+            className="group rounded-3xl border border-white/10 bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-0.5 hover:border-cyan-400/25 hover:bg-white/[0.055]"
+          >
+            <span
+              className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-wider ${
+                step.tone === "cyan"
+                  ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-300"
+                  : step.tone === "violet"
+                    ? "border-violet-400/20 bg-violet-400/10 text-violet-300"
+                    : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+              }`}
+            >
+              Practice flow
+            </span>
+            <h2 className="mt-4 text-lg font-black text-white">{step.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              {step.detail}
+            </p>
+          </article>
+        ))}
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
