@@ -79,6 +79,6 @@ TRẠNG THÁI
 
 KẾT QUẢ CUỐI
 - Git branch: develop
-- Git commit: 0d21866 (feat: upgrade english learning platform)
+- Git commit: 21b2156 (feat: upgrade english learning platform)
 - GitHub push: DONE — origin/develop
 - Thời điểm hoàn tất QA: 31/07/2026, sau khi frontend/backend/content/e2e đều PASS
