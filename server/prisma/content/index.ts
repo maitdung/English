@@ -27,13 +27,17 @@ export type {
 } from './exporter';
 
 export { a1Course, a1Lessons, lesson007TravelAirport } from './a1';
+export { a2Course } from './a2';
+export { b1Course } from './b1';
 
 export { default as a1 } from './a1';
 
 import a1 from './a1';
+import a2 from './a2';
+import b1 from './b1';
 import { ContentRegistry } from './registry';
 
-export const courses = [a1] as const;
+export const courses = [a1, a2, b1] as const;
 
 export const registry = new ContentRegistry().registerCourses([...courses]);
 

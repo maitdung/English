@@ -16,8 +16,13 @@ TRẠNG THÁI
   quyền.
 
 2. HỌC LIỆU VÀ KỸ NĂNG
-- Course English A1 Foundations: 7 bài học.
-- Tổng học liệu trong database: 140 từ vựng, 190 bài tập.
+- 3 khóa học production: A1 Foundations, A2 Everyday Progress và B1 Connected
+  Skills.
+- Tổng học liệu trong database: 13 bài học, 212 từ vựng, 316 bài tập.
+- A2 thêm 3 chương liên kết: kế hoạch cuối tuần, xử lý sự cố du lịch, thói quen
+  sức khỏe và cộng đồng.
+- B1 thêm 3 chương nâng độ khó: cộng tác công sở, media literacy/công nghệ,
+  môi trường và thuyết trình giải pháp địa phương.
 - Nội dung bao phủ từ vựng, ngữ pháp, đọc, nghe, nói và viết.
 - Thêm kho từ vựng phía frontend có tìm kiếm, lọc level/topic, trạng thái học,
   phát âm và tiến độ riêng theo tài khoản.
@@ -56,8 +61,8 @@ TRẠNG THÁI
 - Schema reset password đã được bổ sung bằng migration không phá hủy dữ liệu.
 - Đã đối chiếu Prisma schema với database: không còn khác biệt.
 - Đã đồng bộ lịch sử 4 migration; migrate status báo database up to date.
-- Import transaction đã nâng database từ:
-  1 -> 7 bài học, 20 -> 140 từ vựng, 40 -> 190 bài tập.
+- Import transaction hiện đã nâng database lên:
+  3 khóa học, 13 bài học, 212 từ vựng và 316 bài tập.
 - content:verify xác nhận source khớp database.
 
 6. KẾT QUẢ KIỂM TRA ĐÃ XÁC NHẬN
@@ -68,7 +73,8 @@ TRẠNG THÁI
 - Frontend build/lint: PASS (67 modules; chỉ còn cảnh báo chunk Vite >500kB).
 - Backend typecheck/unit tests/build/lint: PASS (6 suites, 33 tests).
 - Backend e2e: PASS (2 tests).
-- Content check: PASS (7 tests, audit 0 lỗi/0 cảnh báo).
+- Content check: PASS (7 tests, audit 3 courses/13 lessons/212 vocabulary/
+  316 exercises, 0 lỗi/0 cảnh báo).
 
 7. VIỆC CẦN CẤU HÌNH NGOÀI MÃ NGUỒN
 - Cần tài khoản nhà cung cấp email giao dịch (SMTP/Resend/SES...) để gửi reset

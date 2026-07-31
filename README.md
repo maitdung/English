@@ -8,7 +8,12 @@ và khu vực quản trị người dùng.
 
 - Giao diện responsive phong cách premium, có animation, trạng thái loading,
   feedback tương tác và hỗ trợ `prefers-reduced-motion`.
-- Kho học liệu A1 đã chuẩn hóa: **7 bài học, 140 từ vựng, 190 bài tập**.
+- Kho học liệu A1–B1 đã chuẩn hóa: **3 khóa học, 13 bài học, 212 từ vựng,
+  316 bài tập**.
+- A2 gồm Plans & Weekend Activities, Travel Problems & Solutions, Healthy
+  Routines & Community.
+- B1 gồm Workplace Collaboration, Media & Digital Habits, Environment & Local
+  Action.
 - Phòng luyện kỹ năng theo cấp độ A1–C2: từ vựng, nghe, nói, đọc, viết, ngữ
   pháp và kiểm tra.
 - Quiz có chế độ Nền tảng/Tổng hợp/Nâng cao, câu hỏi B2–C1 và giải thích sau
