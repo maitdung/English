@@ -4,7 +4,7 @@ import { PrismaClient } from '../../generated/prisma/client';
 
 import { Course, Lesson } from './types';
 import { validator, ValidationError } from './validator';
-import { normalizeLesson, sortLessons, lessonSummary } from './utils';
+import { normalizeLesson, sortLessons } from './utils';
 import {
   ContentRepository,
   createContentRepository,

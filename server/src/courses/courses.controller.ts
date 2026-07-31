@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -8,6 +8,7 @@ import {
 } from '@nestjs/swagger';
 
 import { CoursesService } from './courses.service';
+import { CheckExerciseDto } from './dto/check-exercise.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
 
 @ApiTags('Courses')
@@ -59,5 +60,29 @@ export class CoursesController {
     @Param('lessonSlug') lessonSlug: string,
   ) {
     return this.coursesService.findLesson(courseSlug, lessonSlug);
+  }
+
+  @Post(':courseSlug/lessons/:lessonSlug/exercises/:exerciseId/check')
+  @ApiOperation({
+    summary: 'Kiểm tra đáp án một bài tập và trả phản hồi',
+  })
+  @ApiOkResponse({
+    description: 'Kết quả, đáp án đúng, giải thích và điểm nhận được.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Không tìm thấy bài học hoặc bài tập.',
+  })
+  checkExercise(
+    @Param('courseSlug') courseSlug: string,
+    @Param('lessonSlug') lessonSlug: string,
+    @Param('exerciseId') exerciseId: string,
+    @Body() dto: CheckExerciseDto,
+  ) {
+    return this.coursesService.checkExercise(
+      courseSlug,
+      lessonSlug,
+      exerciseId,
+      dto.answer,
+    );
   }
 }

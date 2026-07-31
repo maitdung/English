@@ -1,0 +1,84 @@
+MTD LINGO PRO - TIẾN ĐỘ NÂNG CẤP TOÀN DIỆN
+Cập nhật: 31/07/2026 (Asia/Ho_Chi_Minh)
+
+TRẠNG THÁI
+- Phần mã nguồn chính: hoàn thành.
+- Đồng bộ database học liệu: hoàn thành và đã verify.
+- QA tự động: hoàn thành.
+- Commit/push GitHub: đang thực hiện ở bước bàn giao cuối.
+
+1. GIAO DIỆN VÀ TRẢI NGHIỆM
+- Thiết kế lại landing, login, dashboard, hồ sơ và các màn hình học theo phong
+  cách premium, responsive.
+- Thêm gradient, glass surface, animation, hover/active state, loading skeleton,
+  feedback đúng/sai và reduced-motion accessibility.
+- Nút CTA đã nối tới route thật; menu dashboard có phòng kỹ năng và admin theo
+  quyền.
+
+2. HỌC LIỆU VÀ KỸ NĂNG
+- Course English A1 Foundations: 7 bài học.
+- Tổng học liệu trong database: 140 từ vựng, 190 bài tập.
+- Nội dung bao phủ từ vựng, ngữ pháp, đọc, nghe, nói và viết.
+- Thêm kho từ vựng phía frontend có tìm kiếm, lọc level/topic, trạng thái học,
+  phát âm và tiến độ riêng theo tài khoản.
+- Thêm Skills Hub theo cấp độ A1-C2 cho vocabulary/listening/speaking/reading/
+  writing/grammar/test.
+- Quiz có ba chế độ Nền tảng, Tổng hợp và Nâng cao; bộ câu nâng cao có nội dung
+  B2-C1 về suy luận, collocation, văn phong công sở và active listening.
+- Bài học course có giao diện làm bài và endpoint chấm đáp án phía backend.
+- Dashboard và lộ trình học lấy tiến độ thực thay cho số liệu minh họa cố định.
+- Hệ thống tiến độ có review record theo từng item: điểm, số lần làm, độ khó
+  thích nghi, interval ôn tiếp theo và ngày đến hạn.
+- Dashboard có kế hoạch mỗi ngày kết hợp tối đa 5 mục ôn đến hạn và từ mới, streak
+  liên tiếp, phút học, điểm hoạt động và biểu đồ 7 ngày.
+
+3. TÀI KHOẢN VÀ BẢO MẬT
+- Ghi nhớ đăng nhập đúng theo lựa chọn: sessionStorage hoặc localStorage.
+- Refresh token rotation; refresh token lưu dạng bcrypt hash.
+- Đổi mật khẩu yêu cầu mật khẩu hiện tại và thu hồi các phiên cũ.
+- Đổi email yêu cầu mật khẩu hiện tại; tự đưa email về trạng thái cần xác minh.
+- Forgot/reset password dùng token ngẫu nhiên, chỉ lưu SHA-256 hash, có thời hạn
+  30 phút và được consume atomically.
+- Không làm lộ việc một email có tồn tại hay không.
+- Rate limit cho register/login/refresh/forgot/reset/change-password.
+- Helmet, CORS allowlist, DTO validation whitelist, JWT và RBAC admin.
+- Production không được phép trả reset token qua API.
+- Mật khẩu mới/đăng ký/admin phải có chữ hoa, chữ thường, số, ký tự đặc biệt,
+  không có khoảng trắng và dài 8–72 ký tự.
+
+4. ADMIN MANAGER
+- Dashboard số liệu tài khoản, trạng thái hoạt động, đội ngũ và email xác minh.
+- Tìm kiếm, lọc vai trò/trạng thái, sắp xếp, phân trang và đồng bộ lại dữ liệu.
+- Dialog đổi role, chặn tự đổi quyền của chính mình ở giao diện.
+- Backend tiếp tục bắt buộc JWT + ADMIN role; không chỉ bảo vệ bằng giao diện.
+
+5. DATABASE VÀ NỘI DUNG
+- Schema reset password đã được bổ sung bằng migration không phá hủy dữ liệu.
+- Đã đối chiếu Prisma schema với database: không còn khác biệt.
+- Đã đồng bộ lịch sử 4 migration; migrate status báo database up to date.
+- Import transaction đã nâng database từ:
+  1 -> 7 bài học, 20 -> 140 từ vựng, 40 -> 190 bài tập.
+- content:verify xác nhận source khớp database.
+
+6. KẾT QUẢ KIỂM TRA ĐÃ XÁC NHẬN
+- content:check: PASS (7/7 tests, audit 0 lỗi, 0 cảnh báo).
+- content:dry-run: PASS.
+- content:import + content:verify + content:stats: PASS.
+- Prisma migrate diff: PASS, không còn khác biệt.
+- Frontend build/lint: PASS (67 modules; chỉ còn cảnh báo chunk Vite >500kB).
+- Backend typecheck/unit tests/build/lint: PASS (6 suites, 33 tests).
+- Backend e2e: PASS (2 tests).
+- Content check: PASS (7 tests, audit 0 lỗi/0 cảnh báo).
+
+7. VIỆC CẦN CẤU HÌNH NGOÀI MÃ NGUỒN
+- Cần tài khoản nhà cung cấp email giao dịch (SMTP/Resend/SES...) để gửi reset
+  link thật ở production. Mã hiện giữ token an toàn và chỉ cho phép lộ token ở
+  development/test khi bật cờ rõ ràng.
+- Cần secret JWT, database URL, Redis và domain production thật trong hệ thống
+  deploy; không ghi các secret này vào Git.
+
+KẾT QUẢ CUỐI
+- Git branch: develop
+- Git commit: 0d21866 (feat: upgrade english learning platform)
+- GitHub push: DONE — origin/develop
+- Thời điểm hoàn tất QA: 31/07/2026, sau khi frontend/backend/content/e2e đều PASS

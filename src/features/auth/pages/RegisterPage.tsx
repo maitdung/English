@@ -4,6 +4,10 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
 import { useAuth } from "../context/AuthContext";
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "../utils/password";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -31,8 +35,8 @@ function RegisterPage() {
       return "Vui lòng nhập email.";
     }
 
-    if (password.length < 8) {
-  return "Mật khẩu phải có ít nhất 8 ký tự.";
+    if (!isStrongPassword(password)) {
+      return PASSWORD_REQUIREMENTS_MESSAGE;
     }
 
     if (password !== confirmPassword) {
@@ -164,8 +168,11 @@ function RegisterPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Tối thiểu 8 ký tự"
+                placeholder="Tối thiểu 8 ký tự, đủ 4 nhóm"
                 autoComplete="new-password"
+                minLength={8}
+                maxLength={72}
+                helperText="Gồm chữ hoa, chữ thường, số và ký tự đặc biệt; không có khoảng trắng."
                 required
                 rightElement={
                   <button

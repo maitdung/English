@@ -1,7 +1,12 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
+import { getCoursesRequest } from "../../../lib/api/courses-api";
+import {
+  getDailyPlan,
+  getTodayActivity,
+} from "../../learning-engine/data/dailyLearning";
 import { useAuth } from "../../auth/context/AuthContext";
 import {
   flashcards,
@@ -9,27 +14,93 @@ import {
 } from "../../learning-engine/data/lessonCatalog";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
 
-const weeklyActivity = [
-  { day: "T2", value: 0 },
-  { day: "T3", value: 0 },
-  { day: "T4", value: 0 },
-  { day: "T5", value: 0 },
-  { day: "T6", value: 0 },
-  { day: "T7", value: 0 },
-  { day: "CN", value: 0 },
+const trackedSkillIds = [
+  "vocabulary",
+  "listening",
+  "speaking",
+  "reading",
+  "writing",
+  "grammar",
+  "test",
 ];
+
+const staticLessonIds = new Set(lessons.map((lesson) => lesson.id));
 
 function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress } = useLearningProgress();
+  const [backendLessonCount, setBackendLessonCount] = useState(0);
+  const todayPlan = useMemo(() => getDailyPlan(progress), [progress]);
+  const todayActivity = useMemo(
+    () => getTodayActivity(progress),
+    [progress],
+  );
+  const weeklyActivity = useMemo(() => {
+    const items: Array<{ day: string; value: number }> = [];
+    const now = new Date();
+
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - offset);
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+      const activity = progress.dailyActivity[key];
+      items.push({
+        day: new Intl.DateTimeFormat("vi-VN", {
+          weekday: "short",
+        })
+          .format(date)
+          .replace(".", ""),
+        value: Math.min(
+          100,
+          activity ? Math.max(activity.minutes * 2, 4) : 4,
+        ),
+      });
+    }
+
+    return items;
+  }, [progress.dailyActivity]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCoursesRequest({ limit: 50 })
+      .then((response) => {
+        if (!cancelled) {
+          setBackendLessonCount(
+            response.data.reduce(
+              (total, course) => total + course.lessonCount,
+              0,
+            ),
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBackendLessonCount(0);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const completedLessonIds = useMemo(
+    () => [...new Set(progress.completedLessonIds)],
+    [progress.completedLessonIds],
+  );
 
   const completedLessons = useMemo(
     () =>
       lessons.filter((lesson) =>
-        progress.completedLessonIds.includes(lesson.id),
+        completedLessonIds.includes(lesson.id),
       ),
-    [progress.completedLessonIds],
+    [completedLessonIds],
   );
 
   const reviewedFlashcards = useMemo(
@@ -40,7 +111,15 @@ function DashboardPage() {
     [progress.reviewedFlashcardIds],
   );
 
-  const completedLessonCount = completedLessons.length;
+  const completedLessonCount = completedLessonIds.length;
+  const completedBackendLessonCount = completedLessonIds.filter(
+    (lessonId) => !staticLessonIds.has(lessonId),
+  ).length;
+  const totalLessonCount = lessons.length + backendLessonCount;
+  const safeTotalLessonCount = Math.max(
+    totalLessonCount,
+    completedLessonCount,
+  );
   const reviewedFlashcardCount = reviewedFlashcards.length;
 
   const totalLearningMinutes = completedLessons.reduce(
@@ -49,17 +128,28 @@ function DashboardPage() {
   );
 
   const totalLearningItems =
-    lessons.length + flashcards.length + 1;
+    safeTotalLessonCount +
+    flashcards.length +
+    trackedSkillIds.length +
+    1;
+
+  const completedSkillCount = trackedSkillIds.filter((skillId) =>
+    progress.completedSkillIds.includes(skillId),
+  ).length;
 
   const completedLearningItems =
     completedLessonCount +
     reviewedFlashcardCount +
+    completedSkillCount +
     (progress.quizHighScore > 0 ? 1 : 0);
 
   const overallProgress =
     totalLearningItems > 0
-      ? Math.round(
-          (completedLearningItems / totalLearningItems) * 100,
+      ? Math.min(
+          100,
+          Math.round(
+            (completedLearningItems / totalLearningItems) * 100,
+          ),
         )
       : 0;
 
@@ -79,7 +169,7 @@ function DashboardPage() {
       value: String(completedLessonCount),
       detail:
         completedLessonCount > 0
-          ? `${completedLessonCount}/${lessons.length} bài trong chương trình`
+          ? `${completedLessonCount}/${safeTotalLessonCount} bài trong chương trình`
           : "Chưa hoàn thành bài học nào",
       icon: "📘",
     },
@@ -161,6 +251,14 @@ function DashboardPage() {
       });
     }
 
+    if (completedSkillCount >= 3) {
+      unlockedAchievements.push({
+        icon: "✨",
+        title: "Học đa kỹ năng",
+        detail: `Đã hoàn thành ${completedSkillCount} phòng luyện kỹ năng`,
+      });
+    }
+
     if (progress.quizHighScore >= 80) {
       unlockedAchievements.push({
         icon: "🏆",
@@ -172,6 +270,7 @@ function DashboardPage() {
     return unlockedAchievements;
   }, [
     completedLessonCount,
+    completedSkillCount,
     progress.quizHighScore,
     reviewedFlashcardCount,
   ]);
@@ -184,6 +283,11 @@ function DashboardPage() {
 
     if (nextLesson) {
       navigate(`/dashboard/lessons/${nextLesson.id}`);
+      return;
+    }
+
+    if (completedBackendLessonCount < backendLessonCount) {
+      navigate("/dashboard/courses");
       return;
     }
 
@@ -252,6 +356,58 @@ function DashboardPage() {
             </p>
           </article>
         ))}
+      </section>
+
+      <section className="mt-6 rounded-3xl border border-cyan-400/15 bg-gradient-to-br from-cyan-500/[0.08] via-slate-900/70 to-violet-500/[0.08] p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">
+              Kế hoạch hôm nay
+            </p>
+            <h2 className="mt-2 text-2xl font-black">
+              Học mới, ôn cũ, tiến bộ đều
+            </h2>
+            <p className="mt-2 text-sm text-slate-400">
+              {todayPlan.length > 0
+                ? `${todayPlan.length} nhiệm vụ được chọn theo lịch ôn cá nhân.`
+                : "Bạn đã hoàn tất kế hoạch hôm nay — ngày mai sẽ có nội dung mới."}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="rounded-xl bg-emerald-400/10 px-3 py-2 font-black text-emerald-300">
+              🔥 {progress.streakDays} ngày liên tiếp
+            </span>
+            <span className="rounded-xl bg-white/5 px-3 py-2 text-slate-400">
+              {todayActivity.minutes} phút hôm nay
+            </span>
+          </div>
+        </div>
+
+        {todayPlan.length > 0 && (
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {todayPlan.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => navigate(item.route)}
+                className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
+                    {item.isReview ? "Ôn lại" : "Từ mới"}
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">
+                    {item.level ?? "A1"}
+                  </span>
+                </div>
+                <p className="mt-3 truncate font-black">{item.title}</p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                  {item.subtitle}
+                </p>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
@@ -383,8 +539,32 @@ function DashboardPage() {
             </button>
           </div>
 
-          {completedLessons.length > 0 ? (
+          {completedLessonCount > 0 ? (
             <div className="mt-6 space-y-4">
+              {completedBackendLessonCount > 0 && (
+                <div className="flex flex-col gap-4 rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.05] p-4 sm:flex-row sm:items-center">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-xl">
+                    🎓
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold">
+                      Khóa học theo cấp độ
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {completedBackendLessonCount} bài học đã được ghi
+                      nhận từ thư viện khóa học
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="small"
+                    onClick={() => navigate("/dashboard/courses")}
+                  >
+                    Mở khóa học
+                  </Button>
+                </div>
+              )}
               {completedLessons.map((lesson) => (
                 <div
                   key={lesson.id}

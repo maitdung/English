@@ -1,115 +1,18 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
+import { useAuth } from "../../auth/context/AuthContext";
+import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
+import {
+  vocabularyLevels,
+  vocabularyTopics,
+  vocabularyWords as catalogWords,
+  type VocabularyStatus,
+  type VocabularyWord,
+} from "../data/vocabularyCatalog";
 
-type VocabularyStatus = "learning" | "mastered" | "review";
-
-type VocabularyWord = {
-  id: number;
-  word: string;
-  phonetic: string;
-  meaning: string;
-  example: string;
-  topic: string;
-  status: VocabularyStatus;
-  level: string;
-};
-
-const vocabularyWords: VocabularyWord[] = [
-  {
-    id: 1,
-    word: "achievement",
-    phonetic: "/əˈtʃiːvmənt/",
-    meaning: "thành tựu, thành tích",
-    example: "Completing the course was a great achievement.",
-    topic: "Giáo dục",
-    status: "mastered",
-    level: "B1",
-  },
-  {
-    id: 2,
-    word: "appointment",
-    phonetic: "/əˈpɔɪntmənt/",
-    meaning: "cuộc hẹn",
-    example: "I have an appointment with the manager at 2 p.m.",
-    topic: "Công sở",
-    status: "learning",
-    level: "A2",
-  },
-  {
-    id: 3,
-    word: "available",
-    phonetic: "/əˈveɪləbl/",
-    meaning: "có sẵn, rảnh",
-    example: "The meeting room is available this afternoon.",
-    topic: "Công sở",
-    status: "review",
-    level: "A2",
-  },
-  {
-    id: 4,
-    word: "destination",
-    phonetic: "/ˌdestɪˈneɪʃn/",
-    meaning: "điểm đến",
-    example: "Paris is a popular tourist destination.",
-    topic: "Du lịch",
-    status: "learning",
-    level: "B1",
-  },
-  {
-    id: 5,
-    word: "environment",
-    phonetic: "/ɪnˈvaɪrənmənt/",
-    meaning: "môi trường",
-    example: "We should protect the natural environment.",
-    topic: "Cuộc sống",
-    status: "mastered",
-    level: "B1",
-  },
-  {
-    id: 6,
-    word: "improve",
-    phonetic: "/ɪmˈpruːv/",
-    meaning: "cải thiện",
-    example: "Daily practice will improve your English.",
-    topic: "Giáo dục",
-    status: "learning",
-    level: "A2",
-  },
-  {
-    id: 7,
-    word: "opportunity",
-    phonetic: "/ˌɒpəˈtjuːnəti/",
-    meaning: "cơ hội",
-    example: "This job is a good opportunity to gain experience.",
-    topic: "Công sở",
-    status: "review",
-    level: "B1",
-  },
-  {
-    id: 8,
-    word: "reservation",
-    phonetic: "/ˌrezəˈveɪʃn/",
-    meaning: "sự đặt chỗ",
-    example: "I made a hotel reservation for two nights.",
-    topic: "Du lịch",
-    status: "mastered",
-    level: "B1",
-  },
-  {
-    id: 9,
-    word: "schedule",
-    phonetic: "/ˈʃedjuːl/",
-    meaning: "lịch trình",
-    example: "My work schedule is very busy this week.",
-    topic: "Công sở",
-    status: "learning",
-    level: "A2",
-  },
-];
-
-const topics = ["Tất cả", "Công sở", "Du lịch", "Giáo dục", "Cuộc sống"];
+const VOCABULARY_PROGRESS_KEY = "mtd-lingo-vocabulary-progress";
 
 function getStatusLabel(status: VocabularyStatus) {
   switch (status) {
@@ -117,6 +20,8 @@ function getStatusLabel(status: VocabularyStatus) {
       return "Đã thuộc";
     case "review":
       return "Cần ôn tập";
+    case "new":
+      return "Từ mới";
     default:
       return "Đang học";
   }
@@ -128,45 +33,120 @@ function getStatusClassName(status: VocabularyStatus) {
       return "border-emerald-400/20 bg-emerald-400/10 text-emerald-300";
     case "review":
       return "border-amber-400/20 bg-amber-400/10 text-amber-300";
+    case "new":
+      return "border-violet-400/20 bg-violet-400/10 text-violet-300";
     default:
       return "border-cyan-400/20 bg-cyan-400/10 text-cyan-300";
   }
 }
 
 function VocabularyPage() {
+  const { user } = useAuth();
+  const { recordReview } = useLearningProgress();
   const [searchValue, setSearchValue] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("Tất cả");
+  const [selectedLevel, setSelectedLevel] = useState("Tất cả");
+  const [statusOverrides, setStatusOverrides] = useState<
+    Record<string, VocabularyStatus>
+  >({});
   const [selectedWord, setSelectedWord] = useState<VocabularyWord | null>(
-    vocabularyWords[0],
+    catalogWords[0],
   );
+  const progressKey = user
+    ? `${VOCABULARY_PROGRESS_KEY}:${user.id}`
+    : VOCABULARY_PROGRESS_KEY;
+
+  useEffect(() => {
+    try {
+      const storedProgress = JSON.parse(
+        window.localStorage.getItem(progressKey) ?? "{}",
+      ) as Record<string, VocabularyStatus>;
+      setStatusOverrides(storedProgress);
+    } catch {
+      window.localStorage.removeItem(progressKey);
+    }
+  }, [progressKey]);
+
+  const words = useMemo(
+    () =>
+      catalogWords.map((word) => ({
+        ...word,
+        status: statusOverrides[String(word.id)] ?? word.status,
+      })),
+    [statusOverrides],
+  );
+
+  useEffect(() => {
+    setSelectedWord((currentWord) =>
+      currentWord
+        ? words.find((word) => word.id === currentWord.id) ?? currentWord
+        : words[0] ?? null,
+    );
+  }, [words]);
 
   const filteredWords = useMemo(() => {
     const normalizedSearchValue = searchValue.trim().toLowerCase();
 
-    return vocabularyWords.filter((word) => {
+    return words.filter((word) => {
       const matchesTopic =
         selectedTopic === "Tất cả" || word.topic === selectedTopic;
+      const matchesLevel =
+        selectedLevel === "Tất cả" || word.level === selectedLevel;
 
       const matchesSearch =
         normalizedSearchValue.length === 0 ||
         word.word.toLowerCase().includes(normalizedSearchValue) ||
         word.meaning.toLowerCase().includes(normalizedSearchValue);
 
-      return matchesTopic && matchesSearch;
+      return matchesTopic && matchesLevel && matchesSearch;
     });
-  }, [searchValue, selectedTopic]);
+  }, [searchValue, selectedLevel, selectedTopic, words]);
 
-  const masteredWords = vocabularyWords.filter(
+  const masteredWords = words.filter(
     (word) => word.status === "mastered",
   ).length;
 
-  const learningWords = vocabularyWords.filter(
+  const learningWords = words.filter(
     (word) => word.status === "learning",
   ).length;
 
-  const reviewWords = vocabularyWords.filter(
+  const reviewWords = words.filter(
     (word) => word.status === "review",
   ).length;
+
+  const updateWordStatus = (wordId: number, status: VocabularyStatus) => {
+    const nextOverrides = {
+      ...statusOverrides,
+      [String(wordId)]: status,
+    };
+    setStatusOverrides(nextOverrides);
+    window.localStorage.setItem(
+      progressKey,
+      JSON.stringify(nextOverrides),
+    );
+    setSelectedWord((currentWord) =>
+      currentWord?.id === wordId
+        ? { ...currentWord, status }
+        : currentWord,
+    );
+    recordReview(
+      `vocabulary:${wordId}`,
+      "vocabulary",
+      status === "mastered" ? 100 : status === "learning" ? 75 : 35,
+    );
+  };
+
+  const handleReviewNow = () => {
+    const reviewWord =
+      words.find((word) => word.status === "review") ??
+      words.find((word) => word.status === "learning") ??
+      words.find((word) => word.status === "new");
+
+    if (reviewWord) {
+      setSelectedWord(reviewWord);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+  };
 
   const handlePlayAudio = (word: string) => {
     if (!("speechSynthesis" in window)) {
@@ -204,7 +184,7 @@ function VocabularyPage() {
           type="button"
           size="large"
           className="w-full sm:w-auto"
-          onClick={() => console.log("Bắt đầu ôn tập")}
+          onClick={handleReviewNow}
         >
           Ôn tập ngay →
         </Button>
@@ -213,9 +193,9 @@ function VocabularyPage() {
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
           <p className="text-sm text-slate-400">Tổng số từ</p>
-          <p className="mt-2 text-3xl font-black">{vocabularyWords.length}</p>
+          <p className="mt-2 text-3xl font-black">{words.length}</p>
           <p className="mt-5 text-xs font-semibold text-cyan-300">
-            Trong kho từ hiện tại
+            12 chủ đề · A1–C2
           </p>
         </article>
 
@@ -257,7 +237,7 @@ function VocabularyPage() {
           />
 
           <div className="flex flex-wrap gap-2">
-            {topics.map((topic) => (
+            {vocabularyTopics.map((topic) => (
               <button
                 key={topic}
                 type="button"
@@ -269,6 +249,22 @@ function VocabularyPage() {
                 }`}
               >
                 {topic}
+              </button>
+              ))}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
+            {vocabularyLevels.map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setSelectedLevel(level)}
+                className={`rounded-xl border px-3 py-2 text-xs font-black transition ${
+                  selectedLevel === level
+                    ? "border-violet-300 bg-violet-300 text-slate-950"
+                    : "border-white/10 bg-white/[0.03] text-slate-500 hover:text-white"
+                }`}
+              >
+                {level === "Tất cả" ? "Mọi cấp độ" : level}
               </button>
             ))}
           </div>
@@ -426,11 +422,35 @@ function VocabularyPage() {
                   type="button"
                   fullWidth
                   onClick={() =>
-                    console.log("Ôn tập từ:", selectedWord.word)
+                    updateWordStatus(selectedWord.id, "learning")
                   }
                 >
                   Luyện từ này
                 </Button>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateWordStatus(selectedWord.id, "review")}
+                  className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-200 transition hover:bg-amber-400/20"
+                >
+                  Ôn lại
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateWordStatus(selectedWord.id, "mastered")}
+                  className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200 transition hover:bg-emerald-400/20"
+                >
+                  Đã thuộc
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateWordStatus(selectedWord.id, "new")}
+                  className="rounded-xl border border-violet-400/20 bg-violet-400/10 px-3 py-2 text-xs font-bold text-violet-200 transition hover:bg-violet-400/20"
+                >
+                  Đặt lại
+                </button>
               </div>
             </>
           ) : (

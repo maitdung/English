@@ -17,6 +17,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
+export type SelfProfileUpdate = {
+  email?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -104,6 +110,60 @@ export class UsersService {
     });
   }
 
+  async createPasswordResetToken(
+    email: string,
+    passwordResetTokenHash: string,
+    passwordResetExpiresAt: Date,
+  ): Promise<boolean> {
+    const result = await this.prisma.user.updateMany({
+      where: {
+        email: this.normalizeEmail(email),
+        status: UserStatus.ACTIVE,
+      },
+      data: { passwordResetTokenHash, passwordResetExpiresAt },
+    });
+
+    return result.count === 1;
+  }
+
+  async consumePasswordResetToken(
+    passwordResetTokenHash: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    const result = await this.prisma.user.updateMany({
+      where: {
+        passwordResetTokenHash,
+        passwordResetExpiresAt: { gt: new Date() },
+        status: UserStatus.ACTIVE,
+      },
+      data: {
+        passwordHash,
+        refreshTokenHash: null,
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+      },
+    });
+
+    return result.count === 1;
+  }
+
+  async updatePasswordAndRevokeSessions(
+    id: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    const result = await this.prisma.user.updateMany({
+      where: { id },
+      data: {
+        passwordHash,
+        refreshTokenHash: null,
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+      },
+    });
+
+    return result.count === 1;
+  }
+
   async updateLastLogin(id: string): Promise<void> {
     await this.prisma.user.update({
       where: {
@@ -154,6 +214,9 @@ export class UsersService {
 
     if (updateUserDto.password !== undefined) {
       data.passwordHash = await bcrypt.hash(updateUserDto.password, 12);
+      data.refreshTokenHash = null;
+      data.passwordResetTokenHash = null;
+      data.passwordResetExpiresAt = null;
     }
 
     if (updateUserDto.firstName !== undefined) {
@@ -177,6 +240,42 @@ export class UsersService {
         where: {
           id,
         },
+        data,
+      });
+
+      return this.toResponse(user);
+    } catch (error) {
+      this.handleUniqueEmailError(error);
+      throw error;
+    }
+  }
+
+  async updateOwnProfile(
+    id: string,
+    profile: SelfProfileUpdate,
+    emailChanged: boolean,
+  ): Promise<UserResponseDto> {
+    const data: Prisma.UserUpdateInput = {};
+
+    if (profile.email !== undefined) {
+      data.email = this.normalizeEmail(profile.email);
+    }
+
+    if (emailChanged) {
+      data.emailVerified = false;
+    }
+
+    if (profile.firstName !== undefined) {
+      data.firstName = this.normalizeNullableText(profile.firstName);
+    }
+
+    if (profile.lastName !== undefined) {
+      data.lastName = this.normalizeNullableText(profile.lastName);
+    }
+
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
         data,
       });
 
@@ -246,6 +345,10 @@ export class UsersService {
     const normalizedValue = value?.trim();
 
     return normalizedValue || undefined;
+  }
+
+  private normalizeNullableText(value: string | null): string | null {
+    return value?.trim() || null;
   }
 
   private handleUniqueEmailError(error: unknown): void {

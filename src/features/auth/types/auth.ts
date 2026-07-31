@@ -34,12 +34,29 @@ export type ApiUser = {
 export type LoginCredentials = {
   email: string;
   password: string;
+  rememberMe?: boolean;
 };
 
 export type RegisterPayload = {
   fullName: string;
   email: string;
   password: string;
+};
+
+export type UpdateProfilePayload = {
+  fullName: string;
+  email: string;
+  currentPassword?: string;
+};
+
+export type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+};
+
+export type PasswordResetRequestResult = {
+  message: string;
+  resetToken?: string;
 };
 
 export type AuthTokens = {
@@ -66,5 +83,7 @@ export type AuthContextValue = {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   refreshCurrentUser: () => Promise<void>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
+  changePassword: (payload: ChangePasswordPayload) => Promise<void>;
   logout: () => Promise<void>;
 };

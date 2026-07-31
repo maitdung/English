@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "npm run generate",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"prisma.config.ts\" \"eslint.config.mjs\"",
     "start": "nest start",
@@ -17,16 +18,19 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json",
     "seed": "tsx prisma/seed.ts",
     "content:check": "npm run content:format:check && npm run typecheck && npm run content:test && npm run content:audit",
     "content:dry-run": "tsx prisma/content/cli.ts dry-run",
     "content:import": "tsx prisma/content/cli.ts import",
     "seed:dry-run": "CONTENT_SEED_DRY_RUN=true CONTENT_SEED_VALIDATE=true CONTENT_SEED_VERBOSE=true tsx prisma/seed.ts",
     "seed:content": "CONTENT_SEED_DRY_RUN=false CONTENT_SEED_VALIDATE=true CONTENT_SEED_VERBOSE=true tsx prisma/seed.ts",
+    "pretypecheck": "npm run generate",
     "typecheck": "tsc --noEmit",
     "prisma:validate": "prisma validate",
-    "prisma:generate": "prisma generate",
+    "pregenerate": "npm run prisma:validate",
+    "generate": "prisma generate",
+    "prisma:generate": "npm run generate",
     "content:verify": "tsx prisma/content/cli.ts verify",
     "content:stats": "tsx prisma/content/cli.ts stats",
     "content:audit": "tsx prisma/content/cli.ts audit",
@@ -118,6 +122,9 @@
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

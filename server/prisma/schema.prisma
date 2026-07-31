@@ -58,6 +58,8 @@ model User {
   email            String     @unique
   passwordHash     String
   refreshTokenHash String?
+  passwordResetTokenHash String?    @unique
+  passwordResetExpiresAt DateTime?
   firstName        String?
   lastName         String?
   avatarUrl        String?

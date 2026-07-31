@@ -274,6 +274,81 @@ export const quizQuestions: QuizQuestion[] = [
     explanation:
       "I'll get back to you có nghĩa là tôi sẽ phản hồi lại cho bạn sau.",
   },
+  {
+    id: "question-advanced-001",
+    question:
+      "Which sentence best preserves a formal, cautious tone in a project update?",
+    answers: [
+      "The figures are wrong, so fix them now.",
+      "The figures appear to require further verification before publication.",
+      "You messed up the figures again.",
+      "I don't know what happened to the figures.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "“Appear to require further verification” communicates uncertainty precisely and keeps a professional tone.",
+    difficulty: "advanced",
+    level: "B2",
+    topic: "Công sở",
+  },
+  {
+    id: "question-advanced-002",
+    question:
+      "Choose the best connector: “The pilot was expensive; _____, it produced valuable data.”",
+    answers: ["in contrast", "nevertheless", "as a result", "for instance"],
+    correctAnswer: 1,
+    explanation:
+      "Nevertheless introduces a contrast between the cost and the useful outcome.",
+    difficulty: "advanced",
+    level: "B2",
+    topic: "Ngữ pháp",
+  },
+  {
+    id: "question-advanced-003",
+    question:
+      "What can be inferred from: “Maya postponed the launch until the accessibility audit was complete”?",
+    answers: [
+      "The launch had already failed.",
+      "Maya considered inclusive design important enough to delay the schedule.",
+      "The audit was cancelled.",
+      "The product was only for auditors.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "Postponing a launch until an audit is complete signals that accessibility was treated as a release requirement.",
+    difficulty: "advanced",
+    level: "C1",
+    topic: "Đọc hiểu",
+  },
+  {
+    id: "question-advanced-004",
+    question:
+      "Select the most natural collocation: “The new evidence _____ doubt on the original conclusion.”",
+    answers: ["puts", "does", "makes", "takes"],
+    correctAnswer: 0,
+    explanation:
+      "The established collocation is “put doubt on something.”",
+    difficulty: "advanced",
+    level: "C1",
+    topic: "Từ vựng",
+  },
+  {
+    id: "question-advanced-005",
+    question:
+      "Which response demonstrates active listening in a difficult meeting?",
+    answers: [
+      "That is not my problem.",
+      "So you are concerned that the deadline leaves no time for testing—is that right?",
+      "You should have said this earlier.",
+      "Let's ignore the issue and move on.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "Paraphrasing the concern and checking understanding is a strong active-listening strategy.",
+    difficulty: "advanced",
+    level: "C1",
+    topic: "Luyện nghe",
+  },
 ];
 
 export function getLessonById(lessonId: string) {

@@ -1,59 +1,61 @@
+import { Link } from "react-router-dom";
+
 const statistics = [
   {
-    value: "1.200+",
-    label: "Bài học",
+    value: "6",
+    label: "Kỹ năng cốt lõi",
   },
   {
-    value: "8.500+",
-    label: "Từ vựng",
+    value: "A1–C2",
+    label: "Khung trình độ",
   },
   {
-    value: "150+",
-    label: "Đề luyện tập",
+    value: "24/7",
+    label: "Học theo nhịp riêng",
   },
 ];
 
 function HeroSection() {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl" />
-      <div className="absolute -left-40 top-52 h-80 w-80 rounded-full bg-blue-600/10 blur-3xl" />
-      <div className="absolute -right-40 top-32 h-80 w-80 rounded-full bg-violet-600/10 blur-3xl" />
+      <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl motion-safe:animate-pulse" />
+      <div className="animate-float absolute -left-40 top-52 h-80 w-80 rounded-full bg-blue-600/10 blur-3xl" />
+      <div className="animate-float-delayed absolute -right-40 top-32 h-80 w-80 rounded-full bg-violet-600/10 blur-3xl" />
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:px-8 lg:py-28">
-        <div>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-300">
-            <span className="h-2 w-2 rounded-full bg-cyan-400" />
-            Học tiếng Anh thông minh hơn mỗi ngày
+        <div className="reveal-up">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200 shadow-lg shadow-cyan-500/5 backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(103,232,249,.9)]" />
+            English mastery system dành cho người Việt
           </div>
 
           <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            Làm chủ tiếng Anh với một
-            <span className="block bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-              lộ trình rõ ràng
+            Học sâu hơn.
+            <span className="animate-gradient block bg-gradient-to-r from-cyan-200 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+              Dùng tiếng Anh tự tin hơn.
             </span>
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
-            Học từ vựng, ngữ pháp, phát âm và luyện đề TOEIC trên cùng một nền
-            tảng. Theo dõi tiến độ từng ngày và tập trung vào những kỹ năng bạn
-            còn yếu.
+            Một không gian học toàn diện cho từ vựng, nghe, nói, đọc, viết,
+            ngữ pháp và luyện thi. Nội dung được chia theo cấp độ, đi cùng bài
+            tập, kiểm tra và tiến độ cá nhân rõ ràng.
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              className="rounded-2xl bg-cyan-400 px-7 py-4 font-bold text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-300"
+            <Link
+              to="/register"
+              className="premium-button inline-flex items-center justify-center rounded-2xl bg-cyan-300 px-7 py-4 font-black text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200"
             >
-              Bắt đầu học ngay →
-            </button>
+              Bắt đầu lộ trình miễn phí →
+            </Link>
 
-            <button
-              type="button"
+            <a
+              href="#roadmap"
               className="rounded-2xl border border-white/15 bg-white/5 px-7 py-4 font-bold text-white transition hover:border-white/25 hover:bg-white/10"
             >
-              Xem lộ trình học
-            </button>
+              Khám phá phương pháp
+            </a>
           </div>
 
           <div className="mt-12 grid max-w-xl grid-cols-3 gap-4">
@@ -70,10 +72,10 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-xl">
+        <div className="reveal-up-delayed relative mx-auto w-full max-w-xl">
           <div className="absolute -inset-1 rounded-[34px] bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-violet-500/40 blur-xl" />
 
-          <div className="relative rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
+          <div className="premium-surface relative rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400">Xin chào, MTD 👋</p>
@@ -107,7 +109,7 @@ function HeroSection() {
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/15 to-transparent p-5">
+              <div className="animate-float rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/15 to-transparent p-5">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/20 text-xl">
                   🎧
                 </div>
@@ -117,7 +119,7 @@ function HeroSection() {
                 <p className="mt-2 text-xs text-slate-500">12 phút · Cơ bản</p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-transparent p-5">
+              <div className="animate-float-delayed rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-transparent p-5">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/20 text-xl">
                   🔥
                 </div>
@@ -130,12 +132,12 @@ function HeroSection() {
               </div>
             </div>
 
-            <button
-              type="button"
-              className="mt-5 w-full rounded-2xl bg-white py-3.5 font-bold text-slate-950 transition hover:bg-slate-200"
+            <Link
+              to="/login"
+              className="premium-button mt-5 flex w-full items-center justify-center rounded-2xl bg-white py-3.5 font-bold text-slate-950 transition hover:bg-cyan-100"
             >
-              Tiếp tục bài học
-            </button>
+              Mở không gian học tập
+            </Link>
           </div>
         </div>
       </div>

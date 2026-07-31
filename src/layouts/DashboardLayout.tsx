@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   NavLink,
   Outlet,
@@ -18,6 +18,11 @@ const navigationItems = [
     label: "Lộ trình học",
     path: "/dashboard/learning",
     icon: "🗺️",
+  },
+  {
+    label: "Phòng luyện kỹ năng",
+    path: "/dashboard/skills",
+    icon: "✨",
   },
   {
     label: "Khóa học",
@@ -62,6 +67,53 @@ function DashboardLayout() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [dailyGoal, setDailyGoal] = useState("45");
+
+  const visibleNavigationItems =
+    user?.role === "ADMIN"
+      ? [
+          ...navigationItems,
+          {
+            label: "Quản trị hệ thống",
+            path: "/dashboard/admin",
+            icon: "⚙️",
+          },
+        ]
+      : navigationItems;
+
+  useEffect(() => {
+    const readDailyGoal = () => {
+      if (!user) {
+        return;
+      }
+
+      try {
+        const storedPreferences = JSON.parse(
+          window.localStorage.getItem(
+            `mtd-lingo-profile-preferences:${user.id}`,
+          ) ?? "{}",
+        ) as { dailyGoal?: unknown };
+
+        if (typeof storedPreferences.dailyGoal === "string") {
+          setDailyGoal(storedPreferences.dailyGoal);
+        }
+      } catch {
+        setDailyGoal("45");
+      }
+    };
+
+    readDailyGoal();
+    window.addEventListener(
+      "mtd-lingo-preferences-updated",
+      readDailyGoal,
+    );
+
+    return () =>
+      window.removeEventListener(
+        "mtd-lingo-preferences-updated",
+        readDailyGoal,
+      );
+  }, [user]);
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
@@ -114,7 +166,7 @@ function DashboardLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          {navigationItems.map((item) => (
+          {visibleNavigationItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -149,7 +201,7 @@ function DashboardLayout() {
             <div className="mt-3 flex items-end justify-between">
               <p className="text-2xl font-black">32 phút</p>
               <p className="text-xs font-bold text-slate-400">
-                / 45 phút
+                / {dailyGoal} phút
               </p>
             </div>
 

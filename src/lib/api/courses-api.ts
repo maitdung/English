@@ -2,6 +2,7 @@ import type {
   CourseDetail,
   CourseLevel,
   CourseListResponse,
+  ExerciseCheckResponse,
   LessonDetail,
 } from "../../features/courses/types/course";
 import { apiRequest } from "./api-client";
@@ -69,6 +70,25 @@ export function getLessonDetailRequest(
     )}/lessons/${encodeURIComponent(lessonSlug)}`,
     {
       method: "GET",
+    },
+  );
+}
+
+export function checkLessonExerciseRequest(
+  courseSlug: string,
+  lessonSlug: string,
+  exerciseId: string,
+  answer: unknown,
+): Promise<ExerciseCheckResponse> {
+  return apiRequest<ExerciseCheckResponse>(
+    `/courses/${encodeURIComponent(
+      courseSlug,
+    )}/lessons/${encodeURIComponent(
+      lessonSlug,
+    )}/exercises/${encodeURIComponent(exerciseId)}/check`,
+    {
+      method: "POST",
+      body: { answer },
     },
   );
 }

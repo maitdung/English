@@ -10,22 +10,27 @@ import {
 } from "react";
 
 import {
+  changePasswordRequest,
   getCurrentUserRequest,
   loginRequest,
   logoutRequest,
   refreshTokensRequest,
   registerRequest,
+  updateProfileRequest,
 } from "../../../lib/api/auth-api";
 import type {
   ApiUser,
   AuthContextValue,
   AuthSession,
   AuthUser,
+  ChangePasswordPayload,
   LoginCredentials,
   RegisterPayload,
+  UpdateProfilePayload,
 } from "../types/auth";
 
 const SESSION_STORAGE_KEY = "mtd-lingo-auth-session";
+type SessionPersistence = "local" | "session";
 
 const AuthContext = createContext<AuthContextValue | undefined>(
   undefined,
@@ -51,11 +56,18 @@ function mapApiUser(user: ApiUser): AuthUser {
   };
 }
 
-function readStoredSession(): AuthSession | null {
+function readStoredSession(): {
+  session: AuthSession;
+  persistence: SessionPersistence;
+} | null {
   try {
-    const storedSession = window.localStorage.getItem(
+    const sessionStoredValue = window.sessionStorage.getItem(
       SESSION_STORAGE_KEY,
     );
+    const localStoredValue = window.localStorage.getItem(
+      SESSION_STORAGE_KEY,
+    );
+    const storedSession = sessionStoredValue ?? localStoredValue;
 
     if (!storedSession) {
       return null;
@@ -73,21 +85,35 @@ function readStoredSession(): AuthSession | null {
       return null;
     }
 
-    return parsedSession as AuthSession;
+    return {
+      session: parsedSession as AuthSession,
+      persistence: sessionStoredValue ? "session" : "local",
+    };
   } catch {
     return null;
   }
 }
 
-function storeSession(session: AuthSession): void {
-  window.localStorage.setItem(
-    SESSION_STORAGE_KEY,
-    JSON.stringify(session),
-  );
+function storeSession(
+  session: AuthSession,
+  persistence: SessionPersistence,
+): void {
+  const activeStorage =
+    persistence === "local"
+      ? window.localStorage
+      : window.sessionStorage;
+  const inactiveStorage =
+    persistence === "local"
+      ? window.sessionStorage
+      : window.localStorage;
+
+  activeStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  inactiveStorage.removeItem(SESSION_STORAGE_KEY);
 }
 
 function clearStoredSession(): void {
   window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
 
   // Xóa dữ liệu đăng nhập giả của phiên bản frontend cũ.
   window.localStorage.removeItem("mtd-lingo-users");
@@ -99,14 +125,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const sessionRef = useRef<AuthSession | null>(null);
+  const persistenceRef = useRef<SessionPersistence>("session");
 
   const updateSession = useCallback(
-    (nextSession: AuthSession | null) => {
+    (
+      nextSession: AuthSession | null,
+      persistence = persistenceRef.current,
+    ) => {
+      persistenceRef.current = persistence;
       sessionRef.current = nextSession;
       setSession(nextSession);
 
       if (nextSession) {
-        storeSession(nextSession);
+        storeSession(nextSession, persistence);
       } else {
         clearStoredSession();
       }
@@ -209,11 +240,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      sessionRef.current = storedSession;
-      setSession(storedSession);
+      persistenceRef.current = storedSession.persistence;
+      sessionRef.current = storedSession.session;
+      setSession(storedSession.session);
 
       try {
-        await loadCurrentUser(storedSession);
+        await loadCurrentUser(storedSession.session);
       } catch {
         updateSession(null);
       } finally {
@@ -238,7 +270,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         user: mapApiUser(response.user),
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
-      });
+      }, credentials.rememberMe ? "local" : "session");
     },
     [updateSession],
   );
@@ -251,7 +283,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         user: mapApiUser(response.user),
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
-      });
+      }, "session");
     },
     [updateSession],
   );
@@ -266,6 +298,100 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       await loadCurrentUser(currentSession);
     }, [loadCurrentUser]);
+
+  const updateProfile = useCallback(
+    async (payload: UpdateProfilePayload): Promise<void> => {
+      const currentSession = sessionRef.current;
+
+      if (!currentSession) {
+        throw new Error("Phiên đăng nhập không còn hợp lệ.");
+      }
+
+      let requestSession = currentSession;
+      let apiUser: ApiUser;
+
+      try {
+        apiUser = await updateProfileRequest(
+          payload,
+          requestSession.accessToken,
+        );
+      } catch (error) {
+        const errorStatus =
+          error instanceof Error &&
+          "status" in error &&
+          typeof error.status === "number"
+            ? error.status
+            : null;
+
+        if (errorStatus !== 401) {
+          throw error;
+        }
+
+        const refreshedSession = await refreshSession(currentSession);
+
+        if (!refreshedSession) {
+          throw error;
+        }
+
+        requestSession = refreshedSession;
+        apiUser = await updateProfileRequest(
+          payload,
+          requestSession.accessToken,
+        );
+      }
+
+      updateSession({
+        ...requestSession,
+        user: mapApiUser(apiUser),
+      });
+    },
+    [refreshSession, updateSession],
+  );
+
+  const changePassword = useCallback(
+    async (payload: ChangePasswordPayload): Promise<void> => {
+      const currentSession = sessionRef.current;
+
+      if (!currentSession) {
+        throw new Error("Phiên đăng nhập không còn hợp lệ.");
+      }
+
+      let requestSession = currentSession;
+
+      try {
+        await changePasswordRequest(
+          payload,
+          requestSession.accessToken,
+        );
+      } catch (error) {
+        const errorStatus =
+          error instanceof Error &&
+          "status" in error &&
+          typeof error.status === "number"
+            ? error.status
+            : null;
+
+        if (errorStatus !== 401) {
+          throw error;
+        }
+
+        const refreshedSession = await refreshSession(currentSession);
+
+        if (!refreshedSession) {
+          throw error;
+        }
+
+        requestSession = refreshedSession;
+        await changePasswordRequest(
+          payload,
+          requestSession.accessToken,
+        );
+      }
+
+      updateSession(null);
+    },
+    [refreshSession, updateSession],
+  );
 
   const logout = useCallback(async (): Promise<void> => {
     const currentSession = sessionRef.current;
@@ -291,15 +417,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       register,
       refreshCurrentUser,
+      updateProfile,
+      changePassword,
       logout,
     }),
     [
       isLoading,
+      changePassword,
       login,
       logout,
       refreshCurrentUser,
       register,
       session?.user,
+      updateProfile,
     ],
   );
 
@@ -310,6 +440,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
+// oxlint-disable-next-line react/only-export-components
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
 

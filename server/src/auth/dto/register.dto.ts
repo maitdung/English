@@ -3,9 +3,15 @@ import {
   IsEmail,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+
+import {
+  STRONG_PASSWORD_MESSAGE,
+  STRONG_PASSWORD_PATTERN,
+} from '../password-policy';
 
 export class RegisterDto {
   @ApiProperty({
@@ -23,6 +29,9 @@ export class RegisterDto {
   @IsString()
   @MinLength(8)
   @MaxLength(72)
+  @Matches(STRONG_PASSWORD_PATTERN, {
+    message: STRONG_PASSWORD_MESSAGE,
+  })
   password: string;
 
   @ApiPropertyOptional({

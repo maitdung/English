@@ -5,11 +5,16 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
 import { UserRole } from '../../../generated/prisma/client';
+import {
+  STRONG_PASSWORD_MESSAGE,
+  STRONG_PASSWORD_PATTERN,
+} from '../../auth/password-policy';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -26,6 +31,9 @@ export class CreateUserDto {
   @IsString()
   @MinLength(8)
   @MaxLength(72)
+  @Matches(STRONG_PASSWORD_PATTERN, {
+    message: STRONG_PASSWORD_MESSAGE,
+  })
   password: string;
 
   @ApiPropertyOptional({

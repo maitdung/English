@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { CourseStatus, Prisma } from '../../generated/prisma/client';
+import {
+  CourseStatus,
+  ExerciseType,
+  Prisma,
+} from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CourseQueryDto } from './dto/course-query.dto';
 
@@ -265,5 +269,136 @@ export class CoursesService {
     }
 
     return lesson;
+  }
+
+  async checkExercise(
+    courseSlug: string,
+    lessonSlug: string,
+    exerciseId: string,
+    submittedAnswer: unknown,
+  ) {
+    const exercise = await this.prisma.exercise.findFirst({
+      where: {
+        id: exerciseId,
+        lesson: {
+          slug: lessonSlug,
+          unit: {
+            course: {
+              slug: courseSlug,
+              status: CourseStatus.PUBLISHED,
+            },
+          },
+        },
+      },
+      select: {
+        type: true,
+        options: true,
+        correctAnswer: true,
+        explanation: true,
+        points: true,
+      },
+    });
+
+    if (!exercise) {
+      throw new NotFoundException('Không tìm thấy bài tập.');
+    }
+
+    const isCorrect = this.answersMatch(
+      exercise.correctAnswer,
+      submittedAnswer,
+      exercise.type === ExerciseType.MULTIPLE_CHOICE
+        ? exercise.options
+        : undefined,
+    );
+
+    return {
+      isCorrect,
+      correctAnswer: exercise.correctAnswer,
+      explanation: exercise.explanation,
+      pointsEarned: isCorrect ? exercise.points : 0,
+      maxPoints: exercise.points,
+    };
+  }
+
+  private answersMatch(
+    expected: unknown,
+    submitted: unknown,
+    multipleChoiceOptions?: unknown,
+  ): boolean {
+    if (Array.isArray(multipleChoiceOptions)) {
+      const expectedOption = this.resolveMultipleChoiceAnswer(
+        expected,
+        multipleChoiceOptions,
+      );
+      const submittedOption = this.resolveMultipleChoiceAnswer(
+        submitted,
+        multipleChoiceOptions,
+      );
+
+      return (
+        this.normalizeAnswerValue(expectedOption) ===
+        this.normalizeAnswerValue(submittedOption)
+      );
+    }
+
+    if (Array.isArray(expected)) {
+      const submittedValue = Array.isArray(submitted)
+        ? submitted.join(' ')
+        : submitted;
+
+      return (
+        this.normalizeAnswerValue(expected.join(' ')) ===
+        this.normalizeAnswerValue(submittedValue)
+      );
+    }
+
+    return (
+      this.normalizeAnswerValue(expected) ===
+      this.normalizeAnswerValue(submitted)
+    );
+  }
+
+  private resolveMultipleChoiceAnswer(
+    answer: unknown,
+    options: unknown[],
+  ): unknown {
+    const optionIndex =
+      typeof answer === 'number' && Number.isInteger(answer)
+        ? answer
+        : typeof answer === 'string' && /^\d+$/.test(answer.trim())
+          ? Number.parseInt(answer.trim(), 10)
+          : null;
+
+    if (
+      optionIndex !== null &&
+      optionIndex >= 0 &&
+      optionIndex < options.length
+    ) {
+      return options[optionIndex];
+    }
+
+    return answer;
+  }
+
+  private normalizeAnswerValue(value: unknown): string {
+    if (typeof value === 'string') {
+      return value
+        .normalize('NFKC')
+        .trim()
+        .replace(/[‘’]/g, "'")
+        .replace(/\s+/g, ' ')
+        .replace(/\s+([,.;:!?])/g, '$1')
+        .toLocaleLowerCase('en-US');
+    }
+
+    if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      value === null
+    ) {
+      return String(value);
+    }
+
+    return JSON.stringify(value) ?? '';
   }
 }

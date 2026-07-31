@@ -1,45 +1,61 @@
+import { Link } from "react-router-dom";
+
 const skills = [
   {
     icon: "🎧",
     title: "Luyện nghe",
     description:
       "Luyện phản xạ nghe qua hội thoại thực tế và các dạng bài TOEIC.",
-    lessonCount: "240 bài học",
+    lessonCount: "Hội thoại + nghe hiểu",
   },
   {
     icon: "🗣️",
-    title: "Phát âm",
+    title: "Luyện nói & phát âm",
     description:
       "Cải thiện phát âm, trọng âm và ngữ điệu qua từng chủ đề.",
-    lessonCount: "180 bài học",
+    lessonCount: "Ngữ âm + phản xạ",
   },
   {
     icon: "📚",
     title: "Từ vựng",
     description:
       "Ghi nhớ từ vựng bằng flashcard và phương pháp lặp lại ngắt quãng.",
-    lessonCount: "8.500+ từ",
+    lessonCount: "Theo chủ đề & cấp độ",
   },
   {
     icon: "✍️",
     title: "Ngữ pháp",
     description:
       "Học ngữ pháp từ cơ bản đến nâng cao với bài tập thực hành.",
-    lessonCount: "320 bài học",
+    lessonCount: "Giải thích + thực hành",
   },
   {
     icon: "📖",
     title: "Luyện đọc",
     description:
       "Tăng tốc độ đọc hiểu với nội dung được phân chia theo trình độ.",
-    lessonCount: "200 bài đọc",
+    lessonCount: "Đọc nhanh + đọc sâu",
+  },
+  {
+    icon: "🖋️",
+    title: "Luyện viết",
+    description:
+      "Viết câu, email và đoạn văn theo khung; nâng cấp từ vựng và cách diễn đạt.",
+    lessonCount: "Từ câu đến bài luận",
+  },
+  {
+    icon: "🧪",
+    title: "Kiểm tra năng lực",
+    description:
+      "Quiz theo bài, kiểm tra kỹ năng và báo cáo điểm mạnh, điểm cần cải thiện.",
+    lessonCount: "Phản hồi tức thì",
   },
   {
     icon: "🏆",
     title: "Luyện thi TOEIC",
     description:
-      "Làm quen cấu trúc đề thi và đánh giá năng lực bằng bài thi thử.",
-    lessonCount: "150+ đề thi",
+      "Làm quen 7 Part, luyện chiến thuật thời gian và mô phỏng bài thi thực tế.",
+    lessonCount: "Listening + Reading",
   },
 ];
 
@@ -90,11 +106,11 @@ function LearningSection() {
             </p>
           </div>
 
-          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {skills.map((skill) => (
               <article
                 key={skill.title}
-                className="group rounded-3xl border border-white/10 bg-slate-900/60 p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-slate-900"
+                className="premium-surface group rounded-3xl border border-white/10 bg-slate-900/60 p-6"
               >
                 <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-white/5 text-2xl transition group-hover:bg-cyan-400/10">
                   {skill.icon}
@@ -157,7 +173,7 @@ function LearningSection() {
             {roadmap.map((step) => (
               <article
                 key={step.number}
-                className="flex gap-5 rounded-3xl border border-white/10 bg-slate-900/50 p-5 transition hover:border-violet-400/30 hover:bg-slate-900 sm:p-6"
+                className="premium-surface flex gap-5 rounded-3xl border border-white/10 bg-slate-900/50 p-5 sm:p-6"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-sm font-black text-violet-300">
                   {step.number}
@@ -194,12 +210,12 @@ function LearningSection() {
               của bạn.
             </p>
 
-            <button
-              type="button"
-              className="mt-8 rounded-2xl bg-white px-8 py-4 font-bold text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-200"
+            <Link
+              to="/register"
+              className="premium-button mt-8 inline-flex rounded-2xl bg-white px-8 py-4 font-bold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-100"
             >
               Tạo tài khoản miễn phí
-            </button>
+            </Link>
           </div>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
@@ -7,7 +7,10 @@ import useLearningProgress from "../hooks/useLearningProgress";
 
 function QuizPage() {
   const navigate = useNavigate();
-  const { saveQuizScore } = useLearningProgress();
+  const { recordReview, saveQuizScore } = useLearningProgress();
+  const [difficulty, setDifficulty] = useState<
+    "mixed" | "foundation" | "advanced"
+  >("mixed");
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<
@@ -15,9 +18,25 @@ function QuizPage() {
   >({});
   const [showExplanation, setShowExplanation] = useState(false);
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
+  const questions = useMemo(
+    () =>
+      difficulty === "mixed"
+        ? quizQuestions
+        : quizQuestions.filter(
+            (question) =>
+              (question.difficulty ?? "foundation") === difficulty,
+          ),
+    [difficulty],
+  );
+  const currentQuestion = questions[currentQuestionIndex] ?? questions[0];
   const selectedAnswer = selectedAnswers[currentQuestion.id];
   const hasSelectedAnswer = selectedAnswer !== undefined;
+
+  useEffect(() => {
+    setCurrentQuestionIndex(0);
+    setSelectedAnswers({});
+    setShowExplanation(false);
+  }, [difficulty]);
 
   const handleSelectAnswer = (answerIndex: number) => {
     if (showExplanation) {
@@ -36,26 +55,35 @@ function QuizPage() {
       return;
     }
 
-    const isLastQuestion =
-      currentQuestionIndex === quizQuestions.length - 1;
+    const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
     if (isLastQuestion) {
-      const correctAnswers = quizQuestions.filter(
+      const correctAnswers = questions.filter(
         (question) =>
           selectedAnswers[question.id] === question.correctAnswer,
       ).length;
 
       const score = Math.round(
-        (correctAnswers / quizQuestions.length) * 100,
+        (correctAnswers / questions.length) * 100,
       );
 
+      questions.forEach((question) => {
+        recordReview(
+          `quiz:${question.id}`,
+          "quiz",
+          selectedAnswers[question.id] === question.correctAnswer
+            ? 100
+            : 0,
+          2,
+        );
+      });
       saveQuizScore(score);
 
       navigate("/dashboard/quiz/result", {
         state: {
           score,
           correctAnswers,
-          totalQuestions: quizQuestions.length,
+        totalQuestions: questions.length,
         },
       });
 
@@ -83,9 +111,31 @@ function QuizPage() {
       </section>
 
       <section className="mt-8 rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-8">
+        <div className="mb-6 flex flex-wrap gap-2 border-b border-white/10 pb-5">
+          {[
+            ["mixed", "Tổng hợp"],
+            ["foundation", "Nền tảng"],
+            ["advanced", "Nâng cao"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                setDifficulty(value as "mixed" | "foundation" | "advanced")
+              }
+              className={`rounded-xl border px-4 py-2 text-sm font-black transition ${
+                difficulty === value
+                  ? "border-cyan-300 bg-cyan-300 text-slate-950"
+                  : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="flex items-center justify-between text-sm">
           <span className="font-bold text-slate-400">
-            Câu {currentQuestionIndex + 1}/{quizQuestions.length}
+            Câu {currentQuestionIndex + 1}/{questions.length}
           </span>
 
           <span className="font-bold text-cyan-300">
@@ -98,7 +148,7 @@ function QuizPage() {
             className="h-full rounded-full bg-cyan-400 transition-all"
             style={{
               width: `${
-                ((currentQuestionIndex + 1) / quizQuestions.length) *
+                ((currentQuestionIndex + 1) / questions.length) *
                 100
               }%`,
             }}
@@ -166,7 +216,7 @@ function QuizPage() {
           >
             {!showExplanation
               ? "Kiểm tra đáp án"
-              : currentQuestionIndex === quizQuestions.length - 1
+              : currentQuestionIndex === questions.length - 1
                 ? "Xem kết quả"
                 : "Câu tiếp theo →"}
           </Button>

@@ -45,8 +45,8 @@ function Button({
   const isDisabled = disabled || isLoading;
 
   const buttonClasses = [
-    "inline-flex items-center justify-center gap-2 font-bold",
-    "transition duration-200",
+    "premium-button inline-flex items-center justify-center gap-2 font-bold",
+    "transition duration-200 active:scale-[0.98]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     "focus-visible:ring-offset-slate-950",
     "disabled:cursor-not-allowed disabled:opacity-50",

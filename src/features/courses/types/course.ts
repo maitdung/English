@@ -96,6 +96,14 @@ export type LessonExercise = {
   orderIndex: number;
 };
 
+export type ExerciseCheckResponse = {
+  isCorrect: boolean;
+  correctAnswer: unknown;
+  explanation: string | null;
+  pointsEarned: number;
+  maxPoints: number;
+};
+
 export type LessonDetail = {
   id: string;
   slug: string;

@@ -1,5 +1,6 @@
 import generatedTravelAirportLesson from './lesson-007-travel-airport';
 import { adaptGeneratedLesson } from './adapter';
+import { foundationLessons } from './foundations';
 
 export const lesson007TravelAirport = adaptGeneratedLesson(
   generatedTravelAirportLesson,
@@ -17,6 +18,9 @@ export const lesson007TravelAirport = adaptGeneratedLesson(
   },
 );
 
-export const a1Lessons = [lesson007TravelAirport] as const;
+export const a1Lessons = [
+  ...foundationLessons,
+  lesson007TravelAirport,
+] as const;
 
 export default a1Lessons;
