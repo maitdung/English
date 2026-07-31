@@ -1,8 +1,4 @@
-import type {
-  Flashcard,
-  Lesson,
-  QuizQuestion,
-} from "../types/learning";
+import type { Flashcard, Lesson, QuizQuestion } from "../types/learning";
 
 export const lessons: Lesson[] = [
   {
@@ -225,8 +221,7 @@ export const quizQuestions: QuizQuestion[] = [
       "See you tomorrow.",
     ],
     correctAnswer: 1,
-    explanation:
-      "Nice to meet you được sử dụng khi gặp một người lần đầu.",
+    explanation: "Nice to meet you được sử dụng khi gặp một người lần đầu.",
   },
   {
     id: "question-002",
@@ -326,8 +321,7 @@ export const quizQuestions: QuizQuestion[] = [
       "Select the most natural collocation: “The new evidence _____ doubt on the original conclusion.”",
     answers: ["puts", "does", "makes", "takes"],
     correctAnswer: 0,
-    explanation:
-      "The established collocation is “put doubt on something.”",
+    explanation: "The established collocation is “put doubt on something.”",
     difficulty: "advanced",
     level: "C1",
     topic: "Từ vựng",
@@ -348,6 +342,88 @@ export const quizQuestions: QuizQuestion[] = [
     difficulty: "advanced",
     level: "C1",
     topic: "Luyện nghe",
+  },
+  {
+    id: "question-advanced-006",
+    question:
+      "Choose the best meaning of the sentence: “The proposal was met with qualified support.”",
+    answers: [
+      "Everyone rejected it immediately.",
+      "It was supported, but with reservations.",
+      "It received praise for its wording only.",
+      "The proposal was legally invalid.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "Qualified support means support that is not unconditional; there are reservations or limits.",
+    difficulty: "advanced",
+    level: "C1",
+    topic: "Đọc hiểu",
+  },
+  {
+    id: "question-advanced-007",
+    question: "Which sentence is the most precise for a formal presentation?",
+    answers: [
+      "The data are kind of interesting.",
+      "The data suggest a modest but consistent upward trend.",
+      "The data are totally amazing.",
+      "The data maybe show something good.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "The second option is measured, formal and specific, which suits a presentation.",
+    difficulty: "advanced",
+    level: "C1",
+    topic: "Công sở",
+  },
+  {
+    id: "question-advanced-008",
+    question:
+      "What does the phrase “in light of the evidence” most naturally signal?",
+    answers: [
+      "A contrast with no reason.",
+      "A conclusion based on the evidence.",
+      "A request to stop reading.",
+      "A personal apology.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "The phrase introduces a conclusion or action that follows from the evidence.",
+    difficulty: "advanced",
+    level: "C2",
+    topic: "Từ vựng",
+  },
+  {
+    id: "question-advanced-009",
+    question: "Which sentence best reflects a C2-style qualification?",
+    answers: [
+      "This is definitely the only answer.",
+      "This may be true in some contexts, though the evidence remains limited.",
+      "This is always false.",
+      "Nobody can say anything useful.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "C2 writing often balances certainty with careful qualification.",
+    difficulty: "advanced",
+    level: "C2",
+    topic: "Văn phong",
+  },
+  {
+    id: "question-advanced-010",
+    question: "Which reply shows the most mature response to disagreement?",
+    answers: [
+      "You are just wrong.",
+      "I see your point, although I read the data differently.",
+      "That makes no sense at all.",
+      "Let's not talk about it.",
+    ],
+    correctAnswer: 1,
+    explanation:
+      "Acknowledging the other view while calmly presenting a different reading is more advanced discourse.",
+    difficulty: "advanced",
+    level: "C2",
+    topic: "Giao tiếp",
   },
 ];
 

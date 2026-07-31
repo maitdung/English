@@ -188,6 +188,12 @@ function AdminDashboardPage() {
       totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0;
     const verifiedPercent =
       totalUsers > 0 ? Math.round((verifiedUsers / totalUsers) * 100) : 0;
+    const suspendedUsers = users.filter(
+      (adminUser) => adminUser.status === "SUSPENDED",
+    ).length;
+    const unverifiedUsers = users.filter(
+      (adminUser) => !adminUser.emailVerified,
+    ).length;
 
     return [
       {
@@ -217,6 +223,20 @@ function AdminDashboardPage() {
         detail: `${verifiedUsers}/${totalUsers} tài khoản đã xác minh`,
         icon: "✓",
         tone: "amber" as const,
+      },
+      {
+        label: "Chưa xác minh",
+        value: unverifiedUsers.toLocaleString("vi-VN"),
+        detail: `${totalUsers > 0 ? Math.round((unverifiedUsers / totalUsers) * 100) : 0}% tài khoản cần theo dõi`,
+        icon: "◌",
+        tone: "amber" as const,
+      },
+      {
+        label: "Đã tạm khóa",
+        value: suspendedUsers.toLocaleString("vi-VN"),
+        detail: "Tài khoản cần rà soát hoặc xử lý bảo mật",
+        icon: "⛨",
+        tone: "violet" as const,
       },
     ];
   }, [users]);
