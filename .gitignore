@@ -33,9 +33,11 @@ backups/
 .env
 .env.*
 !.env.example
+!.env.production.example
 server/.env
 server/.env.*
 !server/.env.example
+!server/.env.production.example
 
 # Dependencies and builds
 node_modules/

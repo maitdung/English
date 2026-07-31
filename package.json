@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:check": "npm run build && npm run lint && npm --prefix server run build && npm --prefix server test -- --runInBand src/auth/auth.controller.spec.ts src/users/users.controller.spec.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

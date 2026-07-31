@@ -119,6 +119,35 @@ npm run build
 npm run test:e2e -- --runInBand
 ```
 
+## Deploy nhanh
+
+1. Copy env mẫu:
+
+```bash
+cp .env.production.example .env.production
+cp server/.env.production.example server/.env.production
+```
+
+2. Chạy kiểm tra trước deploy:
+
+```bash
+npm run deploy:check
+```
+
+3. Frontend:
+
+- Deploy lên Cloudflare Pages
+- Build command: `npm run build`
+- Output directory: `dist`
+- Env: `VITE_API_URL=https://api.your-domain.com/api`
+
+4. Backend:
+
+- Deploy riêng trên Render / Railway / Fly / VPS
+- Chạy `npx prisma migrate deploy`
+- Chạy `npm run seed:content`
+- Start: `npm run start:prod`
+
 ## Phân quyền
 
 - `STUDENT`: học, luyện kỹ năng, làm bài, xem tiến độ và quản lý hồ sơ.
