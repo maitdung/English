@@ -1,28 +1,62 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Button from "../../../components/ui/Button/Button";
+
+type ListeningQuestion = {
+  question: string;
+  answers: string[];
+  correct: number;
+};
 
 type ListeningLesson = {
   id: number;
   title: string;
   description: string;
-  level: "A1" | "A2" | "B1" | "B2";
+  level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   duration: number;
   progress: number;
   category: string;
   icon: string;
+  estimatedSeconds: number;
+  speechRate: number;
+  transcript: string;
+  focusWords: string[];
+  questions: ListeningQuestion[];
 };
 
 const listeningLessons: ListeningLesson[] = [
   {
     id: 1,
     title: "Greetings and Introductions",
-    description: "Luyện nghe các đoạn hội thoại chào hỏi và giới thiệu bản thân.",
+    description:
+      "Luyện nghe các đoạn hội thoại chào hỏi và giới thiệu bản thân.",
     level: "A1",
     duration: 8,
     progress: 100,
     category: "Giao tiếp",
     icon: "👋",
+    estimatedSeconds: 58,
+    speechRate: 0.78,
+    transcript:
+      "Good morning. My name is Anna. I am from Canada, and I am studying English for work. Nice to meet you. Hi Anna, I am Minh. I live in Da Nang. I work at a small hotel near the beach. Nice to meet you too. What do you like doing after work? I like listening to music and walking with my friends. That sounds great.",
+    focusWords: ["nice to meet you", "from", "work", "after work", "sounds"],
+    questions: [
+      {
+        question: "Where is Anna from?",
+        answers: ["Canada", "Da Nang", "A hotel"],
+        correct: 0,
+      },
+      {
+        question: "Where does Minh work?",
+        answers: ["At a school", "At a small hotel", "At the airport"],
+        correct: 1,
+      },
+      {
+        question: "What does Anna like doing after work?",
+        answers: ["Cooking dinner", "Walking with friends", "Reading news"],
+        correct: 1,
+      },
+    ],
   },
   {
     id: 2,
@@ -33,6 +67,32 @@ const listeningLessons: ListeningLesson[] = [
     progress: 72,
     category: "Cuộc sống",
     icon: "☀️",
+    estimatedSeconds: 76,
+    speechRate: 0.82,
+    transcript:
+      "Every weekday, Daniel gets up at six thirty. He checks his messages, makes coffee, and reads the plan for the day. At eight o'clock, he takes the bus to the office. Today is different because he has a team meeting at nine. After work, he usually goes to the gym, but tonight he is meeting his sister for dinner.",
+    focusWords: ["weekday", "gets up", "takes the bus", "meeting", "usually"],
+    questions: [
+      {
+        question: "What time does Daniel get up?",
+        answers: ["At six thirty", "At eight o'clock", "At nine o'clock"],
+        correct: 0,
+      },
+      {
+        question: "What time does the meeting begin?",
+        answers: ["At nine o'clock", "In the meeting room", "With his sister"],
+        correct: 0,
+      },
+      {
+        question: "What is Daniel doing tonight?",
+        answers: [
+          "Going to the gym",
+          "Meeting his sister for dinner",
+          "Taking the bus home",
+        ],
+        correct: 1,
+      },
+    ],
   },
   {
     id: 3,
@@ -43,6 +103,32 @@ const listeningLessons: ListeningLesson[] = [
     progress: 45,
     category: "Công sở",
     icon: "💼",
+    estimatedSeconds: 82,
+    speechRate: 0.84,
+    transcript:
+      "Hello, this is Rachel from customer support. I am calling about the printer on the third floor. It is not working again. Could someone check it before lunch? We have to print the contracts for the new clients. Of course. I will ask the technician to come at eleven fifteen. Please send me the room number by email.",
+    focusWords: ["customer support", "printer", "third floor", "contracts"],
+    questions: [
+      {
+        question: "Why did Rachel call?",
+        answers: [
+          "To report a printer problem",
+          "To order lunch",
+          "To change a meeting room",
+        ],
+        correct: 0,
+      },
+      {
+        question: "What needs to be printed?",
+        answers: ["Tickets", "Contracts", "Reports"],
+        correct: 1,
+      },
+      {
+        question: "When will the technician come?",
+        answers: ["Before nine", "At eleven fifteen", "After work"],
+        correct: 1,
+      },
+    ],
   },
   {
     id: 4,
@@ -53,6 +139,32 @@ const listeningLessons: ListeningLesson[] = [
     progress: 20,
     category: "Du lịch",
     icon: "✈️",
+    estimatedSeconds: 88,
+    speechRate: 0.88,
+    transcript:
+      "Attention passengers on flight 482 to Singapore. Boarding will begin in approximately twenty minutes at gate B twelve. Because of heavy rain, the departure time has been delayed by thirty minutes. Passengers with small children or those needing assistance may board first. Please keep your passport and boarding pass ready for inspection.",
+    focusWords: ["boarding", "approximately", "delayed", "assistance"],
+    questions: [
+      {
+        question: "Where is the flight going?",
+        answers: ["Singapore", "Sydney", "Seoul"],
+        correct: 0,
+      },
+      {
+        question: "Why is the departure delayed?",
+        answers: ["Heavy rain", "A missing passport", "A gate change"],
+        correct: 0,
+      },
+      {
+        question: "Who may board first?",
+        answers: [
+          "Business travelers",
+          "Passengers needing assistance",
+          "People without luggage",
+        ],
+        correct: 1,
+      },
+    ],
   },
   {
     id: 5,
@@ -63,6 +175,28 @@ const listeningLessons: ListeningLesson[] = [
     progress: 0,
     category: "Nâng cao",
     icon: "🎙️",
+    estimatedSeconds: 98,
+    speechRate: 0.9,
+    transcript:
+      "A new community library opened downtown this morning after two years of planning. The project was funded by local businesses and volunteers. In an interview, the director said the library is not only a place to borrow books, but also a learning hub where residents can attend workshops, practise digital skills, and meet language partners.",
+    focusWords: ["community", "funded", "volunteers", "learning hub"],
+    questions: [
+      {
+        question: "What opened downtown?",
+        answers: ["A community library", "A train station", "A hospital"],
+        correct: 0,
+      },
+      {
+        question: "Who helped fund the project?",
+        answers: ["Only the government", "Local businesses", "Tourists"],
+        correct: 1,
+      },
+      {
+        question: "What can residents practise there?",
+        answers: ["Digital skills", "Driving", "Cooking"],
+        correct: 0,
+      },
+    ],
   },
   {
     id: 6,
@@ -73,10 +207,63 @@ const listeningLessons: ListeningLesson[] = [
     progress: 60,
     category: "TOEIC",
     icon: "❓",
+    estimatedSeconds: 72,
+    speechRate: 0.88,
+    transcript:
+      "Where should I put these documents? Please leave them on my desk. When will the client arrive? Around two thirty, if the train is on time. Did you send the updated invoice? Yes, I emailed it this morning. Who is leading the presentation? I think Sarah is, but we should confirm with her.",
+    focusWords: ["documents", "client", "invoice", "presentation"],
+    questions: [
+      {
+        question: "Where should the documents be placed?",
+        answers: ["On the desk", "In the kitchen", "At reception"],
+        correct: 0,
+      },
+      {
+        question: "When will the client arrive?",
+        answers: ["Around two thirty", "This morning", "Next week"],
+        correct: 0,
+      },
+      {
+        question: "Who may lead the presentation?",
+        answers: ["Sarah", "The client", "The receptionist"],
+        correct: 0,
+      },
+    ],
   },
 ];
 
 const levels = ["Tất cả", "A1", "A2", "B1", "B2"];
+
+function formatTime(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainingSeconds = safeSeconds % 60;
+
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+    .toString()
+    .padStart(2, "0")}`;
+}
+
+function createUtterance(lesson: ListeningLesson): SpeechSynthesisUtterance {
+  const utterance = new SpeechSynthesisUtterance(lesson.transcript);
+  utterance.lang = "en-US";
+  utterance.rate = lesson.speechRate;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const voices = window.speechSynthesis.getVoices();
+  const preferredVoice = voices.find(
+    (voice) =>
+      voice.lang.toLowerCase().startsWith("en") &&
+      /samantha|victoria|daniel|google us english|microsoft/i.test(voice.name),
+  );
+
+  if (preferredVoice) {
+    utterance.voice = preferredVoice;
+  }
+
+  return utterance;
+}
 
 function ListeningPage() {
   const [selectedLevel, setSelectedLevel] = useState("Tất cả");
@@ -84,16 +271,20 @@ function ListeningPage() {
     listeningLessons[1],
   );
   const [isPlaying, setIsPlaying] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [checkedAnswer, setCheckedAnswer] = useState<number | null>(null);
+  const [isTranscriptVisible, setIsTranscriptVisible] = useState(false);
+  const [audioMessage, setAudioMessage] = useState("");
+  const progressTimerRef = useRef<number | null>(null);
 
   const filteredLessons = useMemo(() => {
     if (selectedLevel === "Tất cả") {
       return listeningLessons;
     }
 
-    return listeningLessons.filter(
-      (lesson) => lesson.level === selectedLevel,
-    );
+    return listeningLessons.filter((lesson) => lesson.level === selectedLevel);
   }, [selectedLevel]);
 
   const completedLessons = listeningLessons.filter(
@@ -105,23 +296,141 @@ function ListeningPage() {
     0,
   );
 
-  const questions = [
-    {
-      question: "What time does the meeting begin?",
-      answers: ["At nine o'clock", "In the meeting room", "With the manager"],
-    },
-    {
-      question: "Where is the speaker going?",
-      answers: ["To the airport", "At seven thirty", "By train"],
-    },
-    {
-      question: "Why did the woman call?",
-      answers: ["To confirm an appointment", "On Monday", "Her colleague"],
-    },
-  ];
+  const activeProgressPercent = Math.min(
+    100,
+    Math.round((elapsedSeconds / activeLesson.estimatedSeconds) * 100),
+  );
+  const activeQuestion = activeLesson.questions[currentQuestion];
+  const isCorrect =
+    checkedAnswer !== null && checkedAnswer === activeQuestion.correct;
+
+  useEffect(() => {
+    const loadVoices = () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.getVoices();
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis?.addEventListener?.("voiceschanged", loadVoices);
+
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.removeEventListener?.(
+          "voiceschanged",
+          loadVoices,
+        );
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      if (progressTimerRef.current !== null) {
+        window.clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+      return;
+    }
+
+    progressTimerRef.current = window.setInterval(() => {
+      setElapsedSeconds((current) => {
+        if (current >= activeLesson.estimatedSeconds) {
+          return activeLesson.estimatedSeconds;
+        }
+
+        return current + 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (progressTimerRef.current !== null) {
+        window.clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+    };
+  }, [activeLesson.estimatedSeconds, isPlaying]);
+
+  const stopAudio = (resetProgress = false) => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    setIsPlaying(false);
+
+    if (resetProgress) {
+      setElapsedSeconds(0);
+    }
+  };
+
+  const playAudio = () => {
+    if (!("speechSynthesis" in window)) {
+      setAudioMessage(
+        "Trình duyệt này chưa hỗ trợ phát giọng đọc. Hãy thử Chrome/Safari mới nhất.",
+      );
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setAudioMessage("");
+
+    const utterance = createUtterance(activeLesson);
+
+    utterance.onstart = () => {
+      setIsPlaying(true);
+    };
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setElapsedSeconds(activeLesson.estimatedSeconds);
+    };
+    utterance.onerror = () => {
+      setIsPlaying(false);
+      setAudioMessage(
+        "Chưa phát được âm thanh. Hãy bấm lại nút Play hoặc kiểm tra âm lượng/tab đang bị mute.",
+      );
+    };
+
+    if (elapsedSeconds >= activeLesson.estimatedSeconds) {
+      setElapsedSeconds(0);
+    }
+
+    window.speechSynthesis.speak(utterance);
+
+    window.setTimeout(() => {
+      if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+        setAudioMessage(
+          "Trình duyệt đang chặn giọng đọc. Hãy bấm Play thêm một lần sau khi đã tương tác với trang.",
+        );
+      }
+    }, 400);
+  };
 
   const handleToggleAudio = () => {
-    setIsPlaying((current) => !current);
+    if (isPlaying) {
+      stopAudio(true);
+      return;
+    }
+
+    playAudio();
+  };
+
+  const handleSelectLesson = (lesson: ListeningLesson) => {
+    stopAudio();
+    setActiveLesson(lesson);
+    setElapsedSeconds(0);
+    setCurrentQuestion(0);
+    setSelectedAnswer(null);
+    setCheckedAnswer(null);
+    setAudioMessage("");
+  };
+
+  const handleNextQuestion = () => {
+    setCurrentQuestion(
+      (current) => (current + 1) % activeLesson.questions.length,
+    );
+    setSelectedAnswer(null);
+    setCheckedAnswer(null);
   };
 
   return (
@@ -137,8 +446,8 @@ function ListeningPage() {
           </h1>
 
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-            Luyện nghe theo cấp độ, cải thiện khả năng nhận biết âm thanh và
-            phản xạ với hội thoại thực tế.
+            Luyện nghe theo cấp độ, phát âm trực tiếp trong trình duyệt, có
+            transcript, từ khóa và câu hỏi kiểm tra sau mỗi bài.
           </p>
         </div>
 
@@ -146,7 +455,7 @@ function ListeningPage() {
           type="button"
           size="large"
           className="w-full sm:w-auto"
-          onClick={() => setActiveLesson(listeningLessons[1])}
+          onClick={() => handleSelectLesson(listeningLessons[1])}
         >
           Tiếp tục luyện nghe →
         </Button>
@@ -155,9 +464,7 @@ function ListeningPage() {
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
           <p className="text-sm text-slate-400">Bài nghe</p>
-          <p className="mt-2 text-3xl font-black">
-            {listeningLessons.length}
-          </p>
+          <p className="mt-2 text-3xl font-black">{listeningLessons.length}</p>
           <p className="mt-5 text-xs font-semibold text-cyan-300">
             Đủ 4 cấp độ
           </p>
@@ -219,10 +526,7 @@ function ListeningPage() {
               <button
                 key={lesson.id}
                 type="button"
-                onClick={() => {
-                  setActiveLesson(lesson);
-                  setIsPlaying(false);
-                }}
+                onClick={() => handleSelectLesson(lesson)}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
                   activeLesson.id === lesson.id
                     ? "border-cyan-400/40 bg-cyan-400/[0.07]"
@@ -277,9 +581,7 @@ function ListeningPage() {
                 Đang luyện tập
               </p>
 
-              <h2 className="mt-3 text-2xl font-black">
-                {activeLesson.title}
-              </h2>
+              <h2 className="mt-3 text-2xl font-black">{activeLesson.title}</h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 {activeLesson.description}
@@ -296,66 +598,172 @@ function ListeningPage() {
               <button
                 type="button"
                 onClick={handleToggleAudio}
-                aria-label={isPlaying ? "Tạm dừng" : "Phát bài nghe"}
-                className="flex h-20 w-20 items-center justify-center rounded-full bg-cyan-400 text-3xl text-slate-950 transition hover:scale-105 hover:bg-cyan-300"
+                aria-label={isPlaying ? "Dừng bài nghe" : "Phát bài nghe"}
+                className={`flex h-20 w-20 items-center justify-center rounded-full text-3xl text-slate-950 transition hover:scale-105 ${
+                  isPlaying
+                    ? "animate-pulse bg-amber-300 hover:bg-amber-200"
+                    : "bg-cyan-400 hover:bg-cyan-300"
+                }`}
               >
-                {isPlaying ? "⏸" : "▶"}
+                {isPlaying ? "■" : "▶"}
               </button>
             </div>
 
             <div className="mt-7">
-              <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+                role="progressbar"
+                aria-label="Tiến độ bài nghe"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={activeProgressPercent}
+                className="h-2 overflow-hidden rounded-full bg-slate-800"
+              >
                 <div
-                  className={`h-full rounded-full bg-cyan-400 transition-all ${
-                    isPlaying ? "w-2/3" : "w-1/4"
-                  }`}
+                  className="h-full rounded-full bg-cyan-400 transition-all duration-500"
+                  style={{ width: `${activeProgressPercent}%` }}
                 />
               </div>
 
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                <span>{isPlaying ? "01:04" : "00:24"}</span>
-                <span>01:36</span>
+                <span>{formatTime(elapsedSeconds)}</span>
+                <span>{formatTime(activeLesson.estimatedSeconds)}</span>
               </div>
             </div>
+
+            {audioMessage && (
+              <p
+                role="alert"
+                className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-xs font-semibold leading-5 text-amber-200"
+              >
+                {audioMessage}
+              </p>
+            )}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="small"
+                onClick={() => {
+                  stopAudio(true);
+                  setElapsedSeconds(0);
+                }}
+              >
+                Nghe lại từ đầu
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="small"
+                onClick={() => setIsTranscriptVisible((current) => !current)}
+              >
+                {isTranscriptVisible ? "Ẩn transcript" : "Hiện transcript"}
+              </Button>
+            </div>
           </div>
+
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-300">
+              Từ khóa cần nghe
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {activeLesson.focusWords.map((word) => (
+                <span
+                  key={word}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-300"
+                >
+                  {word}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {isTranscriptVisible && (
+            <div className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.06] p-5">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
+                Transcript
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-300">
+                {activeLesson.transcript}
+              </p>
+            </div>
+          )}
 
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm font-black">
-                Câu hỏi {currentQuestion + 1}/{questions.length}
+                Câu hỏi {currentQuestion + 1}/{activeLesson.questions.length}
               </p>
 
               <button
                 type="button"
-                onClick={() =>
-                  setCurrentQuestion(
-                    (currentQuestion + 1) % questions.length,
-                  )
-                }
+                onClick={handleNextQuestion}
                 className="text-xs font-bold text-cyan-300"
               >
                 Câu tiếp theo →
               </button>
             </div>
 
-            <p className="mt-5 text-lg font-bold">
-              {questions[currentQuestion].question}
-            </p>
+            <p className="mt-5 text-lg font-bold">{activeQuestion.question}</p>
 
             <div className="mt-5 space-y-3">
-              {questions[currentQuestion].answers.map((answer, index) => (
-                <button
-                  key={answer}
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-4 text-left text-sm transition hover:border-cyan-400/30 hover:bg-cyan-400/[0.05]"
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/5 text-xs font-black">
-                    {String.fromCharCode(65 + index)}
-                  </span>
+              {activeQuestion.answers.map((answer, index) => {
+                const isSelected = selectedAnswer === index;
+                const isChecked = checkedAnswer !== null;
+                const isRightAnswer = activeQuestion.correct === index;
 
-                  {answer}
-                </button>
-              ))}
+                return (
+                  <button
+                    key={answer}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      setCheckedAnswer(null);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left text-sm transition ${
+                      isChecked && isRightAnswer
+                        ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-100"
+                        : isChecked && isSelected
+                          ? "border-red-400/40 bg-red-400/10 text-red-100"
+                          : isSelected
+                            ? "border-cyan-400/40 bg-cyan-400/[0.08] text-cyan-100"
+                            : "border-white/10 bg-white/[0.025] hover:border-cyan-400/30 hover:bg-cyan-400/[0.05]"
+                    }`}
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/5 text-xs font-black">
+                      {String.fromCharCode(65 + index)}
+                    </span>
+
+                    {answer}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Button
+                type="button"
+                size="small"
+                disabled={selectedAnswer === null}
+                onClick={() => setCheckedAnswer(selectedAnswer)}
+              >
+                Kiểm tra đáp án
+              </Button>
+
+              {checkedAnswer !== null && (
+                <p
+                  role="status"
+                  className={`text-sm font-bold ${
+                    isCorrect ? "text-emerald-300" : "text-red-300"
+                  }`}
+                >
+                  {isCorrect
+                    ? "Chính xác — tai bạn bắt key khá ổn đó."
+                    : `Chưa đúng. Đáp án là ${String.fromCharCode(
+                        65 + activeQuestion.correct,
+                      )}.`}
+                </p>
+              )}
             </div>
           </div>
         </article>
