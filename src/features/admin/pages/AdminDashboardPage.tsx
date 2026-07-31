@@ -51,6 +51,29 @@ const sortOptions: Array<{
   { value: "NAME_ASC", label: "Tên A–Z" },
 ];
 
+const adminModuleCards = [
+  {
+    title: "Người dùng",
+    detail: "Tìm kiếm, lọc, phân quyền và theo dõi trạng thái tài khoản.",
+    routeHint: "Bảng người dùng",
+  },
+  {
+    title: "Bảo mật",
+    detail: "Kiểm tra xác minh email, tạm khóa và rà soát rủi ro truy cập.",
+    routeHint: "Chính sách truy cập",
+  },
+  {
+    title: "Học liệu",
+    detail: "Quản lý tiến trình nội dung, mức độ và nhịp xuất bản theo cấp.",
+    routeHint: "Lộ trình học",
+  },
+  {
+    title: "Báo cáo",
+    detail: "Tổng hợp số liệu sử dụng, hoàn thành và xu hướng học tập.",
+    routeHint: "Dashboard số liệu",
+  },
+] as const;
+
 function createDisplayName(user: AdminUser): string {
   return (
     [user.lastName, user.firstName].filter(Boolean).join(" ").trim() ||
@@ -240,6 +263,30 @@ function AdminDashboardPage() {
       },
     ];
   }, [users]);
+
+  const quickActions = [
+    {
+      label: "Làm mới dữ liệu",
+      detail: "Kéo lại trạng thái người dùng và cập nhật số liệu trực tiếp.",
+      action: () => void loadUsers(),
+    },
+    {
+      label: "Rà soát vai trò",
+      detail: "Mở lọc quyền để xem ngay nhóm quản trị hoặc giảng viên.",
+      action: () => {
+        setRoleFilter("ADMIN");
+        setCurrentPage(1);
+      },
+    },
+    {
+      label: "Lọc tạm khóa",
+      detail: "Kiểm tra nhanh các tài khoản đang cần xử lý bảo mật.",
+      action: () => {
+        setStatusFilter("SUSPENDED");
+        setCurrentPage(1);
+      },
+    },
+  ] as const;
 
   const filteredUsers = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase("vi-VN");
@@ -513,6 +560,76 @@ function AdminDashboardPage() {
         {metrics.map((metric) => (
           <AdminMetricCard key={metric.label} {...metric} />
         ))}
+      </section>
+
+      <section className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/65 p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
+                Admin control center
+              </p>
+              <h2 className="mt-2 text-xl font-black text-white">
+                Cấu trúc mở cho công cụ quản trị
+              </h2>
+            </div>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-400">
+              Extensible
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {adminModuleCards.map((module) => (
+              <div
+                key={module.title}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black text-white">
+                      {module.title}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      {module.detail}
+                    </p>
+                  </div>
+                  <span className="rounded-xl border border-white/10 bg-slate-950 px-2 py-1 text-[10px] font-black text-slate-400">
+                    {module.routeHint}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/65 p-5 sm:p-6">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-300">
+            Quick actions
+          </p>
+          <h2 className="mt-2 text-xl font-black text-white">
+            Lối tắt vận hành
+          </h2>
+          <div className="mt-5 space-y-3">
+            {quickActions.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.action}
+                className="flex w-full items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-cyan-400/30 hover:bg-white/[0.05]"
+              >
+                <div>
+                  <p className="font-black text-white">{item.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    {item.detail}
+                  </p>
+                </div>
+                <span className="rounded-xl bg-white/5 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                  tool
+                </span>
+              </button>
+            ))}
+          </div>
+        </article>
       </section>
 
       <section className="premium-surface mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/65 shadow-2xl shadow-black/10">
