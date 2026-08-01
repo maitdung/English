@@ -1,6 +1,7 @@
+import { toeicPracticeSets } from "./toeicCatalog";
 import type { PracticeSet } from "../types/practice";
 
-export const practiceSets: PracticeSet[] = [
+const corePracticeSets: PracticeSet[] = [
   {
     id: "vocabulary-everyday-essentials",
     title: "Everyday English Essentials",
@@ -1143,4 +1144,10 @@ export const practiceSets: PracticeSet[] = [
       },
     ],
   },
+];
+
+/** Unified offline catalog used by the library, daily plan, and TOEIC page. */
+export const practiceSets: PracticeSet[] = [
+  ...corePracticeSets,
+  ...toeicPracticeSets,
 ];
