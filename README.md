@@ -22,9 +22,13 @@ và khu vực quản trị người dùng.
   Rhetoric & Adaptation.
 - Phòng luyện kỹ năng theo cấp độ A1–C2: từ vựng, nghe, nói, đọc, viết, ngữ
   pháp và kiểm tra.
-- Thư viện luyện tập mới gồm **16 bộ bài / 64 lượt tương tác**, phủ 7 dạng:
-  chọn đáp án, nghe–chọn, điền từ, chính tả, xếp câu, viết có hướng dẫn và nói
-  đuổi; kết quả được lưu theo từng bộ để làm kế hoạch hằng ngày.
+- Thư viện luyện tập offline gồm **24 bộ bài / 136 lượt tương tác**, phủ 7
+  dạng: chọn đáp án, nghe–chọn, điền từ, chính tả, xếp câu, viết có hướng dẫn
+  và nói đuổi; kết quả được lưu theo từng bộ để làm kế hoạch hằng ngày.
+- Sách **TOEIC 7 Parts** có 11 bộ / 84 câu: Part 1 ảnh, Part 2 hỏi–đáp,
+  Part 3 hội thoại, Part 4 bài nói, Part 5 ngữ pháp–từ vựng, Part 6 điền đoạn,
+  Part 7 đọc hiểu và hai phiên mini mock. Lộ trình chương được khai báo tại
+  `src/features/practice/data/knowledgeBooks.ts`.
 - Trang chủ có khu vực thử bài tập không cần đăng nhập; dashboard có Daily Mix
   đa kỹ năng và thư viện offline để vẫn học được khi API tạm thời gián đoạn.
 - Quiz có chế độ Nền tảng/Tổng hợp/Nâng cao, câu hỏi B2–C1 và giải thích sau
