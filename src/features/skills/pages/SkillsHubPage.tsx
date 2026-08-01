@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
+import { practiceSets } from "../../practice/data/practiceCatalog";
 import { vocabularyWords } from "../../vocabulary/data/vocabularyCatalog";
 
 type SkillId =
@@ -271,9 +272,18 @@ function SkillsHubPage() {
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
-              ["7", "khu luyện"],
-              ["A1–C2", "cấp độ"],
-              ["10′", "mỗi phiên"],
+              [String(practiceSets.length), "bộ bài"],
+              [
+                String(
+                  practiceSets.reduce(
+                    (total, practiceSet) =>
+                      total + practiceSet.exercises.length,
+                    0,
+                  ),
+                ),
+                "lượt tương tác",
+              ],
+              ["7", "kỹ năng"],
             ].map(([value, label]) => (
               <div
                 key={label}
@@ -284,6 +294,12 @@ function SkillsHubPage() {
               </div>
             ))}
           </div>
+          <Link
+            to="/dashboard/practice"
+            className="premium-button inline-flex w-full items-center justify-center rounded-2xl bg-cyan-300 px-5 py-3.5 text-sm font-black text-slate-950 transition hover:bg-cyan-200 sm:w-auto"
+          >
+            Mở thư viện 64+ bài tập →
+          </Link>
         </div>
       </section>
 
@@ -703,25 +719,25 @@ function SkillsHubPage() {
                   "Diagnostic test",
                   "20 câu · 15 phút",
                   "Đo trình độ A1–C2",
-                  "/dashboard/quiz",
+                  "/dashboard/practice/toeic-mini-mix",
                 ],
                 [
                   "Vocabulary sprint",
                   "30 câu · 10 phút",
                   "Từ vựng theo chủ đề",
-                  "/dashboard/quiz",
+                  "/dashboard/practice/vocabulary-workplace-collocations",
                 ],
                 [
                   "TOEIC mini test",
                   "50 câu · 45 phút",
-                  "Listening + Reading",
-                  "/dashboard/toeic",
+                  "Listening + Reading có chấm điểm",
+                  "/dashboard/practice/toeic-mini-mix",
                 ],
                 [
                   "Weekly review",
                   "40 câu · 20 phút",
                   "Ôn lại lỗi thường gặp",
-                  "/dashboard/quiz",
+                  "/dashboard/practice/grammar-conditionals-and-clauses",
                 ],
               ].map(([title, meta, detail, route]) => (
                 <article

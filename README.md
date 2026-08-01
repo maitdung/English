@@ -22,6 +22,11 @@ và khu vực quản trị người dùng.
   Rhetoric & Adaptation.
 - Phòng luyện kỹ năng theo cấp độ A1–C2: từ vựng, nghe, nói, đọc, viết, ngữ
   pháp và kiểm tra.
+- Thư viện luyện tập mới gồm **16 bộ bài / 64 lượt tương tác**, phủ 7 dạng:
+  chọn đáp án, nghe–chọn, điền từ, chính tả, xếp câu, viết có hướng dẫn và nói
+  đuổi; kết quả được lưu theo từng bộ để làm kế hoạch hằng ngày.
+- Trang chủ có khu vực thử bài tập không cần đăng nhập; dashboard có Daily Mix
+  đa kỹ năng và thư viện offline để vẫn học được khi API tạm thời gián đoạn.
 - Quiz có chế độ Nền tảng/Tổng hợp/Nâng cao, câu hỏi B2–C1 và giải thích sau
   mỗi đáp án.
 - Kế hoạch học mỗi ngày tự chọn từ mới và mục cần ôn đến hạn; lưu streak, điểm,

@@ -10,6 +10,8 @@ import {
 import { useAuth } from "../../auth/context/AuthContext";
 import { flashcards, lessons } from "../../learning-engine/data/lessonCatalog";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
+import { practiceSets } from "../../practice/data/practiceCatalog";
+import { practiceSkillLabels } from "../../practice/types/practice";
 
 const trackedSkillIds = [
   "vocabulary",
@@ -106,6 +108,40 @@ function DashboardPage() {
   const totalLessonCount = lessons.length + backendLessonCount;
   const safeTotalLessonCount = Math.max(totalLessonCount, completedLessonCount);
   const reviewedFlashcardCount = reviewedFlashcards.length;
+  const completedPracticeSets = useMemo(
+    () =>
+      practiceSets.filter(
+        (practiceSet) =>
+          progress.reviewRecords[`practice:${practiceSet.id}`],
+      ),
+    [progress.reviewRecords],
+  );
+  const practiceShowcase = useMemo(() => {
+    const skills = [
+      "listening",
+      "speaking",
+      "grammar",
+      "reading",
+      "writing",
+      "toeic",
+    ] as const;
+
+    return skills.flatMap((skill) => {
+      const skillSets = practiceSets.filter((item) => item.skill === skill);
+      const recommendedSet =
+        skillSets.find(
+          (item) =>
+            item.featured &&
+            !progress.reviewRecords[`practice:${item.id}`],
+        ) ??
+        skillSets.find(
+          (item) => !progress.reviewRecords[`practice:${item.id}`],
+        ) ??
+        skillSets[0];
+
+      return recommendedSet ? [recommendedSet] : [];
+    });
+  }, [progress.reviewRecords]);
 
   const totalLearningMinutes = completedLessons.reduce(
     (totalMinutes, lesson) => totalMinutes + lesson.duration,
@@ -113,7 +149,11 @@ function DashboardPage() {
   );
 
   const totalLearningItems =
-    safeTotalLessonCount + flashcards.length + trackedSkillIds.length + 1;
+    safeTotalLessonCount +
+    flashcards.length +
+    practiceSets.length +
+    trackedSkillIds.length +
+    1;
 
   const completedSkillCount = trackedSkillIds.filter((skillId) =>
     progress.completedSkillIds.includes(skillId),
@@ -122,6 +162,7 @@ function DashboardPage() {
   const completedLearningItems =
     completedLessonCount +
     reviewedFlashcardCount +
+    completedPracticeSets.length +
     completedSkillCount +
     (progress.quizHighScore > 0 ? 1 : 0);
 
@@ -236,6 +277,22 @@ function DashboardPage() {
       });
     }
 
+    if (completedPracticeSets.length >= 1) {
+      unlockedAchievements.push({
+        icon: "⚡",
+        title: "Phiên luyện đầu tiên",
+        detail: `Hoàn thành “${completedPracticeSets[0].title}”`,
+      });
+    }
+
+    if (completedPracticeSets.length >= 5) {
+      unlockedAchievements.push({
+        icon: "🧠",
+        title: "Nhịp học đa kỹ năng",
+        detail: "Đã hoàn thành ít nhất 5 bộ luyện tương tác",
+      });
+    }
+
     if (progress.quizHighScore >= 80) {
       unlockedAchievements.push({
         icon: "🏆",
@@ -247,6 +304,7 @@ function DashboardPage() {
     return unlockedAchievements;
   }, [
     completedLessonCount,
+    completedPracticeSets,
     completedSkillCount,
     progress.quizHighScore,
     reviewedFlashcardCount,
@@ -366,7 +424,11 @@ function DashboardPage() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
-                    {item.isReview ? "Ôn lại" : "Từ mới"}
+                    {item.isReview
+                      ? "Ôn lại"
+                      : item.type === "vocabulary"
+                        ? "Từ mới"
+                        : "Luyện mới"}
                   </span>
                   <span className="text-xs font-bold text-slate-500">
                     {item.level ?? "A1"}
@@ -380,6 +442,84 @@ function DashboardPage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/55 p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300">
+              Phòng luyện đa kỹ năng
+            </p>
+            <h2 className="mt-2 text-2xl font-black">
+              Không chỉ học từ — hãy dùng tiếng Anh
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+              Nghe, nói, đọc, viết, ngữ pháp và TOEIC trong các phiên 8–15 phút,
+              có phản hồi ngay sau từng lượt.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/practice")}
+            className="shrink-0 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 py-3 text-sm font-black text-cyan-200 transition hover:bg-cyan-300/15"
+          >
+            Xem {practiceSets.length} bộ bài →
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {practiceShowcase.map((practiceSet, index) => {
+            const record =
+              progress.reviewRecords[`practice:${practiceSet.id}`];
+
+            return (
+              <button
+                key={practiceSet.id}
+                type="button"
+                onClick={() =>
+                  navigate(`/dashboard/practice/${practiceSet.id}`)
+                }
+                className={`group relative overflow-hidden rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30 ${
+                  index === 0
+                    ? "border-cyan-300/20 bg-gradient-to-br from-cyan-400/10 via-white/[0.035] to-blue-400/5 sm:col-span-2 xl:col-span-1"
+                    : "border-white/10 bg-white/[0.025]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.06] text-2xl">
+                    {practiceSet.icon}
+                  </span>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-black ${
+                      record
+                        ? "bg-emerald-400/10 text-emerald-300"
+                        : "bg-white/5 text-slate-500"
+                    }`}
+                  >
+                    {record ? `${record.lastScore}%` : practiceSet.level}
+                  </span>
+                </div>
+                <p className="mt-5 text-xs font-black uppercase tracking-[0.15em] text-cyan-300">
+                  {practiceSkillLabels[practiceSet.skill]}
+                </p>
+                <h3 className="mt-2 text-lg font-black">
+                  {practiceSet.title}
+                </h3>
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
+                  {practiceSet.description}
+                </p>
+                <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-xs font-bold text-slate-500">
+                  <span>
+                    {practiceSet.duration} phút · {practiceSet.exercises.length} lượt
+                  </span>
+                  <span className="text-cyan-300 transition group-hover:translate-x-1">
+                    {record ? "Luyện lại →" : "Bắt đầu →"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">

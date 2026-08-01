@@ -142,6 +142,7 @@ function AdminDashboardPage() {
   const { user, isLoading: isAuthLoading, refreshCurrentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAdminAccess, setIsCheckingAdminAccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
@@ -159,6 +160,7 @@ function AdminDashboardPage() {
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [createUserErrorMessage, setCreateUserErrorMessage] = useState("");
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [hasRetriedAdminSync, setHasRetriedAdminSync] = useState(false);
 
   const isAdmin = user?.role === "ADMIN";
 
@@ -204,6 +206,36 @@ function AdminDashboardPage() {
       void loadUsers();
     }
   }, [isAuthLoading, loadUsers]);
+
+  useEffect(() => {
+    if (isAuthLoading || !user || isAdmin || hasRetriedAdminSync) {
+      return;
+    }
+
+    let isMounted = true;
+    setHasRetriedAdminSync(true);
+    setIsCheckingAdminAccess(true);
+
+    void refreshCurrentUser()
+      .catch(() => {
+        // Giữ thông báo quyền truy cập nếu không thể đồng bộ lại phiên.
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsCheckingAdminAccess(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    hasRetriedAdminSync,
+    isAdmin,
+    isAuthLoading,
+    refreshCurrentUser,
+    user,
+  ]);
 
   const metrics = useMemo(() => {
     const totalUsers = users.length;
@@ -523,7 +555,7 @@ function AdminDashboardPage() {
     }
   };
 
-  if (isAuthLoading) {
+  if (isAuthLoading || isCheckingAdminAccess) {
     return (
       <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9">
         <AdminLoadingState />

@@ -1,4 +1,6 @@
 import { flashcards, lessons } from "./lessonCatalog";
+import { practiceSets } from "../../practice/data/practiceCatalog";
+import { practiceSkillLabels } from "../../practice/types/practice";
 import { vocabularyWords } from "../../vocabulary/data/vocabularyCatalog";
 import type { LearningProgress, ReviewItemType } from "../types/learning";
 
@@ -35,29 +37,69 @@ export function getDailyPlan(
       const lesson = lessons.find(
         (candidate) => `lesson:${candidate.id}` === id,
       );
+      const practiceSet = practiceSets.find(
+        (candidate) => `practice:${candidate.id}` === id,
+      );
 
       return {
         id,
-        title: word?.word ?? card?.word ?? lesson?.title ?? "Ôn tập bài học",
+        title:
+          word?.word ??
+          card?.word ??
+          lesson?.title ??
+          practiceSet?.title ??
+          "Ôn tập bài học",
         subtitle:
           word?.meaning ??
           card?.meaning ??
           lesson?.description ??
+          practiceSet?.description ??
           `Lần ôn thứ ${record.repetitions + 1}`,
         type: record.itemType,
-        route: word || card ? "/dashboard/vocabulary" : "/dashboard/learning",
+        route: practiceSet
+          ? `/dashboard/practice/${practiceSet.id}`
+          : word || card
+            ? "/dashboard/vocabulary"
+            : "/dashboard/learning",
         isReview: true,
-        level: word?.level ?? lesson?.level,
+        level: word?.level ?? lesson?.level ?? practiceSet?.level,
       };
     });
 
   const reviewedIds = new Set(Object.keys(progress.reviewRecords));
+  const availablePracticeSets = practiceSets.filter(
+    (practiceSet) => !reviewedIds.has(`practice:${practiceSet.id}`),
+  );
+  const daySeed = Math.floor(
+    new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() /
+      86_400_000,
+  );
+  const rotatedPracticeSets = availablePracticeSets.length
+    ? [
+        ...availablePracticeSets.slice(daySeed % availablePracticeSets.length),
+        ...availablePracticeSets.slice(0, daySeed % availablePracticeSets.length),
+      ]
+    : [];
+  const newPracticeItems = rotatedPracticeSets
+    .slice(0, Math.min(3, Math.max(0, DAY_LIMIT - dueReviews.length)))
+    .map((practiceSet) => ({
+      id: `practice:${practiceSet.id}`,
+      title: practiceSet.title,
+      subtitle: `${practiceSkillLabels[practiceSet.skill]} · ${practiceSet.exercises.length} lượt tương tác`,
+      type: "quiz" as const,
+      route: `/dashboard/practice/${practiceSet.id}`,
+      isReview: false,
+      level: practiceSet.level,
+    }));
   const newWords = vocabularyWords
     .filter(
       (word) =>
         word.status === "new" && !reviewedIds.has(`vocabulary:${word.id}`),
     )
-    .slice(0, Math.max(0, DAY_LIMIT - dueReviews.length))
+    .slice(
+      0,
+      Math.max(0, DAY_LIMIT - dueReviews.length - newPracticeItems.length),
+    )
     .map((word) => ({
       id: `vocabulary:${word.id}`,
       title: word.word,
@@ -68,7 +110,7 @@ export function getDailyPlan(
       level: word.level,
     }));
 
-  return [...dueReviews, ...newWords].slice(0, DAY_LIMIT);
+  return [...dueReviews, ...newPracticeItems, ...newWords].slice(0, DAY_LIMIT);
 }
 
 export function getTodayActivity(progress: LearningProgress, now = new Date()) {

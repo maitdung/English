@@ -1,29 +1,93 @@
+/* oxlint-disable react/only-export-components -- Route modules intentionally compose lazy page components and export the router. */
+import { lazy, Suspense, type ReactNode } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
-import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
-import LoginPage from "../features/auth/pages/LoginPage";
-import RegisterPage from "../features/auth/pages/RegisterPage";
-import ResetPasswordPage from "../features/auth/pages/ResetPasswordPage";
-import CourseDetailPage from "../features/courses/pages/CourseDetailPage";
-import CourseLessonPage from "../features/courses/pages/CourseLessonPage";
-import CoursesPage from "../features/courses/pages/CoursesPage";
-import AdminDashboardPage from "../features/admin/pages/AdminDashboardPage";
-import DashboardPage from "../features/dashboard/pages/DashboardPage";
-import HomePage from "../features/home/pages/HomePage";
-import NotFoundPage from "../features/home/pages/NotFoundPage";
-import FlashcardsPage from "../features/learning-engine/pages/FlashcardsPage";
-import LessonPlayerPage from "../features/learning-engine/pages/LessonPlayerPage";
-import QuizPage from "../features/learning-engine/pages/QuizPage";
-import QuizResultPage from "../features/learning-engine/pages/QuizResultPage";
-import LearningPathPage from "../features/learning/pages/LearningPathPage";
-import ListeningPage from "../features/listening/pages/ListeningPage";
-import ProfilePage from "../features/profile/pages/ProfilePage";
-import SkillsHubPage from "../features/skills/pages/SkillsHubPage";
-import ToeicPage from "../features/toeic/pages/ToeicPage";
-import VocabularyPage from "../features/vocabulary/pages/VocabularyPage";
 import DashboardLayout from "../layouts/DashboardLayout";
 import MainLayout from "../layouts/MainLayout";
+
+const ForgotPasswordPage = lazy(
+  () => import("../features/auth/pages/ForgotPasswordPage"),
+);
+const LoginPage = lazy(() => import("../features/auth/pages/LoginPage"));
+const RegisterPage = lazy(() => import("../features/auth/pages/RegisterPage"));
+const ResetPasswordPage = lazy(
+  () => import("../features/auth/pages/ResetPasswordPage"),
+);
+const CourseDetailPage = lazy(
+  () => import("../features/courses/pages/CourseDetailPage"),
+);
+const CourseLessonPage = lazy(
+  () => import("../features/courses/pages/CourseLessonPage"),
+);
+const CoursesPage = lazy(
+  () => import("../features/courses/pages/CoursesPage"),
+);
+const AdminDashboardPage = lazy(
+  () => import("../features/admin/pages/AdminDashboardPage"),
+);
+const DashboardPage = lazy(
+  () => import("../features/dashboard/pages/DashboardPage"),
+);
+const HomePage = lazy(() => import("../features/home/pages/HomePage"));
+const NotFoundPage = lazy(
+  () => import("../features/home/pages/NotFoundPage"),
+);
+const FlashcardsPage = lazy(
+  () => import("../features/learning-engine/pages/FlashcardsPage"),
+);
+const LessonPlayerPage = lazy(
+  () => import("../features/learning-engine/pages/LessonPlayerPage"),
+);
+const QuizPage = lazy(
+  () => import("../features/learning-engine/pages/QuizPage"),
+);
+const QuizResultPage = lazy(
+  () => import("../features/learning-engine/pages/QuizResultPage"),
+);
+const LearningPathPage = lazy(
+  () => import("../features/learning/pages/LearningPathPage"),
+);
+const ListeningPage = lazy(
+  () => import("../features/listening/pages/ListeningPage"),
+);
+const PracticeLibraryPage = lazy(
+  () => import("../features/practice/pages/PracticeLibraryPage"),
+);
+const PracticeSessionPage = lazy(
+  () => import("../features/practice/pages/PracticeSessionPage"),
+);
+const ProfilePage = lazy(
+  () => import("../features/profile/pages/ProfilePage"),
+);
+const SkillsHubPage = lazy(
+  () => import("../features/skills/pages/SkillsHubPage"),
+);
+const ToeicPage = lazy(() => import("../features/toeic/pages/ToeicPage"));
+const VocabularyPage = lazy(
+  () => import("../features/vocabulary/pages/VocabularyPage"),
+);
+
+function RouteLoading() {
+  return (
+    <div
+      className="flex min-h-[55vh] items-center justify-center px-5"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="text-center">
+        <span className="mx-auto block h-10 w-10 animate-spin rounded-full border-2 border-cyan-300/20 border-r-cyan-300" />
+        <p className="mt-4 text-sm font-bold text-slate-500">
+          Đang mở không gian học…
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function lazyPage(element: ReactNode) {
+  return <Suspense fallback={<RouteLoading />}>{element}</Suspense>;
+}
 
 export const router = createBrowserRouter([
   {
@@ -32,25 +96,25 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: lazyPage(<HomePage />),
       },
     ],
   },
   {
     path: "/login",
-    element: <LoginPage />,
+    element: lazyPage(<LoginPage />),
   },
   {
     path: "/register",
-    element: <RegisterPage />,
+    element: lazyPage(<RegisterPage />),
   },
   {
     path: "/forgot-password",
-    element: <ForgotPasswordPage />,
+    element: lazyPage(<ForgotPasswordPage />),
   },
   {
     path: "/reset-password",
-    element: <ResetPasswordPage />,
+    element: lazyPage(<ResetPasswordPage />),
   },
   {
     element: <ProtectedRoute />,
@@ -61,63 +125,71 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <DashboardPage />,
+            element: lazyPage(<DashboardPage />),
           },
           {
             path: "learning",
-            element: <LearningPathPage />,
+            element: lazyPage(<LearningPathPage />),
           },
           {
             path: "skills",
-            element: <SkillsHubPage />,
+            element: lazyPage(<SkillsHubPage />),
+          },
+          {
+            path: "practice",
+            element: lazyPage(<PracticeLibraryPage />),
+          },
+          {
+            path: "practice/:setId",
+            element: lazyPage(<PracticeSessionPage />),
           },
           {
             path: "courses",
-            element: <CoursesPage />,
+            element: lazyPage(<CoursesPage />),
           },
           {
             path: "courses/:courseSlug",
-            element: <CourseDetailPage />,
+            element: lazyPage(<CourseDetailPage />),
           },
           {
             path: "courses/:courseSlug/lessons/:lessonSlug",
-            element: <CourseLessonPage />,
+            element: lazyPage(<CourseLessonPage />),
           },
           {
             path: "lessons/:lessonId",
-            element: <LessonPlayerPage />,
+            element: lazyPage(<LessonPlayerPage />),
           },
           {
             path: "flashcards",
-            element: <FlashcardsPage />,
+            element: lazyPage(<FlashcardsPage />),
           },
           {
             path: "quiz",
-            element: <QuizPage />,
+            element: lazyPage(<QuizPage />),
           },
           {
             path: "quiz/result",
-            element: <QuizResultPage />,
+            element: lazyPage(<QuizResultPage />),
           },
           {
             path: "vocabulary",
-            element: <VocabularyPage />,
+            element: lazyPage(<VocabularyPage />),
           },
           {
             path: "listening",
-            element: <ListeningPage />,
+            element: lazyPage(<ListeningPage />),
           },
           {
             path: "toeic",
-            element: <ToeicPage />,
+            element: lazyPage(<ToeicPage />),
           },
           {
             path: "profile",
-            element: <ProfilePage />,
+            element: lazyPage(<ProfilePage />),
           },
           {
             path: "admin",
-            element: <AdminDashboardPage />,
+            element: lazyPage(<AdminDashboardPage />),
           },
         ],
       },
@@ -125,7 +197,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <NotFoundPage />,
+    element: lazyPage(<NotFoundPage />),
   },
 ]);
 

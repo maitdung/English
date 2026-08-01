@@ -5,6 +5,7 @@ import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
 import { ApiError } from "../../../lib/api/api-client";
 import { getCoursesRequest } from "../../../lib/api/courses-api";
+import { practiceSets } from "../../practice/data/practiceCatalog";
 import type { CourseLevel, CourseListItem } from "../types/course";
 
 const levels: Array<"ALL" | CourseLevel> = [
@@ -36,6 +37,41 @@ const courseIcons: Record<CourseLevel, string> = {
   C2: "👑",
 };
 
+const offlineLevels: CourseLevel[] = [
+  "A1",
+  "A2",
+  "B1",
+  "B2",
+  "C1",
+  "C2",
+];
+
+const offlineCourseCatalog: CourseListItem[] = offlineLevels.map((level) => {
+  const matchingSets = practiceSets.filter((practiceSet) =>
+    level === "C2"
+      ? practiceSet.level === "C1"
+      : practiceSet.level === level,
+  );
+  const exerciseCount = matchingSets.reduce(
+    (total, practiceSet) => total + practiceSet.exercises.length,
+    0,
+  );
+
+  return {
+    id: `offline-${level.toLowerCase()}`,
+    slug: `offline-${level.toLowerCase()}`,
+    title: `Lộ trình thực hành ${level}`,
+    shortDescription:
+      "Các phiên luyện tương tác theo CEFR, có thể học ngay cả khi máy chủ tạm thời chưa kết nối.",
+    thumbnailUrl: null,
+    level,
+    estimatedHours: Math.max(1, Math.round((matchingSets.length * 10) / 60)),
+    publishedAt: new Date().toISOString(),
+    unitCount: matchingSets.length,
+    lessonCount: exerciseCount,
+  };
+});
+
 function CoursesPage() {
   const [courses, setCourses] = useState<CourseListItem[]>([]);
   const [searchValue, setSearchValue] = useState("");
@@ -45,6 +81,7 @@ function CoursesPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isOfflineCatalog, setIsOfflineCatalog] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -64,19 +101,32 @@ function CoursesPage() {
 
           if (!isCancelled) {
             setCourses(response.data);
+            setIsOfflineCatalog(false);
           }
         } catch (error) {
           if (isCancelled) {
             return;
           }
 
-          if (error instanceof ApiError) {
-            setErrorMessage(error.message);
-          } else {
-            setErrorMessage(
-              "Không thể tải danh sách khóa học. Vui lòng thử lại.",
-            );
-          }
+          const normalizedSearch = searchValue.trim().toLocaleLowerCase();
+          const fallbackCourses = offlineCourseCatalog.filter((course) => {
+            const matchesLevel =
+              selectedLevel === "ALL" || course.level === selectedLevel;
+            const matchesSearch =
+              !normalizedSearch ||
+              `${course.title} ${course.shortDescription ?? ""}`
+                .toLocaleLowerCase()
+                .includes(normalizedSearch);
+            return matchesLevel && matchesSearch;
+          });
+
+          setCourses(fallbackCourses);
+          setIsOfflineCatalog(true);
+          setErrorMessage(
+            error instanceof ApiError
+              ? "Máy chủ khóa học đang tạm thời không phản hồi. Bạn vẫn có thể học ngay bằng thư viện offline bên dưới."
+              : "Không thể kết nối máy chủ khóa học. Bạn vẫn có thể học ngay bằng thư viện offline bên dưới.",
+          );
         } finally {
           if (!isCancelled) {
             setIsLoading(false);
@@ -120,8 +170,9 @@ function CoursesPage() {
         </h1>
 
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-          Nội dung khóa học được tải trực tiếp từ hệ thống học tập, sắp xếp theo
-          trình độ CEFR từ A1 đến C2.
+          Nội dung được sắp xếp theo trình độ CEFR từ A1 đến C2. Nếu máy chủ
+          đang bảo trì, thư viện offline vẫn cho phép bạn bắt đầu các phiên luyện
+          tương tác ngay.
         </p>
       </section>
 
@@ -132,7 +183,7 @@ function CoursesPage() {
             {isLoading ? "—" : courses.length}
           </p>
           <p className="mt-5 text-xs font-semibold text-cyan-300">
-            Dữ liệu từ PostgreSQL
+            {isOfflineCatalog ? "Thư viện offline sẵn sàng" : "Theo tài khoản của bạn"}
           </p>
         </article>
 
@@ -219,14 +270,11 @@ function CoursesPage() {
         </div>
 
         {errorMessage && (
-          <div className="mt-6 rounded-3xl border border-red-400/20 bg-red-400/10 p-6">
-            <p className="font-bold text-red-300">Không thể tải khóa học</p>
-
-            <p className="mt-2 text-sm text-red-200/80">{errorMessage}</p>
-
-            <p className="mt-3 text-xs text-slate-400">
-              Kiểm tra backend có đang chạy ở cổng 3001 không.
+          <div className="mt-6 rounded-3xl border border-amber-400/20 bg-amber-400/[0.08] p-6">
+            <p className="font-bold text-amber-200">
+              {isOfflineCatalog ? "Đang dùng thư viện học offline" : "Không thể tải khóa học"}
             </p>
+            <p className="mt-2 text-sm leading-6 text-amber-100/75">{errorMessage}</p>
           </div>
         )}
 
@@ -241,7 +289,7 @@ function CoursesPage() {
           </div>
         )}
 
-        {!isLoading && !errorMessage && courses.length > 0 && (
+        {!isLoading && courses.length > 0 && (
           <div className="mt-6 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
             {courses.map((course) => (
               <article
@@ -304,10 +352,16 @@ function CoursesPage() {
                   </div>
 
                   <Link
-                    to={`/dashboard/courses/${course.slug}`}
+                    to={
+                      course.id.startsWith("offline-")
+                        ? "/dashboard/practice"
+                        : `/dashboard/courses/${course.slug}`
+                    }
                     className="premium-button mt-6 flex items-center justify-center rounded-2xl bg-cyan-400 px-5 py-3.5 text-sm font-black text-slate-950 transition hover:bg-cyan-300"
                   >
-                    Xem lộ trình học →
+                    {course.id.startsWith("offline-")
+                      ? "Mở thư viện luyện tập →"
+                      : "Xem lộ trình học →"}
                   </Link>
                 </div>
               </article>
@@ -315,7 +369,7 @@ function CoursesPage() {
           </div>
         )}
 
-        {!isLoading && !errorMessage && courses.length === 0 && (
+        {!isLoading && courses.length === 0 && (
           <div className="mt-6 rounded-3xl border border-dashed border-white/10 bg-slate-900/40 px-5 py-16 text-center">
             <div className="text-5xl">🔎</div>
 

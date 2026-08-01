@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
 
@@ -7,88 +8,76 @@ const toeicParts = [
     part: "Part 1",
     title: "Mô tả hình ảnh",
     questions: 6,
-    progress: 100,
-    score: 92,
     icon: "🖼️",
+    practiceSetId: "toeic-mini-mix",
   },
   {
     part: "Part 2",
     title: "Hỏi và đáp",
     questions: 25,
-    progress: 78,
-    score: 84,
     icon: "💬",
+    practiceSetId: "toeic-part-2-reflex",
   },
   {
     part: "Part 3",
     title: "Hội thoại",
     questions: 39,
-    progress: 54,
-    score: 76,
     icon: "🎧",
+    practiceSetId: "toeic-mini-mix",
   },
   {
     part: "Part 4",
     title: "Bài nói ngắn",
     questions: 30,
-    progress: 30,
-    score: 70,
     icon: "🎙️",
+    practiceSetId: "toeic-mini-mix",
   },
   {
     part: "Part 5",
     title: "Hoàn thành câu",
     questions: 30,
-    progress: 68,
-    score: 81,
     icon: "✍️",
+    practiceSetId: "toeic-part-5-sprint",
   },
   {
     part: "Part 6",
     title: "Hoàn thành đoạn văn",
     questions: 16,
-    progress: 42,
-    score: 74,
     icon: "📄",
+    practiceSetId: "toeic-mini-mix",
   },
   {
     part: "Part 7",
     title: "Đọc hiểu",
     questions: 54,
-    progress: 22,
-    score: 67,
     icon: "📚",
+    practiceSetId: "toeic-mini-mix",
   },
 ];
 
 const mockTests = [
   {
     id: 1,
-    title: "Đề thi thử TOEIC số 01",
-    duration: "120 phút",
-    questions: 200,
-    score: 725,
-    status: "Đã hoàn thành",
+    title: "TOEIC Mini Mix",
+    description: "Luyện nghe và đọc trong một phiên ngắn có chấm đáp án.",
+    practiceSetId: "toeic-mini-mix",
   },
   {
     id: 2,
-    title: "Đề thi thử TOEIC số 02",
-    duration: "120 phút",
-    questions: 200,
-    score: null,
-    status: "Chưa làm",
+    title: "Ôn tập TOEIC tổng hợp",
+    description: "Rà soát nhiều dạng câu hỏi trước khi luyện từng Part.",
+    practiceSetId: "toeic-mini-mix",
   },
   {
     id: 3,
-    title: "Mini Test Listening",
-    duration: "45 phút",
-    questions: 50,
-    score: 390,
-    status: "Đã hoàn thành",
+    title: "Listening Part 2 Reflex",
+    description: "Tăng phản xạ nghe câu hỏi và chọn câu trả lời phù hợp.",
+    practiceSetId: "toeic-part-2-reflex",
   },
 ];
 
 function ToeicPage() {
+  const navigate = useNavigate();
   const [targetScore, setTargetScore] = useState(800);
   const [selectedPart, setSelectedPart] = useState(toeicParts[1]);
 
@@ -105,8 +94,8 @@ function ToeicPage() {
           </h1>
 
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-            Luyện tập từng phần, theo dõi điểm số và làm đề thi thử theo cấu
-            trúc TOEIC hoàn chỉnh.
+            Luyện từng Part bằng các bộ câu hỏi tương tác, chấm đáp án và xem
+            giải thích ngay sau mỗi lượt làm.
           </p>
         </div>
 
@@ -114,23 +103,23 @@ function ToeicPage() {
           type="button"
           size="large"
           className="w-full sm:w-auto"
-          onClick={() => console.log("Bắt đầu thi thử")}
+          onClick={() => navigate("/dashboard/practice/toeic-mini-mix")}
         >
-          Bắt đầu thi thử →
+          Mở TOEIC Mini Mix →
         </Button>
       </section>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900 to-blue-500/10 p-5">
-          <p className="text-sm text-slate-400">Điểm hiện tại</p>
-          <p className="mt-2 text-4xl font-black">725</p>
+          <p className="text-sm text-slate-400">Bộ luyện sẵn sàng</p>
+          <p className="mt-2 text-4xl font-black">3</p>
           <p className="mt-5 text-xs font-semibold text-emerald-300">
-            +45 điểm trong tháng
+            TOEIC Mix · Part 2 · Part 5
           </p>
         </article>
 
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Mục tiêu</p>
+          <p className="text-sm text-slate-400">Mục tiêu tự chọn</p>
           <p className="mt-2 text-4xl font-black">{targetScore}</p>
 
           <select
@@ -147,17 +136,17 @@ function ToeicPage() {
 
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
           <p className="text-sm text-slate-400">Listening</p>
-          <p className="mt-2 text-4xl font-black">390</p>
+          <p className="mt-2 text-4xl font-black">Part 2</p>
           <p className="mt-5 text-xs font-semibold text-cyan-300">
-            Mục tiêu 450
+            Phản xạ hỏi và đáp
           </p>
         </article>
 
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
           <p className="text-sm text-slate-400">Reading</p>
-          <p className="mt-2 text-4xl font-black">335</p>
+          <p className="mt-2 text-4xl font-black">Part 5</p>
           <p className="mt-5 text-xs font-semibold text-violet-300">
-            Mục tiêu 350
+            Ngữ pháp và từ loại tốc độ
           </p>
         </article>
       </section>
@@ -189,7 +178,7 @@ function ToeicPage() {
                   </div>
 
                   <span className="rounded-lg bg-white/5 px-2 py-1 text-xs font-bold text-cyan-300">
-                    {item.score}%
+                    {item.questions} câu
                   </span>
                 </div>
 
@@ -200,15 +189,8 @@ function ToeicPage() {
                 <h3 className="mt-2 text-lg font-black">{item.title}</h3>
 
                 <p className="mt-2 text-sm text-slate-500">
-                  {item.questions} câu hỏi
+                  Chọn để mở bộ luyện phù hợp
                 </p>
-
-                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-800">
-                  <div
-                    className="h-full rounded-full bg-cyan-400"
-                    style={{ width: `${item.progress}%` }}
-                  />
-                </div>
               </button>
             ))}
           </div>
@@ -236,17 +218,15 @@ function ToeicPage() {
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <div className="rounded-2xl bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-500">Tiến độ</p>
+              <p className="text-sm text-slate-500">Cấu trúc Part</p>
               <p className="mt-2 text-2xl font-black">
-                {selectedPart.progress}%
+                {selectedPart.questions} câu
               </p>
             </div>
 
             <div className="rounded-2xl bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-500">Độ chính xác</p>
-              <p className="mt-2 text-2xl font-black">
-                {selectedPart.score}%
-              </p>
+              <p className="text-sm text-slate-500">Hình thức</p>
+              <p className="mt-2 text-2xl font-black">Có giải thích</p>
             </div>
           </div>
 
@@ -255,7 +235,7 @@ function ToeicPage() {
             fullWidth
             className="mt-6"
             onClick={() =>
-              console.log("Luyện tập:", selectedPart.part)
+              navigate(`/dashboard/practice/${selectedPart.practiceSetId}`)
             }
           >
             Luyện {selectedPart.part}
@@ -265,9 +245,9 @@ function ToeicPage() {
 
       <section className="mt-6 rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
         <div>
-          <h2 className="text-xl font-black">Đề thi thử gần đây</h2>
+          <h2 className="text-xl font-black">Bộ luyện TOEIC đề xuất</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Luyện tập trong điều kiện giống kỳ thi thật
+            Chọn một bộ luyện thật để bắt đầu và nhận phản hồi ngay
           </p>
         </div>
 
@@ -280,24 +260,22 @@ function ToeicPage() {
               <div>
                 <h3 className="font-black">{test.title}</h3>
                 <p className="mt-2 text-sm text-slate-500">
-                  {test.duration} · {test.questions} câu hỏi
+                  {test.description}
                 </p>
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="sm:text-right">
-                  <p className="text-xs text-slate-500">{test.status}</p>
-                  <p className="mt-1 font-black text-cyan-300">
-                    {test.score ? `${test.score} điểm` : "Chưa có điểm"}
-                  </p>
-                </div>
+                <p className="text-sm font-bold text-cyan-300 sm:text-right">
+                  Chấm và giải thích sau mỗi câu
+                </p>
 
                 <Button
                   type="button"
-                  variant={test.score ? "secondary" : "primary"}
-                  onClick={() => console.log("Mở đề:", test.title)}
+                  onClick={() =>
+                    navigate(`/dashboard/practice/${test.practiceSetId}`)
+                  }
                 >
-                  {test.score ? "Làm lại" : "Bắt đầu"}
+                  Mở bộ luyện
                 </Button>
               </div>
             </article>

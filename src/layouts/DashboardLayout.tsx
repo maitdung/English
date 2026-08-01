@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   NavLink,
   Outlet,
@@ -9,7 +9,7 @@ import { useAuth } from "../features/auth/context/AuthContext";
 
 const navigationItems = [
   {
-    label: "Tổng quan",
+    label: "Hôm nay",
     path: "/dashboard",
     icon: "🏠",
     end: true,
@@ -20,9 +20,9 @@ const navigationItems = [
     icon: "🗺️",
   },
   {
-    label: "Phòng luyện kỹ năng",
-    path: "/dashboard/skills",
-    icon: "✨",
+    label: "Thư viện luyện tập",
+    path: "/dashboard/practice",
+    icon: "⚡",
   },
   {
     label: "Khóa học",
@@ -35,19 +35,9 @@ const navigationItems = [
     icon: "📖",
   },
   {
-    label: "Flashcard",
-    path: "/dashboard/flashcards",
-    icon: "🃏",
-  },
-  {
     label: "Luyện nghe",
     path: "/dashboard/listening",
     icon: "🎧",
-  },
-  {
-    label: "Quiz",
-    path: "/dashboard/quiz",
-    icon: "✅",
   },
   {
     label: "Luyện thi TOEIC",
@@ -63,11 +53,12 @@ const navigationItems = [
 
 function DashboardLayout() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshCurrentUser } = useAuth();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [dailyGoal, setDailyGoal] = useState("45");
+  const hasRefreshedSessionRef = useRef(false);
 
   const visibleNavigationItems =
     user?.role === "ADMIN"
@@ -80,6 +71,18 @@ function DashboardLayout() {
           },
         ]
       : navigationItems;
+
+  useEffect(() => {
+    if (!user || hasRefreshedSessionRef.current) {
+      return;
+    }
+
+    hasRefreshedSessionRef.current = true;
+
+    void refreshCurrentUser().catch(() => {
+      // Giữ dashboard hoạt động ngay cả khi lần đồng bộ này thất bại.
+    });
+  }, [refreshCurrentUser, user]);
 
   useEffect(() => {
     const readDailyGoal = () => {
@@ -195,19 +198,13 @@ function DashboardLayout() {
         <div className="border-t border-white/10 p-4">
           <div className="rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 p-4">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
-              Mục tiêu hôm nay
+              Mục tiêu mỗi ngày
             </p>
 
-            <div className="mt-3 flex items-end justify-between">
-              <p className="text-2xl font-black">32 phút</p>
-              <p className="text-xs font-bold text-slate-400">
-                / {dailyGoal} phút
-              </p>
-            </div>
-
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-              <div className="h-full w-[71%] rounded-full bg-cyan-400" />
-            </div>
+            <p className="mt-3 text-2xl font-black">{dailyGoal} phút</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Hoàn thành một phiên luyện để giữ nhịp học hôm nay.
+            </p>
           </div>
         </div>
       </aside>

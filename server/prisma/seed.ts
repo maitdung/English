@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 import { PrismaPg } from '@prisma/adapter-pg';
+import * as bcrypt from 'bcrypt';
 
 import {
   CourseLevel,
@@ -8,6 +9,8 @@ import {
   ExerciseType,
   LessonType,
   PrismaClient,
+  UserRole,
+  UserStatus,
 } from '../generated/prisma/client';
 
 import { ContentImporter, courses, serializeError } from './content';
@@ -25,6 +28,41 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({
   adapter,
 });
+
+const ADMIN_TEST_EMAIL = 'test+1785464559@example.com';
+const ADMIN_TEST_PASSWORD = 'NewPass123!';
+
+async function seedAdminTestAccount(): Promise<void> {
+  const passwordHash = await bcrypt.hash(ADMIN_TEST_PASSWORD, 12);
+
+  await prisma.user.upsert({
+    where: {
+      email: ADMIN_TEST_EMAIL,
+    },
+    create: {
+      email: ADMIN_TEST_EMAIL,
+      passwordHash,
+      firstName: 'Test',
+      lastName: 'User',
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    },
+    update: {
+      passwordHash,
+      firstName: 'Test',
+      lastName: 'User',
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+      refreshTokenHash: null,
+      passwordResetTokenHash: null,
+      passwordResetExpiresAt: null,
+    },
+  });
+
+  console.log(`✅ Đã đảm bảo tài khoản admin test: ${ADMIN_TEST_EMAIL}`);
+}
 
 function readBooleanEnvironment(name: string, defaultValue: boolean): boolean {
   const rawValue = process.env[name];
@@ -855,6 +893,7 @@ async function main(): Promise<void> {
   console.log(`🔎 Validate content: ${environment.validate ? 'yes' : 'no'}`);
 
   if (!environment.dryRun) {
+    await seedAdminTestAccount();
     await seedEnglishA1();
   } else {
     console.log(

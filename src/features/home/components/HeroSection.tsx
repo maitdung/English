@@ -2,16 +2,40 @@ import { Link } from "react-router-dom";
 
 const statistics = [
   {
-    value: "6",
-    label: "Kỹ năng cốt lõi",
+    value: "7",
+    label: "Kỹ năng tương tác",
   },
   {
     value: "A1–C2",
     label: "Khung trình độ",
   },
   {
-    value: "24/7",
-    label: "Học theo nhịp riêng",
+    value: "500+",
+    label: "Bài tập trong hệ thống",
+  },
+];
+
+const dailyMix = [
+  {
+    icon: "🎧",
+    title: "Nghe & bắt chi tiết",
+    meta: "B1 · 4 lượt · 8 phút",
+    color: "bg-blue-400/15 text-blue-100",
+    status: "Tiếp theo",
+  },
+  {
+    icon: "✦",
+    title: "Xếp câu điều kiện",
+    meta: "Ngữ pháp · 5 lượt · 7 phút",
+    color: "bg-rose-400/15 text-rose-100",
+    status: "Ôn lại",
+  },
+  {
+    icon: "🗣️",
+    title: "Shadowing tại công sở",
+    meta: "Nói · 4 lượt · 6 phút",
+    color: "bg-violet-400/15 text-violet-100",
+    status: "Mới",
   },
 ];
 
@@ -26,20 +50,20 @@ function HeroSection() {
         <div className="reveal-up">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200 shadow-lg shadow-cyan-500/5 backdrop-blur">
             <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(103,232,249,.9)]" />
-            English mastery system dành cho người Việt
+            7 kỹ năng · A1–C2 · phản hồi tức thì
           </div>
 
           <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            Học sâu hơn.
+            Học ít lan man hơn.
             <span className="animate-gradient block bg-gradient-to-r from-cyan-200 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-              Dùng tiếng Anh tự tin hơn.
+              Thực hành nhiều hơn.
             </span>
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
-            Một không gian học toàn diện cho từ vựng, nghe, nói, đọc, viết,
-            ngữ pháp và luyện thi. Nội dung được chia theo cấp độ, đi cùng bài
-            tập, kiểm tra và tiến độ cá nhân rõ ràng.
+            Lộ trình học tiếng Anh dành cho người Việt với bài nghe, nói, đọc,
+            viết, ngữ pháp, từ vựng và TOEIC thật sự tương tác. Mỗi ngày hệ thống
+            chọn một phiên ngắn, chấm ngay và lưu đúng điểm bạn cần ôn.
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
@@ -51,10 +75,10 @@ function HeroSection() {
             </Link>
 
             <a
-              href="#roadmap"
+              href="#practice-demo"
               className="rounded-2xl border border-white/15 bg-white/5 px-7 py-4 font-bold text-white transition hover:border-white/25 hover:bg-white/10"
             >
-              Khám phá phương pháp
+              Thử bài tập ngay
             </a>
           </div>
 
@@ -78,58 +102,58 @@ function HeroSection() {
           <div className="premium-surface relative rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Xin chào, MTD 👋</p>
-                <h2 className="mt-1 text-xl font-bold">Tiếp tục hành trình</h2>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-violet-600 font-bold">
-                M
-              </div>
-            </div>
-
-            <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-400">Mục tiêu hôm nay</p>
-                  <p className="mt-1 font-bold">Hoàn thành 3 bài học</p>
-                </div>
-
-                <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-                  67%
-                </span>
-              </div>
-
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
-                <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" />
-              </div>
-
-              <p className="mt-3 text-xs text-slate-500">
-                Bạn đã hoàn thành 2 trên 3 bài học.
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="animate-float rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/15 to-transparent p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/20 text-xl">
-                  🎧
-                </div>
-
-                <p className="mt-5 text-sm text-slate-400">Bài học tiếp theo</p>
-                <p className="mt-1 font-bold">Listening Part 2</p>
-                <p className="mt-2 text-xs text-slate-500">12 phút · Cơ bản</p>
-              </div>
-
-              <div className="animate-float-delayed rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-transparent p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/20 text-xl">
-                  🔥
-                </div>
-
-                <p className="mt-5 text-sm text-slate-400">Chuỗi học tập</p>
-                <p className="mt-1 text-2xl font-black">12 ngày</p>
-                <p className="mt-2 text-xs text-slate-500">
-                  Kỷ lục của bạn: 18 ngày
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
+                  Bản xem trước lộ trình
                 </p>
+                <h2 className="mt-2 text-xl font-black">Daily Mix · 21 phút</h2>
               </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 via-blue-500 to-violet-500 font-black text-slate-950 shadow-lg shadow-cyan-500/15">
+                3
+              </div>
+            </div>
+
+            <div className="mt-7 space-y-3">
+              {dailyMix.map((item, index) => (
+                <div
+                  key={item.title}
+                  className={`group flex items-center gap-4 rounded-2xl border p-4 transition ${
+                    index === 0
+                      ? "border-cyan-300/25 bg-cyan-300/[0.07]"
+                      : "border-white/10 bg-white/[0.025]"
+                  }`}
+                >
+                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg ${item.color}`}>
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-black">
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block text-xs text-slate-500">
+                      {item.meta}
+                    </span>
+                  </span>
+                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-black text-slate-400">
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 grid grid-cols-[1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+              <div>
+                <div className="flex items-center justify-between gap-3 text-xs font-bold">
+                  <span className="text-slate-400">Mục tiêu 45 phút</span>
+                  <span className="text-emerald-300">21 phút đã xếp</span>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full w-[47%] rounded-full bg-gradient-to-r from-cyan-300 to-violet-400" />
+                </div>
+              </div>
+              <span className="text-2xl" aria-label="Chuỗi học tập">
+                🔥
+              </span>
             </div>
 
             <Link

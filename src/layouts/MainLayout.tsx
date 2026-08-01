@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 
 import { useAuth } from "../features/auth/context/AuthContext";
 
 function MainLayout() {
   const { isAuthenticated } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -14,7 +16,7 @@ function MainLayout() {
               M
             </div>
 
-            <div>
+            <div className="hidden sm:block">
               <p className="text-lg font-black leading-none">MTD Lingo Pro</p>
               <p className="mt-1 text-xs text-slate-400">
                 Learn • Practice • Master
@@ -61,12 +63,64 @@ function MainLayout() {
                   to="/register"
                   className="premium-button rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
                 >
-                  Học miễn phí
+                  <span className="sm:hidden">Học ngay</span>
+                  <span className="hidden sm:inline">Học miễn phí</span>
                 </Link>
               </>
             )}
+            <button
+              type="button"
+              aria-label={isMenuOpen ? "Đóng menu" : "Mở menu"}
+              aria-expanded={isMenuOpen}
+              onClick={() => setIsMenuOpen((value) => !value)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-lg text-slate-300 md:hidden"
+            >
+              {isMenuOpen ? "×" : "☰"}
+            </button>
           </div>
         </div>
+
+        {isMenuOpen && (
+          <nav className="border-t border-white/10 bg-slate-950/95 px-5 py-4 shadow-2xl md:hidden">
+            <div className="mx-auto grid max-w-7xl gap-1">
+              {[
+                ["Trang chủ", "/"],
+                ["Thử bài tập", "/#practice-demo"],
+                ["Kỹ năng", "/#skills"],
+                ["Lộ trình", "/#roadmap"],
+              ].map(([label, href]) =>
+                href === "/" ? (
+                  <Link
+                    key={label}
+                    to="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="rounded-xl px-4 py-3 text-sm font-bold text-slate-300 transition hover:bg-white/5 hover:text-white"
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <a
+                    key={label}
+                    href={href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="rounded-xl px-4 py-3 text-sm font-bold text-slate-300 transition hover:bg-white/5 hover:text-white"
+                  >
+                    {label}
+                  </a>
+                ),
+              )}
+              {!isAuthenticated && (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="mt-2 rounded-xl border border-white/10 px-4 py-3 text-center text-sm font-black text-cyan-300"
+                >
+                  Đăng nhập
+                </Link>
+              )}
+            </div>
+          </nav>
+        )}
       </header>
 
       <main>
