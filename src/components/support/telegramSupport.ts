@@ -1,6 +1,6 @@
 // The public handle supplied by the product owner. It is deliberately only a
 // normal Telegram link; a bot token must never be shipped to the browser.
-const FALLBACK_TELEGRAM_SUPPORT_URL = "https://t.me/maituandung";
+const FALLBACK_TELEGRAM_SUPPORT_URL = "https://t.me/maituandung004";
 const TELEGRAM_HOSTS = new Set([
   "t.me",
   "www.t.me",

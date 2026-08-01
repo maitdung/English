@@ -87,10 +87,10 @@ Frontend:
 
 ```env
 VITE_API_URL=http://localhost:3001/api
-VITE_TELEGRAM_SUPPORT_URL=https://t.me/maituandung
+VITE_TELEGRAM_SUPPORT_URL=https://t.me/maituandung004
 ```
 
-Dashboard và landing có nút chat Telegram công khai tới `@maituandung`. Nút này
+Dashboard và landing có nút chat Telegram công khai tới `@maituandung004`. Nút này
 chỉ mở cuộc trò chuyện và có thể điền sẵn nội dung; nếu cần gửi thông báo tự
 động, hãy tạo bot ở backend với `TELEGRAM_BOT_TOKEN` và `TELEGRAM_CHAT_ID`,
 không đưa hai giá trị đó vào biến `VITE_*` hay mã frontend.

@@ -149,7 +149,7 @@ npm run deploy:check        # Run pre-deployment checks (build + lint + backend 
 ### Frontend (.env)
 ```
 VITE_API_URL=http://localhost:3001/api
-VITE_TELEGRAM_SUPPORT_URL=https://t.me/maituandung
+VITE_TELEGRAM_SUPPORT_URL=https://t.me/maituandung004
 ```
 
 ### Backend (server/.env)
