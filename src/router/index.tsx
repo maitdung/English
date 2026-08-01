@@ -20,9 +20,7 @@ const CourseDetailPage = lazy(
 const CourseLessonPage = lazy(
   () => import("../features/courses/pages/CourseLessonPage"),
 );
-const CoursesPage = lazy(
-  () => import("../features/courses/pages/CoursesPage"),
-);
+const CoursesPage = lazy(() => import("../features/courses/pages/CoursesPage"));
 const AdminDashboardPage = lazy(
   () => import("../features/admin/pages/AdminDashboardPage"),
 );
@@ -30,9 +28,7 @@ const DashboardPage = lazy(
   () => import("../features/dashboard/pages/DashboardPage"),
 );
 const HomePage = lazy(() => import("../features/home/pages/HomePage"));
-const NotFoundPage = lazy(
-  () => import("../features/home/pages/NotFoundPage"),
-);
+const NotFoundPage = lazy(() => import("../features/home/pages/NotFoundPage"));
 const FlashcardsPage = lazy(
   () => import("../features/learning-engine/pages/FlashcardsPage"),
 );
@@ -57,9 +53,10 @@ const PracticeLibraryPage = lazy(
 const PracticeSessionPage = lazy(
   () => import("../features/practice/pages/PracticeSessionPage"),
 );
-const ProfilePage = lazy(
-  () => import("../features/profile/pages/ProfilePage"),
+const KnowledgeBooksPage = lazy(
+  () => import("../features/practice/pages/KnowledgeBooksPage"),
 );
+const ProfilePage = lazy(() => import("../features/profile/pages/ProfilePage"));
 const SkillsHubPage = lazy(
   () => import("../features/skills/pages/SkillsHubPage"),
 );
@@ -142,6 +139,10 @@ export const router = createBrowserRouter([
           {
             path: "practice/:setId",
             element: lazyPage(<PracticeSessionPage />),
+          },
+          {
+            path: "books",
+            element: lazyPage(<KnowledgeBooksPage />),
           },
           {
             path: "courses",

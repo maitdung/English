@@ -1,40 +1,87 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
 import { ApiError } from "../../../lib/api/api-client";
 import {
   getAdminWebsiteSettingsRequest,
+  triggerAdminWebsiteDeployRequest,
   updateAdminWebsiteSettingsRequest,
   type AdminWebsiteSettings as AdminWebsiteSettingsPayload,
 } from "../../../lib/api/admin-settings-api";
 
+const PRODUCTION_FRONTEND_URL = "https://english-c0h.pages.dev";
+const PRODUCTION_API_URL = "https://english-3t66.onrender.com/api";
+
 const defaultSettings: AdminWebsiteSettingsPayload = {
-  frontendUrl: "https://your-domain.com",
-  apiUrl: "https://api.your-domain.com/api",
+  frontendUrl: PRODUCTION_FRONTEND_URL,
+  apiUrl: PRODUCTION_API_URL,
   buildCommand: "npm run build",
   backendCommand: "cd server && npm run build && npm run start:prod",
 };
 
-function AdminWebsiteSettingsPanel() {
-  const [settings, setSettings] = useState<AdminWebsiteSettingsPayload>(defaultSettings);
-  const [statusMessage, setStatusMessage] = useState("");
+type StatusNotice = {
+  tone: "success" | "error";
+  message: string;
+};
+
+type AdminWebsiteSettingsProps = {
+  runWithSessionRetry: <Result>(
+    request: () => Promise<Result>,
+  ) => Promise<Result>;
+};
+
+function applyProductionUrlDefaults(
+  settings: AdminWebsiteSettingsPayload,
+): AdminWebsiteSettingsPayload {
+  const frontendUrl = settings.frontendUrl.trim();
+  const apiUrl = settings.apiUrl.trim();
+
+  return {
+    ...settings,
+    frontendUrl:
+      !frontendUrl || frontendUrl.includes("your-domain.com")
+        ? PRODUCTION_FRONTEND_URL
+        : frontendUrl,
+    apiUrl:
+      !apiUrl || apiUrl.includes("your-domain.com")
+        ? PRODUCTION_API_URL
+        : apiUrl,
+  };
+}
+
+function getActionErrorMessage(reason: unknown, fallback: string): string {
+  return reason instanceof ApiError ? reason.message : fallback;
+}
+
+function AdminWebsiteSettingsPanel({
+  runWithSessionRetry,
+}: AdminWebsiteSettingsProps) {
+  const [settings, setSettings] =
+    useState<AdminWebsiteSettingsPayload>(defaultSettings);
+  const [statusNotice, setStatusNotice] = useState<StatusNotice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [isDeployCoolingDown, setIsDeployCoolingDown] = useState(false);
+  const deployInFlightRef = useRef(false);
+  const deployCooldownTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    getAdminWebsiteSettingsRequest()
+    runWithSessionRetry(getAdminWebsiteSettingsRequest)
       .then((response) => {
-        if (!cancelled) setSettings(response);
+        if (!cancelled) setSettings(applyProductionUrlDefaults(response));
       })
       .catch((reason: unknown) => {
         if (!cancelled) {
-          setStatusMessage(
-            reason instanceof ApiError
-              ? reason.message
-              : "Không tải được cấu hình admin.",
-          );
+          setStatusNotice({
+            tone: "error",
+            message: getActionErrorMessage(
+              reason,
+              "Không tải được cấu hình admin.",
+            ),
+          });
         }
       })
       .finally(() => {
@@ -44,7 +91,16 @@ function AdminWebsiteSettingsPanel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [runWithSessionRetry]);
+
+  useEffect(
+    () => () => {
+      if (deployCooldownTimerRef.current !== null) {
+        window.clearTimeout(deployCooldownTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const envPreview = useMemo(
     () => `VITE_API_URL=${settings.apiUrl.replace(/\/$/, "")}`,
@@ -59,22 +115,117 @@ function AdminWebsiteSettingsPanel() {
     ["Verify health", `${settings.apiUrl.replace(/\/api$/, "")}/api/health`],
   ];
 
-  const updateSetting = (key: keyof AdminWebsiteSettingsPayload, value: string) => {
+  const updateSetting = (
+    key: keyof AdminWebsiteSettingsPayload,
+    value: string,
+  ) => {
     setSettings((currentSettings) => ({
       ...currentSettings,
       [key]: value,
     }));
-    setStatusMessage("");
+    setStatusNotice(null);
   };
 
   const saveSettings = async () => {
-    await updateAdminWebsiteSettingsRequest(settings);
-    setStatusMessage("Đã lưu cấu hình website lên server.");
+    setStatusNotice(null);
+
+    try {
+      const savedSettings = await runWithSessionRetry(() =>
+        updateAdminWebsiteSettingsRequest(settings),
+      );
+      setSettings(applyProductionUrlDefaults(savedSettings));
+      setStatusNotice({
+        tone: "success",
+        message: "Đã lưu cấu hình website lên server.",
+      });
+    } catch (reason) {
+      setStatusNotice({
+        tone: "error",
+        message: getActionErrorMessage(
+          reason,
+          "Không thể lưu cấu hình website.",
+        ),
+      });
+    }
   };
 
   const copyEnv = async () => {
-    await navigator.clipboard.writeText(envPreview);
-    setStatusMessage("Đã copy cấu hình .env.production.");
+    setStatusNotice(null);
+
+    try {
+      await navigator.clipboard.writeText(envPreview);
+      setStatusNotice({
+        tone: "success",
+        message: "Đã copy cấu hình .env.production.",
+      });
+    } catch {
+      setStatusNotice({
+        tone: "error",
+        message: "Không thể copy cấu hình trên trình duyệt này.",
+      });
+    }
+  };
+
+  const startDeployCooldown = () => {
+    setIsDeployCoolingDown(true);
+
+    if (deployCooldownTimerRef.current !== null) {
+      window.clearTimeout(deployCooldownTimerRef.current);
+    }
+
+    deployCooldownTimerRef.current = window.setTimeout(() => {
+      setIsDeployCoolingDown(false);
+      deployCooldownTimerRef.current = null;
+    }, 60_000);
+  };
+
+  const deployWebsite = async () => {
+    if (deployInFlightRef.current) return;
+
+    const confirmed = window.confirm(
+      `Triển khai bản mới nhất đã được đẩy lên nhánh develop tới ${PRODUCTION_FRONTEND_URL}? Quá trình có thể mất vài phút.`,
+    );
+
+    if (!confirmed) return;
+
+    deployInFlightRef.current = true;
+    setIsDeploying(true);
+    setStatusNotice(null);
+
+    try {
+      const result = await runWithSessionRetry(
+        triggerAdminWebsiteDeployRequest,
+      );
+
+      if (result.accepted) {
+        startDeployCooldown();
+      }
+
+      setStatusNotice({
+        tone: result.accepted ? "success" : "error",
+        message: result.accepted
+          ? `${result.message} Bản mới nhất trên develop đang được triển khai lên ${PRODUCTION_FRONTEND_URL}.`
+          : "Cloudflare Pages chưa chấp nhận yêu cầu triển khai.",
+      });
+    } catch (reason) {
+      if (reason instanceof ApiError && reason.status === 429) {
+        startDeployCooldown();
+      }
+
+      setStatusNotice({
+        tone: "error",
+        message:
+          reason instanceof ApiError && reason.status === 429
+            ? "Một yêu cầu triển khai vừa được gửi. Vui lòng đợi một phút trước khi thử lại."
+            : getActionErrorMessage(
+                reason,
+                "Không thể gửi yêu cầu triển khai website.",
+              ),
+      });
+    } finally {
+      deployInFlightRef.current = false;
+      setIsDeploying(false);
+    }
   };
 
   return (
@@ -101,7 +252,11 @@ function AdminWebsiteSettingsPanel() {
           >
             Copy .env
           </Button>
-          <Button type="button" size="small" onClick={() => void saveSettings()}>
+          <Button
+            type="button"
+            size="small"
+            onClick={() => void saveSettings()}
+          >
             Lưu setting
           </Button>
         </div>
@@ -111,20 +266,57 @@ function AdminWebsiteSettingsPanel() {
         <p className="mt-4 text-sm text-slate-500">Đang tải cấu hình...</p>
       )}
 
+      <div className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.06] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
+        <div>
+          <p className="text-sm font-black text-white">
+            Triển khai website production
+          </p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-400">
+            Cloudflare Pages sẽ lấy bản mới nhất đã được đẩy lên nhánh develop.
+            Thông tin xác thực triển khai được giữ an toàn trên backend.
+          </p>
+        </div>
+        <Button
+          type="button"
+          className="mt-4 shrink-0 sm:mt-0"
+          onClick={() => void deployWebsite()}
+          isLoading={isDeploying}
+          disabled={isLoading || isDeploying || isDeployCoolingDown}
+        >
+          {isDeployCoolingDown
+            ? "Đã gửi — chờ 1 phút"
+            : "Triển khai lên english-c0h.pages.dev"}
+        </Button>
+      </div>
+
+      {statusNotice && (
+        <p
+          role={statusNotice.tone === "error" ? "alert" : "status"}
+          aria-live={statusNotice.tone === "error" ? "assertive" : "polite"}
+          className={`mt-4 rounded-2xl border px-4 py-3 text-sm font-semibold ${
+            statusNotice.tone === "error"
+              ? "border-red-400/25 bg-red-400/10 text-red-300"
+              : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+          }`}
+        >
+          {statusNotice.message}
+        </p>
+      )}
+
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <Input
           id="admin-frontend-url"
           label="Frontend production URL"
           value={settings.frontendUrl}
           onChange={(event) => updateSetting("frontendUrl", event.target.value)}
-          placeholder="https://your-domain.com"
+          placeholder={PRODUCTION_FRONTEND_URL}
         />
         <Input
           id="admin-api-url"
           label="Backend API production URL"
           value={settings.apiUrl}
           onChange={(event) => updateSetting("apiUrl", event.target.value)}
-          placeholder="https://api.your-domain.com/api"
+          placeholder={PRODUCTION_API_URL}
         />
         <Input
           id="admin-build-command"
@@ -173,12 +365,6 @@ function AdminWebsiteSettingsPanel() {
           </div>
         </div>
       </div>
-
-      {statusMessage && (
-        <p className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-300">
-          {statusMessage}
-        </p>
-      )}
     </section>
   );
 }

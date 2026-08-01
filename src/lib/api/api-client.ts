@@ -50,7 +50,68 @@ function getErrorMessage(
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
   accessToken?: string | null;
+  networkRetryCount?: number;
+  networkRetryStatusCodes?: readonly number[];
 };
+
+const NETWORK_RETRY_DELAY_MS = 1_500;
+const MAX_NETWORK_RETRY_DELAY_MS = 12_000;
+const MAX_NETWORK_RETRY_COUNT = 6;
+
+function wait(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, delayMs);
+  });
+}
+
+function createNetworkError(): ApiError {
+  return new ApiError(
+    "Kết nối tới máy chủ bị gián đoạn. Máy chủ có thể đang khởi động hoặc mạng chưa ổn định; vui lòng đợi một chút rồi thử lại.",
+    0,
+    null,
+  );
+}
+
+async function fetchWithNetworkRetry(
+  url: string,
+  init: RequestInit,
+  retryCount: number,
+  retryStatusCodes: readonly number[],
+): Promise<Response> {
+  const normalizedRetryCount = Number.isFinite(retryCount)
+    ? Math.min(MAX_NETWORK_RETRY_COUNT, Math.max(0, Math.floor(retryCount)))
+    : 0;
+
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const response = await fetch(url, init);
+
+      if (
+        attempt >= normalizedRetryCount ||
+        !retryStatusCodes.includes(response.status)
+      ) {
+        return response;
+      }
+
+      try {
+        await response.body?.cancel();
+      } catch {
+        // Việc đóng body lỗi không được ngăn lần thử health tiếp theo.
+      }
+    } catch {
+      if (attempt >= normalizedRetryCount || init.signal?.aborted) {
+        throw createNetworkError();
+      }
+    }
+
+    await wait(
+      Math.min(
+        NETWORK_RETRY_DELAY_MS * 2 ** attempt,
+        MAX_NETWORK_RETRY_DELAY_MS,
+      ),
+    );
+  }
+}
 
 export async function apiRequest<T>(
   path: string,
@@ -59,6 +120,8 @@ export async function apiRequest<T>(
   const {
     body,
     accessToken,
+    networkRetryCount = 0,
+    networkRetryStatusCodes = [],
     headers: customHeaders,
     ...requestOptions
   } = options;
@@ -75,21 +138,16 @@ export async function apiRequest<T>(
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  let response: Response;
-
-  try {
-    response = await fetch(`${API_URL}${path}`, {
+  const response = await fetchWithNetworkRetry(
+    `${API_URL}${path}`,
+    {
       ...requestOptions,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
-    });
-  } catch {
-    throw new ApiError(
-      "Không thể kết nối tới máy chủ. Hãy kiểm tra backend đang chạy.",
-      0,
-      null,
-    );
-  }
+    },
+    networkRetryCount,
+    networkRetryStatusCodes,
+  );
 
   const contentType = response.headers.get("content-type");
   const hasJsonBody = contentType?.includes("application/json");
@@ -104,8 +162,7 @@ export async function apiRequest<T>(
 
   if (!response.ok) {
     const errorPayload =
-      typeof responsePayload === "object" &&
-      responsePayload !== null
+      typeof responsePayload === "object" && responsePayload !== null
         ? (responsePayload as ApiErrorPayload)
         : null;
 

@@ -87,7 +87,13 @@ Frontend:
 
 ```env
 VITE_API_URL=http://localhost:3001/api
+VITE_TELEGRAM_SUPPORT_URL=https://t.me/maituandung
 ```
+
+Dashboard và landing có nút chat Telegram công khai tới `@maituandung`. Nút này
+chỉ mở cuộc trò chuyện và có thể điền sẵn nội dung; nếu cần gửi thông báo tự
+động, hãy tạo bot ở backend với `TELEGRAM_BOT_TOKEN` và `TELEGRAM_CHAT_ID`,
+không đưa hai giá trị đó vào biến `VITE_*` hay mã frontend.
 
 Backend xem đầy đủ trong `server/.env.example`. Khi triển khai thật:
 
@@ -111,7 +117,9 @@ npm run content:stats
 
 Học liệu được quản lý trong `server/prisma/content`. Import mặc định không xóa
 toàn bộ dữ liệu; mỗi khóa học được upsert và mỗi bài được cập nhật trong
-transaction.
+transaction. Làm giàu từ vựng qua API công cộng mặc định được tắt để CI/deploy
+ổn định; chỉ đặt `ENABLE_VOCABULARY_ENRICHMENT=true` khi chủ động chạy import và
+chấp nhận thời gian chờ từ dịch vụ bên ngoài.
 
 ## Kiểm tra chất lượng
 
@@ -154,7 +162,7 @@ npm run deploy:check
 - Deploy lên Cloudflare Pages
 - Build command: `npm run build`
 - Output directory: `dist`
-- Env: `VITE_API_URL=https://api.your-domain.com/api`
+- Env: `VITE_API_URL=https://english-3t66.onrender.com/api`
 
 4. Backend:
 
@@ -162,6 +170,15 @@ npm run deploy:check
 - Chạy `npx prisma migrate deploy`
 - Chạy `npm run seed:content`
 - Start: `npm run start:prod`
+
+5. Nút triển khai trong trang quản trị:
+
+- Trong Cloudflare Pages, tạo Deploy Hook cho nhánh `develop`.
+- Lưu URL hook vào biến bí mật `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` trên Render.
+- Không đặt URL hook trong biến `VITE_*` hoặc mã frontend.
+- Sau đó ADMIN có thể vào phần **Cấu hình website** và bấm
+  **Triển khai lên english-c0h.pages.dev** để build lại commit mới nhất đã được
+  push lên `develop`.
 
 Xem checklist đầy đủ trong [`docs/DEPLOYMENT_FINAL.md`](/Users/mtd/Downloads/englishpro/mtd-lingo-pro/docs/DEPLOYMENT_FINAL.md).
 

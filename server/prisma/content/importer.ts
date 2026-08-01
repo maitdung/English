@@ -70,6 +70,7 @@ export class ContentImporter {
   ) {
     this.repository = createContentRepository(prisma, {
       verbose: options.verbose,
+      enableApiLogging: options.verbose,
     });
   }
 

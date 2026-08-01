@@ -10,7 +10,8 @@ import {
 } from '../../generated/prisma/client';
 
 import { mapCourse, mapExercises, mapLesson, mapVocabulary } from './mapper';
-import type { Course, Lesson } from './types';
+import { ExternalLanguageApiService } from './services/external-language-api.service';
+import type { Course, Lesson, VocabularyItem } from './types';
 
 const CONTENT_UNIT_ORDER_INDEX = 99;
 const CONTENT_UNIT_TITLE = 'Content Engine Lessons';
@@ -23,6 +24,7 @@ export type PrismaTransactionClient = Parameters<
 
 export interface ContentRepositoryOptions {
   verbose?: boolean;
+  enableApiLogging?: boolean;
 }
 
 export interface ExistingContentStats {
@@ -42,10 +44,16 @@ export interface ImportCourseResult {
 }
 
 export class ContentRepository {
+  private readonly apiService: ExternalLanguageApiService;
+
   constructor(
     private readonly prisma: PrismaClient,
     private readonly options: ContentRepositoryOptions = {},
-  ) {}
+  ) {
+    this.apiService = new ExternalLanguageApiService(
+      options.enableApiLogging ?? options.verbose ?? false,
+    );
+  }
 
   async getStats(): Promise<ExistingContentStats> {
     const [courses, units, lessons, vocabularies, exercises] =
@@ -81,9 +89,11 @@ export class ContentRepository {
   }
 
   async importCourse(course: Course): Promise<ImportCourseResult> {
+    const enhancedCourse = await this.enhanceCourseVocabulary(course);
+
     return this.prisma.$transaction(
       async (tx) => {
-        return this.importCourseWithTransaction(tx, course);
+        return this.importCourseWithTransaction(tx, enhancedCourse);
       },
       {
         timeout: 60_000,
@@ -272,6 +282,55 @@ export class ContentRepository {
     await tx.vocabulary.createMany({
       data,
     });
+  }
+
+  private async enhanceCourseVocabulary(course: Course): Promise<Course> {
+    const lessons: Lesson[] = [];
+
+    for (const lesson of course.lessons) {
+      lessons.push({
+        ...lesson,
+        vocabulary: await this.enhanceVocabularyData(lesson.vocabulary),
+      });
+    }
+
+    return {
+      ...course,
+      lessons,
+    };
+  }
+
+  private async enhanceVocabularyData(
+    vocabulary: VocabularyItem[],
+  ): Promise<VocabularyItem[]> {
+    if (
+      vocabulary.length === 0 ||
+      process.env.ENABLE_VOCABULARY_ENRICHMENT !== 'true' ||
+      process.env.DISABLE_VOCABULARY_ENRICHMENT === 'true'
+    ) {
+      return vocabulary;
+    }
+
+    try {
+      const enhanced = await this.apiService.enhanceVocabularyBatch(
+        vocabulary,
+        5,
+      );
+
+      this.log(
+        `Processed ${vocabulary.length} vocabulary items with external APIs.`,
+      );
+
+      return enhanced;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.warn(
+        `[ContentRepository] Vocabulary enhancement failed; using original data: ${message}`,
+      );
+
+      return vocabulary;
+    }
   }
 
   private async replaceLessonExercises(

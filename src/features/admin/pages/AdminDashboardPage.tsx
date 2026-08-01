@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
+import {
+  copyTelegramText,
+  TELEGRAM_SUPPORT_MESSAGE,
+  TELEGRAM_SUPPORT_URL,
+} from "../../../components/support/telegramSupport";
 import { ApiError } from "../../../lib/api/api-client";
 import {
   createAdminUserRequest,
@@ -16,6 +21,7 @@ import { useAuth } from "../../auth/context/AuthContext";
 import AdminCreateUserDialog from "../components/AdminCreateUserDialog";
 import AdminMetricCard from "../components/AdminMetricCard";
 import AdminRoleDialog from "../components/AdminRoleDialog";
+import AdminTelegramComposer from "../components/AdminTelegramComposer";
 import AdminUserTable from "../components/AdminUserTable";
 import AdminWebsiteSettings from "../components/AdminWebsiteSettings";
 import type {
@@ -229,13 +235,7 @@ function AdminDashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [
-    hasRetriedAdminSync,
-    isAdmin,
-    isAuthLoading,
-    refreshCurrentUser,
-    user,
-  ]);
+  }, [hasRetriedAdminSync, isAdmin, isAuthLoading, refreshCurrentUser, user]);
 
   const metrics = useMemo(() => {
     const totalUsers = users.length;
@@ -326,6 +326,40 @@ function AdminDashboardPage() {
       action: () => {
         setStatusFilter("SUSPENDED");
         setCurrentPage(1);
+      },
+    },
+    {
+      label: "Mở hỗ trợ Telegram",
+      detail: "Mở kênh hỗ trợ công khai trong một tab mới.",
+      action: () => {
+        window.open(TELEGRAM_SUPPORT_URL, "_blank", "noopener,noreferrer");
+        setSuccessMessage("Đã mở kênh hỗ trợ Telegram.");
+      },
+    },
+    {
+      label: "Copy link Telegram",
+      detail: "Sao chép đường dẫn hỗ trợ để gửi cho học viên.",
+      action: () => {
+        void copyTelegramText(TELEGRAM_SUPPORT_URL).then((copied) => {
+          setSuccessMessage(
+            copied
+              ? "Đã copy link hỗ trợ Telegram."
+              : "Không thể copy link. Hãy thử lại trên trình duyệt khác.",
+          );
+        });
+      },
+    },
+    {
+      label: "Copy mẫu nhắn hỗ trợ",
+      detail: "Dùng mẫu có sẵn để tiếp nhận lỗi nhanh và đủ thông tin.",
+      action: () => {
+        void copyTelegramText(TELEGRAM_SUPPORT_MESSAGE).then((copied) => {
+          setSuccessMessage(
+            copied
+              ? "Đã copy mẫu nhắn hỗ trợ Telegram."
+              : "Không thể copy mẫu nhắn. Hãy thử lại trên trình duyệt khác.",
+          );
+        });
       },
     },
   ] as const;
@@ -803,7 +837,9 @@ function AdminDashboardPage() {
         </article>
       </section>
 
-      <AdminWebsiteSettings />
+      <AdminTelegramComposer />
+
+      <AdminWebsiteSettings runWithSessionRetry={runWithSessionRetry} />
 
       <section className="premium-surface mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/65 shadow-2xl shadow-black/10">
         <div className="border-b border-white/10 p-5 sm:p-6">

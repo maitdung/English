@@ -52,6 +52,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "axios": "^1.19.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.81.3",
     "class-transformer": "^0.5.1",
@@ -111,6 +112,11 @@
     "tsx": "^4.23.1",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "overrides": {
+    "@nestjs/swagger": {
+      "js-yaml": "5.2.3"
+    }
   },
   "jest": {
     "moduleFileExtensions": [

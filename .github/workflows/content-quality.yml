@@ -58,6 +58,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/content_ci
       CONTENT_SEED_VALIDATE: "true"
       CONTENT_SEED_VERBOSE: "false"
+      ENABLE_VOCABULARY_ENRICHMENT: "false"
 
     steps:
       - name: Checkout repository

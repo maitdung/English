@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  NavLink,
-  Outlet,
-  useNavigate,
-} from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
+import TelegramSupportButton from "../components/support/TelegramSupportButton";
 import { useAuth } from "../features/auth/context/AuthContext";
 
 const navigationItems = [
@@ -23,6 +20,11 @@ const navigationItems = [
     label: "Thư viện luyện tập",
     path: "/dashboard/practice",
     icon: "⚡",
+  },
+  {
+    label: "Sách kiến thức",
+    path: "/dashboard/books",
+    icon: "📚",
   },
   {
     label: "Khóa học",
@@ -106,10 +108,7 @@ function DashboardLayout() {
     };
 
     readDailyGoal();
-    window.addEventListener(
-      "mtd-lingo-preferences-updated",
-      readDailyGoal,
-    );
+    window.addEventListener("mtd-lingo-preferences-updated", readDailyGoal);
 
     return () =>
       window.removeEventListener(
@@ -123,15 +122,14 @@ function DashboardLayout() {
   };
 
   const handleLogout = async () => {
-  await logout();
+    await logout();
 
-  navigate("/login", {
-    replace: true,
-  });
-};
+    navigate("/login", {
+      replace: true,
+    });
+  };
 
-  const userInitial =
-    user?.fullName.trim().charAt(0).toUpperCase() || "U";
+  const userInitial = user?.fullName.trim().charAt(0).toUpperCase() || "U";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -213,9 +211,7 @@ function DashboardLayout() {
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-slate-950/90 px-5 backdrop-blur-xl sm:px-8">
           <button
             type="button"
-            onClick={() =>
-              setIsSidebarOpen((currentValue) => !currentValue)
-            }
+            onClick={() => setIsSidebarOpen((currentValue) => !currentValue)}
             aria-label="Mở thanh điều hướng"
             className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-xl lg:hidden"
           >
@@ -223,21 +219,15 @@ function DashboardLayout() {
           </button>
 
           <div className="hidden lg:block">
-            <p className="text-sm text-slate-500">
-              Chào mừng trở lại,
-            </p>
+            <p className="text-sm text-slate-500">Chào mừng trở lại,</p>
 
-            <p className="mt-1 font-black">
-              {user?.fullName || "Học viên"}
-            </p>
+            <p className="mt-1 font-black">{user?.fullName || "Học viên"}</p>
           </div>
 
           <div className="relative ml-auto">
             <button
               type="button"
-              onClick={() =>
-                setShowUserMenu((currentValue) => !currentValue)
-              }
+              onClick={() => setShowUserMenu((currentValue) => !currentValue)}
               className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-2 pr-3 transition hover:border-white/20"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 font-black text-slate-950">
@@ -307,6 +297,8 @@ function DashboardLayout() {
         <main>
           <Outlet />
         </main>
+
+        <TelegramSupportButton />
       </div>
     </div>
   );

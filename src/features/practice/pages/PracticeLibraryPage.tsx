@@ -153,15 +153,15 @@ function PracticeLibraryPage() {
         !progress.reviewRecords[`practice:${practiceSet.id}`],
     );
     const unfinishedSets = practiceSets.filter(
-      (practiceSet) =>
-        !progress.reviewRecords[`practice:${practiceSet.id}`],
+      (practiceSet) => !progress.reviewRecords[`practice:${practiceSet.id}`],
     );
     const candidates =
       unfinishedFeaturedSets.length > 0
         ? unfinishedFeaturedSets
         : unfinishedSets.length > 0
           ? unfinishedSets
-          : practiceSets.filter((practiceSet) => practiceSet.featured).length > 0
+          : practiceSets.filter((practiceSet) => practiceSet.featured).length >
+              0
             ? practiceSets.filter((practiceSet) => practiceSet.featured)
             : practiceSets;
     const today = new Date();
@@ -248,8 +248,8 @@ function PracticeLibraryPage() {
 
             <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
               Chọn bộ bài theo mục tiêu và trình độ của bạn. Mỗi phiên kết hợp
-              nhiều dạng tương tác, có phản hồi tức thì và ghi lại kết quả để lần
-              học sau bắt đầu đúng chỗ cần cải thiện.
+              nhiều dạng tương tác, có phản hồi tức thì và ghi lại kết quả để
+              lần học sau bắt đầu đúng chỗ cần cải thiện.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -267,6 +267,12 @@ function PracticeLibraryPage() {
               >
                 Khám phá thư viện
               </a>
+              <Link
+                to="/dashboard/books"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-violet-300/20 bg-violet-300/10 px-6 py-3 font-bold text-violet-200 transition hover:border-violet-200/40 hover:bg-violet-300/15"
+              >
+                Mở sách theo chương 📚
+              </Link>
             </div>
           </div>
 
@@ -383,7 +389,9 @@ function PracticeLibraryPage() {
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-slate-300">
-                  <span className={`rounded-xl border px-3 py-2 ${dailyAccent.badge}`}>
+                  <span
+                    className={`rounded-xl border px-3 py-2 ${dailyAccent.badge}`}
+                  >
                     {practiceSkillLabels[dailyPracticeSet.skill]}
                   </span>
                   <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
@@ -567,7 +575,9 @@ function PracticeLibraryPage() {
                     </div>
 
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-bold">
-                      <span className={`rounded-lg border px-2.5 py-1 ${accent.badge}`}>
+                      <span
+                        className={`rounded-lg border px-2.5 py-1 ${accent.badge}`}
+                      >
                         {practiceSkillLabels[practiceSet.skill]}
                       </span>
                       <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-slate-300">
@@ -633,8 +643,8 @@ function PracticeLibraryPage() {
 
                       <div className="flex items-center justify-between gap-4 border-t border-white/10 pt-5">
                         <p className="text-xs font-semibold text-slate-500">
-                          {practiceSet.duration} phút · {practiceSet.exercises.length}{" "}
-                          bài tập
+                          {practiceSet.duration} phút ·{" "}
+                          {practiceSet.exercises.length} bài tập
                         </p>
                         <span
                           aria-hidden="true"

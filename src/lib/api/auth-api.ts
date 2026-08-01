@@ -37,9 +37,22 @@ function splitFullName(fullName: string): {
   };
 }
 
-export function loginRequest(
+async function waitForApiReadyRequest(): Promise<void> {
+  await apiRequest("/health", {
+    method: "GET",
+    networkRetryCount: 6,
+    networkRetryStatusCodes: [502, 503, 504],
+    signal: AbortSignal.timeout(65_000),
+  });
+}
+
+export async function loginRequest(
   credentials: LoginCredentials,
 ): Promise<AuthResponse> {
+  // Đánh thức backend Render bằng GET an toàn trước khi gửi mật khẩu. Không
+  // retry POST /login vì nhiều lần đăng nhập có thể làm lệch refresh token.
+  await waitForApiReadyRequest();
+
   return apiRequest<AuthResponse>("/auth/login", {
     method: "POST",
     body: {
@@ -65,18 +78,14 @@ export function registerRequest(
   });
 }
 
-export function getCurrentUserRequest(
-  accessToken: string,
-): Promise<ApiUser> {
+export function getCurrentUserRequest(accessToken: string): Promise<ApiUser> {
   return apiRequest<ApiUser>("/auth/me", {
     method: "GET",
     accessToken,
   });
 }
 
-export function refreshTokensRequest(
-  refreshToken: string,
-): Promise<{
+export function refreshTokensRequest(refreshToken: string): Promise<{
   accessToken: string;
   refreshToken: string;
   accessTokenExpiresIn: number;
@@ -90,9 +99,7 @@ export function refreshTokensRequest(
   });
 }
 
-export function logoutRequest(
-  accessToken: string,
-): Promise<void> {
+export function logoutRequest(accessToken: string): Promise<void> {
   return apiRequest<void>("/auth/logout", {
     method: "POST",
     accessToken,
@@ -120,15 +127,12 @@ export function updateProfileRequest(
 export function requestPasswordResetRequest(
   email: string,
 ): Promise<PasswordResetRequestResult> {
-  return apiRequest<PasswordResetRequestResult>(
-    "/auth/forgot-password",
-    {
-      method: "POST",
-      body: {
-        email: email.trim().toLowerCase(),
-      },
+  return apiRequest<PasswordResetRequestResult>("/auth/forgot-password", {
+    method: "POST",
+    body: {
+      email: email.trim().toLowerCase(),
     },
-  );
+  });
 }
 
 export function resetPasswordRequest(

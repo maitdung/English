@@ -9,12 +9,15 @@
 5. Add env:
 
 ```env
-VITE_API_URL=https://api.your-domain.com/api
+VITE_API_URL=https://english-3t66.onrender.com/api
 ```
 
 ## Backend on Render / Railway / Fly / VPS
 
 1. Set environment variables from `server/.env.production.example`.
+   The production `FRONTEND_URL` is `https://english-c0h.pages.dev`.
+   To enable one-click deploy for ADMIN, set the Cloudflare Pages `develop`
+   Deploy Hook URL as `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on the backend host.
 2. If you do not have a production Redis yet, keep:
 
 ```env

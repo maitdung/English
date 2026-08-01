@@ -14,6 +14,19 @@ const files = [
   },
 ];
 
+const placeholderPatterns = [
+  /replace-with/i,
+  /your-(?:api|backend|cloudflare|custom|domain)/i,
+  /USERNAME|PASSWORD|DATABASE_NAME/,
+  /(?:^|[@:/])HOST(?=[:/?]|$)/,
+  /(?:localhost|127\.0\.0\.1)(?=[:/?]|$)/i,
+  /example\.(?:com|org|net)/i,
+];
+
+function isPlaceholderValue(value) {
+  return !value || placeholderPatterns.some((pattern) => pattern.test(value));
+}
+
 function ensureFileFromExample(source, target) {
   const sourcePath = path.join(rootDir, source);
   const targetPath = path.join(rootDir, target);
@@ -46,13 +59,7 @@ function checkRequiredPairs(filePath, requiredKeys) {
     }
 
     const value = match[1].trim();
-    if (
-      !value ||
-      value.includes("replace-with") ||
-      value.includes("your-domain") ||
-      value.includes("USERNAME:PASSWORD@HOST") ||
-      value.includes("localhost:3001/api")
-    ) {
+    if (isPlaceholderValue(value)) {
       missing.push(key);
     }
   }

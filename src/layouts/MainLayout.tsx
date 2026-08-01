@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 
 import { useAuth } from "../features/auth/context/AuthContext";
+import TelegramSupportButton from "../components/support/TelegramSupportButton";
 
 function MainLayout() {
   const { isAuthenticated } = useAuth();
@@ -145,6 +146,8 @@ function MainLayout() {
           </p>
         </div>
       </footer>
+
+      <TelegramSupportButton label="Chat với MTD" />
     </div>
   );
 }

@@ -33,7 +33,7 @@ export function mapVocabulary(lessonId: string, vocabulary: VocabularyItem[]) {
     meaning: item.meaning,
     example: item.example || null,
     exampleTranslation: item.exampleTranslation || null,
-    audioUrl: null,
+    audioUrl: item.pronunciationAudio || null,
     imageUrl: null,
     orderIndex: index + 1,
   }));

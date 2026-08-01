@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { isCloudflarePagesDeployHookUrl } from './cloudflare-pages-deploy-hook';
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
@@ -27,6 +29,23 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
+  ENABLE_VOCABULARY_ENRICHMENT: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  CLOUDFLARE_PAGES_DEPLOY_HOOK_URL: z.preprocess(
+    (value) =>
+      typeof value === 'string' && value.trim() === '' ? undefined : value,
+    z
+      .string()
+      .trim()
+      .url()
+      .refine(isCloudflarePagesDeployHookUrl, {
+        message:
+          'CLOUDFLARE_PAGES_DEPLOY_HOOK_URL must be a Cloudflare Pages HTTPS deploy hook',
+      })
+      .optional(),
+  ),
   FRONTEND_URL: z.string().min(1),
   ENABLE_SWAGGER_DOCS: z
     .enum(['true', 'false'])
