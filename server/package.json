@@ -37,7 +37,7 @@
     "content:test": "tsx --test prisma/content/content.test.ts",
     "content:format:check": "prettier --check prisma/content package.json",
     "content:check:full": "npm run content:check && npm run content:dry-run && npm run content:import && npm run content:verify",
-    "content:database:prepare": "prisma db push --skip-generate",
+    "content:database:prepare": "prisma db push",
     "content:ci": "npm run content:check && npm run content:database:prepare && npm run content:import && npm run content:verify"
   },
   "dependencies": {
