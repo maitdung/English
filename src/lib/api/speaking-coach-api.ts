@@ -9,7 +9,7 @@ export type SpeakingCoachFeedbackResponse = {
   score: number;
   feedback: string;
   improvement: string;
-  source: "openai" | "fallback";
+  source: "openai" | "xai" | "fallback";
 };
 
 export async function getSpeakingCoachFeedbackRequest(

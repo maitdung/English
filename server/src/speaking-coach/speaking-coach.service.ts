@@ -5,7 +5,7 @@ type SpeakingCoachFeedbackResult = {
   score: number;
   feedback: string;
   improvement: string;
-  source: 'openai' | 'fallback';
+  source: 'openai' | 'xai' | 'fallback';
 };
 
 @Injectable()
@@ -18,17 +18,47 @@ export class SpeakingCoachService {
     topic: string,
     response: string,
   ): Promise<SpeakingCoachFeedbackResult> {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY')?.trim();
+    const xaiApiKey =
+      this.configService.get<string>('XAI_API_KEY')?.trim() ||
+      this.configService.get<string>('GROK_API_KEY')?.trim();
+    const openAiApiKey = this.configService
+      .get<string>('OPENAI_API_KEY')
+      ?.trim();
+    const provider = this.configService
+      .get<string>('AI_PROVIDER')
+      ?.trim()
+      .toLowerCase();
 
-    if (!apiKey) {
+    if (!xaiApiKey && !openAiApiKey) {
       this.logger.warn(
-        'OPENAI_API_KEY is not configured. Falling back to heuristic feedback.',
+        'No AI API key configured. Falling back to heuristic feedback.',
       );
       return this.buildFallbackFeedback(topic, response);
     }
 
     try {
-      const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      if (provider === 'openai' || (!provider && openAiApiKey && !xaiApiKey)) {
+        return await this.requestFromOpenAI(topic, response, openAiApiKey!);
+      }
+
+      if (provider === 'xai' || xaiApiKey) {
+        return await this.requestFromXAI(topic, response, xaiApiKey!);
+      }
+    } catch (error) {
+      this.logger.warn(`AI coaching request failed: ${String(error)}`);
+    }
+
+    return this.buildFallbackFeedback(topic, response);
+  }
+
+  private async requestFromOpenAI(
+    topic: string,
+    response: string,
+    apiKey: string,
+  ): Promise<SpeakingCoachFeedbackResult> {
+    const openAiResponse = await fetch(
+      'https://api.openai.com/v1/chat/completions',
+      {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,35 +79,89 @@ export class SpeakingCoachService {
             },
           ],
         }),
-      });
+      },
+    );
 
-      if (!openAiResponse.ok) {
-        const errorBody = await openAiResponse.text();
-        throw new Error(
-          `OpenAI request failed with status ${openAiResponse.status}: ${errorBody}`,
-        );
-      }
-
-      const payload = (await openAiResponse.json()) as {
-        choices?: Array<{ message?: { content?: string } }>;
-      };
-      const content = payload.choices?.[0]?.message?.content ?? '';
-      const parsed = this.parseJsonPayload(content);
-
-      if (parsed) {
-        return {
-          score: this.clampScore(parsed.score ?? 70),
-          feedback: parsed.feedback || 'Câu trả lời của bạn đang khá tốt.',
-          improvement:
-            parsed.improvement || 'Hãy thêm một chi tiết cụ thể để câu trả lời giàu ý nghĩa hơn.',
-          source: 'openai',
-        };
-      }
-    } catch (error) {
-      this.logger.warn(`OpenAI coaching request failed: ${String(error)}`);
+    if (!openAiResponse.ok) {
+      const errorBody = await openAiResponse.text();
+      throw new Error(
+        `OpenAI request failed with status ${openAiResponse.status}: ${errorBody}`,
+      );
     }
 
-    return this.buildFallbackFeedback(topic, response);
+    const payload = (await openAiResponse.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const content = payload.choices?.[0]?.message?.content ?? '';
+    const parsed = this.parseJsonPayload(content);
+
+    if (parsed) {
+      return {
+        score: this.clampScore(parsed.score ?? 70),
+        feedback: parsed.feedback || 'Câu trả lời của bạn đang khá tốt.',
+        improvement:
+          parsed.improvement ||
+          'Hãy thêm một chi tiết cụ thể để câu trả lời giàu ý nghĩa hơn.',
+        source: 'openai',
+      };
+    }
+
+    throw new Error('OpenAI response did not contain valid JSON.');
+  }
+
+  private async requestFromXAI(
+    topic: string,
+    response: string,
+    apiKey: string,
+  ): Promise<SpeakingCoachFeedbackResult> {
+    const xaiResponse = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-3-mini',
+        temperature: 0.6,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an encouraging English speaking coach. Return valid JSON only with fields score (0-100), feedback (short encouraging feedback in Vietnamese), improvement (one clear actionable tip in Vietnamese).',
+          },
+          {
+            role: 'user',
+            content: `Topic: ${topic}\nStudent response: ${response}\nReturn a compact JSON object.`,
+          },
+        ],
+      }),
+    });
+
+    if (!xaiResponse.ok) {
+      const errorBody = await xaiResponse.text();
+      throw new Error(
+        `xAI request failed with status ${xaiResponse.status}: ${errorBody}`,
+      );
+    }
+
+    const payload = (await xaiResponse.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const content = payload.choices?.[0]?.message?.content ?? '';
+    const parsed = this.parseJsonPayload(content);
+
+    if (parsed) {
+      return {
+        score: this.clampScore(parsed.score ?? 70),
+        feedback: parsed.feedback || 'Câu trả lời của bạn đang khá tốt.',
+        improvement:
+          parsed.improvement ||
+          'Hãy thêm một chi tiết cụ thể để câu trả lời giàu ý nghĩa hơn.',
+        source: 'xai',
+      };
+    }
+
+    throw new Error('xAI response did not contain valid JSON.');
   }
 
   private parseJsonPayload(content: string): {
@@ -104,7 +188,9 @@ export class SpeakingCoachService {
         feedback:
           typeof parsed.feedback === 'string' ? parsed.feedback : undefined,
         improvement:
-          typeof parsed.improvement === 'string' ? parsed.improvement : undefined,
+          typeof parsed.improvement === 'string'
+            ? parsed.improvement
+            : undefined,
       };
     } catch {
       return null;
@@ -117,9 +203,13 @@ export class SpeakingCoachService {
   ): SpeakingCoachFeedbackResult {
     const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
     const hasConnector = /because|but|and|so|however|also/i.test(response);
-    const hasPastTense = /was|were|did|went|made|had|worked|learned/i.test(response);
+    const hasPastTense = /was|were|did|went|made|had|worked|learned/i.test(
+      response,
+    );
 
-    const score = this.clampScore(70 + wordCount + (hasConnector ? 6 : 0) + (hasPastTense ? 4 : 0));
+    const score = this.clampScore(
+      70 + wordCount + (hasConnector ? 6 : 0) + (hasPastTense ? 4 : 0),
+    );
 
     const feedback =
       score >= 85

@@ -92,7 +92,7 @@ function SpeakingCoachPage() {
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(true);
-  const [feedbackSource, setFeedbackSource] = useState<"openai" | "fallback">("fallback");
+  const [feedbackSource, setFeedbackSource] = useState<"openai" | "xai" | "fallback">("fallback");
   const hasLoadedHistory = useRef(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
@@ -467,7 +467,11 @@ function SpeakingCoachPage() {
                 <p className="text-sm font-semibold text-white">Phản hồi coach</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
-                    {feedbackSource === "openai" ? "AI thật" : "Fallback"}
+                    {feedbackSource === "xai"
+                      ? "xAI / Grok"
+                      : feedbackSource === "openai"
+                        ? "OpenAI"
+                        : "Fallback"}
                   </span>
                   <span className="text-sm leading-7 text-slate-400">{feedback}</span>
                 </div>
