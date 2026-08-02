@@ -3,10 +3,15 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getSpeakingCoachFeedbackRequest } from "../../../lib/api/speaking-coach-api";
 
-type SpeechRecognitionResultLike = {
+type SpeechRecognitionAlternativeLike = {
   transcript: string;
   confidence: number;
+};
+
+type SpeechRecognitionResultLike = {
   isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternativeLike | null;
 };
 
 type SpeechRecognitionResultListLike = {
@@ -107,7 +112,8 @@ function SpeakingCoachPage() {
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(true);
-  const [feedbackSource, setFeedbackSource] = useState<"openai" | "xai" | "fallback">("fallback");
+  const [liveTranscript, setLiveTranscript] = useState("");
+  const [feedbackSource, setFeedbackSource] = useState<"openai" | "xai" | "gemini" | "fallback">("fallback");
   const hasLoadedHistory = useRef(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
@@ -131,9 +137,9 @@ function SpeakingCoachPage() {
     }
 
     const recognition = new speechConstructor();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = "en-US";
+    recognition.lang = typeof navigator !== "undefined" ? navigator.language : "en-US";
     recognition.onresult = (event) => {
       const results = event.results;
 
@@ -141,28 +147,36 @@ function SpeakingCoachPage() {
         return;
       }
 
-      let nextTranscript = "";
-      for (let index = 0; index < results.length; index += 1) {
-        const result = results.item(index);
-        if (!result) {
-          continue;
-        }
+      (() => {
+        for (let index = 0; index < results.length; index += 1) {
+          const result = results.item(index);
+          if (!result) {
+            continue;
+          }
 
-        const alternative = result.transcript?.trim();
-        if (alternative) {
-          nextTranscript += `${alternative} `;
-        }
-      }
+          const alternative = result.item(0);
+          if (!alternative?.transcript?.trim()) {
+            continue;
+          }
 
-      const finalTranscript = nextTranscript.trim();
-      if (finalTranscript) {
-        setResponse((currentValue) => {
-          const combinedValue = currentValue.trim()
-            ? `${currentValue.trim()} ${finalTranscript}`
-            : finalTranscript;
-          return combinedValue;
-        });
-      }
+          const transcript = alternative.transcript.trim();
+          if (result.isFinal) {
+            setResponse((currentValue) => {
+              const trimmedCurrentValue = currentValue.trim();
+              if (!trimmedCurrentValue) {
+                return transcript;
+              }
+
+              return `${trimmedCurrentValue} ${transcript}`;
+            });
+            setLiveTranscript("");
+            return;
+          }
+
+          setLiveTranscript(transcript);
+          return;
+        }
+      })();
     };
     recognition.onerror = (event) => {
       const errorCode = event.error;
@@ -175,6 +189,7 @@ function SpeakingCoachPage() {
     };
     recognition.onend = () => {
       setIsListening(false);
+      setLiveTranscript("");
     };
 
     recognitionRef.current = recognition;
@@ -238,10 +253,12 @@ function SpeakingCoachPage() {
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
+      setLiveTranscript("");
       return;
     }
 
     setSpeechError(null);
+    setLiveTranscript("");
     recognitionRef.current.start();
     setIsListening(true);
   };
@@ -472,6 +489,11 @@ function SpeakingCoachPage() {
                   <span className="text-sm text-slate-400">Voice input không hỗ trợ trên trình duyệt này.</span>
                 ) : null}
               </div>
+              {isListening && liveTranscript ? (
+                <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-sm text-cyan-200">
+                  Đang nghe: {liveTranscript}
+                </div>
+              ) : null}
               {speechError ? (
                 <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-3 text-sm text-amber-200">
                   {speechError}
