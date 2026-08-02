@@ -3,11 +3,26 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getSpeakingCoachFeedbackRequest } from "../../../lib/api/speaking-coach-api";
 
+type SpeechRecognitionResultLike = {
+  transcript: string;
+  confidence: number;
+  isFinal: boolean;
+};
+
+type SpeechRecognitionResultListLike = {
+  length: number;
+  item(index: number): SpeechRecognitionResultLike | null;
+};
+
+type SpeechRecognitionEventLike = {
+  results?: SpeechRecognitionResultListLike;
+};
+
 type SpeechRecognitionLike = {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
-  onresult: ((event: unknown) => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
   onerror: ((event: { error: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
@@ -120,14 +135,7 @@ function SpeakingCoachPage() {
     recognition.interimResults = true;
     recognition.lang = "en-US";
     recognition.onresult = (event) => {
-      const speechEvent = event as {
-        results?: ArrayLike<{
-          transcript: string;
-          confidence: number;
-          isFinal: boolean;
-        }>;
-      };
-      const results = speechEvent.results;
+      const results = event.results;
 
       if (!results) {
         return;
@@ -135,17 +143,23 @@ function SpeakingCoachPage() {
 
       let nextTranscript = "";
       for (let index = 0; index < results.length; index += 1) {
-        const result = results[index];
-        if (result) {
-          nextTranscript += result.transcript;
+        const result = results.item(index);
+        if (!result) {
+          continue;
+        }
+
+        const alternative = result.transcript?.trim();
+        if (alternative) {
+          nextTranscript += `${alternative} `;
         }
       }
 
-      if (nextTranscript.trim()) {
+      const finalTranscript = nextTranscript.trim();
+      if (finalTranscript) {
         setResponse((currentValue) => {
           const combinedValue = currentValue.trim()
-            ? `${currentValue.trim()} ${nextTranscript.trim()}`
-            : nextTranscript.trim();
+            ? `${currentValue.trim()} ${finalTranscript}`
+            : finalTranscript;
           return combinedValue;
         });
       }
