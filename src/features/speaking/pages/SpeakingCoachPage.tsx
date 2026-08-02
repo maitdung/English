@@ -20,13 +20,16 @@ type SpeechRecognitionResultListLike = {
 };
 
 type SpeechRecognitionEventLike = {
+  resultIndex?: number;
   results?: SpeechRecognitionResultListLike;
 };
 
 type SpeechRecognitionLike = {
   continuous: boolean;
   interimResults: boolean;
+  maxAlternatives: number;
   lang: string;
+  onstart: (() => void) | null;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
   onerror: ((event: { error: string }) => void) | null;
   onend: (() => void) | null;
@@ -137,46 +140,44 @@ function SpeakingCoachPage() {
     }
 
     const recognition = new speechConstructor();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = typeof navigator !== "undefined" ? navigator.language : "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.lang = "en-US";
+    recognition.onstart = () => {
+      setSpeechError(null);
+      setLiveTranscript("");
+    };
     recognition.onresult = (event) => {
       const results = event.results;
+      const resultIndex = typeof event.resultIndex === "number" ? event.resultIndex : 0;
 
-      if (!results) {
+      if (!results || resultIndex < 0) {
         return;
       }
 
-      (() => {
-        for (let index = 0; index < results.length; index += 1) {
-          const result = results.item(index);
-          if (!result) {
-            continue;
+      const result = results.item(resultIndex);
+      const alternative = result?.item(0);
+      const transcript = alternative?.transcript?.trim();
+
+      if (!transcript) {
+        return;
+      }
+
+      if (result?.isFinal) {
+        setResponse((currentValue) => {
+          const trimmedCurrentValue = currentValue.trim();
+          if (!trimmedCurrentValue) {
+            return transcript;
           }
 
-          const alternative = result.item(0);
-          if (!alternative?.transcript?.trim()) {
-            continue;
-          }
+          return `${trimmedCurrentValue} ${transcript}`;
+        });
+        setLiveTranscript("");
+        return;
+      }
 
-          const transcript = alternative.transcript.trim();
-          if (result.isFinal) {
-            setResponse((currentValue) => {
-              const trimmedCurrentValue = currentValue.trim();
-              if (!trimmedCurrentValue) {
-                return transcript;
-              }
-
-              return `${trimmedCurrentValue} ${transcript}`;
-            });
-            setLiveTranscript("");
-            return;
-          }
-
-          setLiveTranscript(transcript);
-          return;
-        }
-      })();
+      setLiveTranscript(transcript);
     };
     recognition.onerror = (event) => {
       const errorCode = event.error;
