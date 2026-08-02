@@ -9,6 +9,7 @@ import { HealthModule } from './health/health.module';
 import { LearningProgressModule } from './learning-progress/learning-progress.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { validateEnv } from './config/env.validation';
+import { SpeakingCoachModule } from './speaking-coach/speaking-coach.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module';
     AdminSettingsModule,
     CoursesModule,
     LearningProgressModule,
+    SpeakingCoachModule,
   ],
 })
 export class AppModule {}

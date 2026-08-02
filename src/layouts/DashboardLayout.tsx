@@ -42,6 +42,11 @@ const navigationItems = [
     icon: "🎧",
   },
   {
+    label: "Speaking Coach",
+    path: "/dashboard/speaking-coach",
+    icon: "🗣️",
+  },
+  {
     label: "Luyện thi TOEIC",
     path: "/dashboard/toeic",
     icon: "🏆",

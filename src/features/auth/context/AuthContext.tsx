@@ -412,6 +412,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const contextValue = useMemo<AuthContextValue>(
     () => ({
       user: session?.user ?? null,
+      session: session ?? null,
       isAuthenticated: Boolean(session?.user),
       isLoading,
       login,
@@ -428,7 +429,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logout,
       refreshCurrentUser,
       register,
-      session?.user,
+      session,
       updateProfile,
     ],
   );

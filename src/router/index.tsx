@@ -57,6 +57,9 @@ const KnowledgeBooksPage = lazy(
   () => import("../features/practice/pages/KnowledgeBooksPage"),
 );
 const ProfilePage = lazy(() => import("../features/profile/pages/ProfilePage"));
+const SpeakingCoachPage = lazy(
+  () => import("../features/speaking/pages/SpeakingCoachPage"),
+);
 const SkillsHubPage = lazy(
   () => import("../features/skills/pages/SkillsHubPage"),
 );
@@ -135,6 +138,10 @@ export const router = createBrowserRouter([
           {
             path: "practice",
             element: lazyPage(<PracticeLibraryPage />),
+          },
+          {
+            path: "speaking-coach",
+            element: lazyPage(<SpeakingCoachPage />),
           },
           {
             path: "practice/:setId",

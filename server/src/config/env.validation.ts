@@ -47,6 +47,7 @@ const envSchema = z.object({
       .optional(),
   ),
   FRONTEND_URL: z.string().min(1),
+  OPENAI_API_KEY: z.string().optional().default(''),
   ENABLE_SWAGGER_DOCS: z
     .enum(['true', 'false'])
     .default('false')

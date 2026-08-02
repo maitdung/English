@@ -78,6 +78,7 @@ export type AuthSession = {
 
 export type AuthContextValue = {
   user: AuthUser | null;
+  session: AuthSession | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
