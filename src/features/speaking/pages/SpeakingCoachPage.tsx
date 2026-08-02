@@ -483,9 +483,11 @@ function SpeakingCoachPage() {
                   <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
                     {feedbackSource === "xai"
                       ? "xAI / Grok"
-                      : feedbackSource === "openai"
-                        ? "OpenAI"
-                        : "Fallback"}
+                      : feedbackSource === "gemini"
+                        ? "Gemini"
+                        : feedbackSource === "openai"
+                          ? "OpenAI"
+                          : "Fallback"}
                   </span>
                   <span className="text-sm leading-7 text-slate-400">{feedback}</span>
                 </div>

@@ -5,7 +5,7 @@ type SpeakingCoachFeedbackResult = {
   score: number;
   feedback: string;
   improvement: string;
-  source: 'openai' | 'xai' | 'fallback';
+  source: 'openai' | 'xai' | 'gemini' | 'fallback';
 };
 
 @Injectable()
@@ -24,12 +24,13 @@ export class SpeakingCoachService {
     const openAiApiKey = this.configService
       .get<string>('OPENAI_API_KEY')
       ?.trim();
+    const geminiApiKey = this.configService.get<string>('GEMINI_API_KEY')?.trim();
     const provider = this.configService
       .get<string>('AI_PROVIDER')
       ?.trim()
       .toLowerCase();
 
-    if (!xaiApiKey && !openAiApiKey) {
+    if (!xaiApiKey && !openAiApiKey && !geminiApiKey) {
       this.logger.warn(
         'No AI API key configured. Falling back to heuristic feedback.',
       );
@@ -37,12 +38,16 @@ export class SpeakingCoachService {
     }
 
     try {
-      if (provider === 'openai' || (!provider && openAiApiKey && !xaiApiKey)) {
+      if (provider === 'openai' || (!provider && openAiApiKey && !xaiApiKey && !geminiApiKey)) {
         return await this.requestFromOpenAI(topic, response, openAiApiKey!);
       }
 
-      if (provider === 'xai' || xaiApiKey) {
+      if (provider === 'xai' || (!provider && xaiApiKey && !geminiApiKey)) {
         return await this.requestFromXAI(topic, response, xaiApiKey!);
+      }
+
+      if (provider === 'gemini' || geminiApiKey) {
+        return await this.requestFromGemini(topic, response, geminiApiKey!);
       }
     } catch (error) {
       this.logger.warn(`AI coaching request failed: ${String(error)}`);
@@ -162,6 +167,59 @@ export class SpeakingCoachService {
     }
 
     throw new Error('xAI response did not contain valid JSON.');
+  }
+
+  private async requestFromGemini(
+    topic: string,
+    response: string,
+    apiKey: string,
+  ): Promise<SpeakingCoachFeedbackResult> {
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `You are an encouraging English speaking coach. Return valid JSON only with fields score (0-100), feedback (short encouraging feedback in Vietnamese), improvement (one clear actionable tip in Vietnamese). Topic: ${topic}\nStudent response: ${response}\nReturn a compact JSON object.`,
+                },
+              ],
+            },
+          ],
+        }),
+      },
+    );
+
+    if (!geminiResponse.ok) {
+      const errorBody = await geminiResponse.text();
+      throw new Error(
+        `Gemini request failed with status ${geminiResponse.status}: ${errorBody}`,
+      );
+    }
+
+    const payload = (await geminiResponse.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+    const content = payload.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const parsed = this.parseJsonPayload(content);
+
+    if (parsed) {
+      return {
+        score: this.clampScore(parsed.score ?? 70),
+        feedback: parsed.feedback || 'Câu trả lời của bạn đang khá tốt.',
+        improvement:
+          parsed.improvement ||
+          'Hãy thêm một chi tiết cụ thể để câu trả lời giàu ý nghĩa hơn.',
+        source: 'gemini',
+      };
+    }
+
+    throw new Error('Gemini response did not contain valid JSON.');
   }
 
   private parseJsonPayload(content: string): {
