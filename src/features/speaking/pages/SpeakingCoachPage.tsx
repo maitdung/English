@@ -116,6 +116,7 @@ function SpeakingCoachPage() {
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [speechLanguage, setSpeechLanguage] = useState("en-US");
   const [feedbackSource, setFeedbackSource] = useState<"openai" | "xai" | "gemini" | "fallback">("fallback");
   const hasLoadedHistory = useRef(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -141,9 +142,9 @@ function SpeakingCoachPage() {
 
     const recognition = new speechConstructor();
     recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
-    recognition.lang = "en-US";
+    recognition.lang = speechLanguage;
     recognition.onstart = () => {
       setSpeechError(null);
       setLiveTranscript("");
@@ -156,8 +157,14 @@ function SpeakingCoachPage() {
         return;
       }
 
-      const result = results.item(resultIndex);
-      const alternative = result?.item(0);
+      const result =
+        results.item(resultIndex) ??
+        (results as unknown as ArrayLike<SpeechRecognitionResultLike>)[resultIndex] ??
+        null;
+      const alternative =
+        result?.item(0) ??
+        (result as unknown as ArrayLike<SpeechRecognitionAlternativeLike> | null)?.[0] ??
+        null;
       const transcript = alternative?.transcript?.trim();
 
       if (!transcript) {
@@ -198,7 +205,7 @@ function SpeakingCoachPage() {
     return () => {
       recognition.stop();
     };
-  }, []);
+  }, [speechLanguage]);
 
   useEffect(() => {
     const storageKey = `mtd-lingo-speaking-history:${session?.user?.id ?? "guest"}`;
@@ -260,8 +267,13 @@ function SpeakingCoachPage() {
 
     setSpeechError(null);
     setLiveTranscript("");
-    recognitionRef.current.start();
-    setIsListening(true);
+    try {
+      recognitionRef.current.start();
+      setIsListening(true);
+    } catch (error) {
+      setSpeechError(error instanceof Error ? error.message : "Không thể bật ghi âm.");
+      setIsListening(false);
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -486,6 +498,15 @@ function SpeakingCoachPage() {
                 >
                   {isListening ? "⏹ Dừng ghi âm" : "🎤 Dùng giọng nói"}
                 </button>
+                <select
+                  value={speechLanguage}
+                  onChange={(event) => setSpeechLanguage(event.target.value)}
+                  className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none"
+                >
+                  <option value="en-US">English (US)</option>
+                  <option value="en-GB">English (UK)</option>
+                  <option value="vi-VN">Tiếng Việt</option>
+                </select>
                 {!speechSupported ? (
                   <span className="text-sm text-slate-400">Voice input không hỗ trợ trên trình duyệt này.</span>
                 ) : null}
