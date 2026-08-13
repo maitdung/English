@@ -1,4 +1,9 @@
+import { useEffect, useMemo, useState } from "react";
 import Button from "../../../components/ui/Button/Button";
+import { useNavigate } from "react-router-dom";
+import { getCoursesRequest } from "../../../lib/api/courses-api";
+import { lessons } from "../../learning-engine/data/lessonCatalog";
+import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
 
 const learningStages = [
   {
@@ -29,6 +34,19 @@ const learningStages = [
   },
   {
     id: 3,
+    title: "Khóa học theo cấp độ",
+    description:
+      "Học theo lộ trình A1–C2 với bài đọc, nghe, viết, nói và bài tập tương tác.",
+    icon: "🎓",
+    status: "locked",
+    progress: 0,
+    lessonsCompleted: 0,
+    totalLessons: 0,
+    duration: "Theo khóa học",
+    topics: ["A1–A2", "B1–B2", "C1–C2"],
+  },
+  {
+    id: 4,
     title: "Từ vựng theo chủ đề",
     description:
       "Mở rộng vốn từ vựng thiết yếu cho công việc, học tập và giao tiếp.",
@@ -41,7 +59,7 @@ const learningStages = [
     topics: ["Công sở", "Du lịch", "Giáo dục"],
   },
   {
-    id: 4,
+    id: 5,
     title: "Ngữ pháp trung cấp",
     description:
       "Nắm chắc các thì, câu điều kiện, câu bị động và mệnh đề quan hệ.",
@@ -54,7 +72,7 @@ const learningStages = [
     topics: ["Các thì", "Câu điều kiện", "Mệnh đề"],
   },
   {
-    id: 5,
+    id: 6,
     title: "Luyện nghe chuyên sâu",
     description:
       "Phát triển khả năng nghe hiểu hội thoại, thông báo và bài nói dài.",
@@ -67,7 +85,7 @@ const learningStages = [
     topics: ["Hội thoại", "Thông báo", "Bài nói"],
   },
   {
-    id: 6,
+    id: 7,
     title: "Luyện thi TOEIC",
     description:
       "Làm quen cấu trúc đề thi và luyện chiến thuật cho từng phần TOEIC.",
@@ -80,6 +98,18 @@ const learningStages = [
     topics: ["Listening", "Reading", "Luyện đề"],
   },
 ];
+
+const stageRoutes = [
+  `/dashboard/lessons/${lessons[0]?.id ?? ""}`,
+  `/dashboard/lessons/${lessons[1]?.id ?? ""}`,
+  "/dashboard/courses",
+  "/dashboard/skills?skill=vocabulary",
+  "/dashboard/skills?skill=grammar",
+  "/dashboard/skills?skill=listening",
+  "/dashboard/toeic",
+];
+
+const staticLessonIds = new Set(lessons.map((lesson) => lesson.id));
 
 function getStatusText(status: string) {
   switch (status) {
@@ -108,24 +138,160 @@ function getStatusClassName(status: string) {
 }
 
 function LearningPathPage() {
-  const completedStages = learningStages.filter(
-    (stage) => stage.status === "completed",
+  const navigate = useNavigate();
+  const { progress } = useLearningProgress();
+  const [backendLessonCount, setBackendLessonCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCoursesRequest({ limit: 50 })
+      .then((response) => {
+        if (!cancelled) {
+          setBackendLessonCount(
+            response.data.reduce(
+              (total, course) => total + course.lessonCount,
+              0,
+            ),
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBackendLessonCount(0);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const completedLessonIds = useMemo(
+    () => [...new Set(progress.completedLessonIds)],
+    [progress.completedLessonIds],
+  );
+  const completedBackendLessonCount = completedLessonIds.filter(
+    (lessonId) => !staticLessonIds.has(lessonId),
   ).length;
 
-  const totalLessons = learningStages.reduce(
-    (total, stage) => total + stage.totalLessons,
-    0,
+  const stageMetrics = [
+    {
+      completed: lessons[0]
+        ? completedLessonIds.includes(lessons[0].id)
+        : false,
+      completedUnits: lessons[0] &&
+        completedLessonIds.includes(lessons[0].id)
+        ? 1
+        : 0,
+      totalUnits: lessons[0] ? 1 : 0,
+    },
+    {
+      completed: lessons[1]
+        ? completedLessonIds.includes(lessons[1].id)
+        : false,
+      completedUnits: lessons[1] &&
+        completedLessonIds.includes(lessons[1].id)
+        ? 1
+        : 0,
+      totalUnits: lessons[1] ? 1 : 0,
+    },
+    {
+      completed:
+        backendLessonCount > 0 &&
+        completedBackendLessonCount >= backendLessonCount,
+      completedUnits: Math.min(
+        completedBackendLessonCount,
+        backendLessonCount,
+      ),
+      totalUnits: backendLessonCount,
+    },
+    {
+      completed: progress.completedSkillIds.includes("vocabulary"),
+      completedUnits: progress.completedSkillIds.includes("vocabulary")
+        ? 1
+        : 0,
+      totalUnits: 1,
+    },
+    {
+      completed: progress.completedSkillIds.includes("grammar"),
+      completedUnits: progress.completedSkillIds.includes("grammar")
+        ? 1
+        : 0,
+      totalUnits: 1,
+    },
+    {
+      completed: progress.completedSkillIds.includes("listening"),
+      completedUnits: progress.completedSkillIds.includes("listening")
+        ? 1
+        : 0,
+      totalUnits: 1,
+    },
+    {
+      completed:
+        progress.quizHighScore >= 60 ||
+        progress.completedSkillIds.includes("test"),
+      completedUnits:
+        progress.quizHighScore >= 60 ||
+        progress.completedSkillIds.includes("test")
+          ? 1
+          : 0,
+      totalUnits: 1,
+    },
+  ].map((metric) => ({
+    ...metric,
+    progress:
+      metric.totalUnits > 0
+        ? Math.round((metric.completedUnits / metric.totalUnits) * 100)
+        : 0,
+  }));
+
+  const firstIncompleteIndex = stageMetrics.findIndex(
+    (metric) => !metric.completed && metric.totalUnits > 0,
   );
+  const currentStageIndex =
+    firstIncompleteIndex === -1
+      ? learningStages.length - 1
+      : firstIncompleteIndex;
+  const stages = learningStages.map((stage, index) => {
+    const metric = stageMetrics[index];
+    const isCurrent = index === currentStageIndex;
+    const isBackendStageWithoutData = index === 2 && metric.totalUnits === 0;
 
-  const completedLessons = learningStages.reduce(
-    (total, stage) => total + stage.lessonsCompleted,
-    0,
+    return {
+      ...stage,
+      status: metric.completed
+        ? "completed"
+        : isBackendStageWithoutData
+          ? "available"
+          : isCurrent
+            ? "active"
+            : "locked",
+      progress: metric.progress,
+      lessonsCompleted: metric.completedUnits,
+      totalLessons: metric.totalUnits,
+    };
+  });
+  const completedStages = stageMetrics.filter(
+    (metric) => metric.completed,
+  ).length;
+  const totalLessons = lessons.length + backendLessonCount;
+  const completedLessons = completedLessonIds.length;
+  const trackedStageMetrics = stageMetrics.filter(
+    (metric) => metric.totalUnits > 0,
   );
+  const totalProgress =
+    trackedStageMetrics.length > 0
+      ? Math.round(
+          trackedStageMetrics.reduce(
+            (total, metric) => total + metric.progress,
+            0,
+          ) / trackedStageMetrics.length,
+        )
+      : 0;
 
-  const totalProgress = Math.round((completedLessons / totalLessons) * 100);
-
-  const handleStageAction = (stageTitle: string) => {
-    console.log("Mở chặng học:", stageTitle);
+  const handleStageAction = (stageId: number) => {
+    navigate(stageRoutes[stageId - 1] ?? "/dashboard/courses");
   };
 
   return (
@@ -149,7 +315,7 @@ function LearningPathPage() {
         <Button
           type="button"
           size="large"
-          onClick={() => handleStageAction("Giao tiếp hằng ngày")}
+          onClick={() => handleStageAction(stages[currentStageIndex].id)}
           className="w-full sm:w-auto"
         >
           Tiếp tục chặng hiện tại →
@@ -179,7 +345,7 @@ function LearningPathPage() {
         <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
           <p className="text-sm text-slate-400">Chặng hoàn thành</p>
           <p className="mt-2 text-3xl font-black">
-            {completedStages} / {learningStages.length}
+            {completedStages} / {stages.length}
           </p>
           <p className="mt-5 text-xs font-semibold text-emerald-300">
             Tiếp tục duy trì tiến độ
@@ -198,9 +364,13 @@ function LearningPathPage() {
 
         <article className="rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/15 via-slate-900 to-violet-500/10 p-5">
           <p className="text-sm text-slate-400">Chặng hiện tại</p>
-          <p className="mt-2 text-xl font-black">Giao tiếp hằng ngày</p>
+          <p className="mt-2 text-xl font-black">
+            {stages[currentStageIndex].title}
+          </p>
           <p className="mt-5 text-xs font-semibold text-violet-300">
-            Hoàn thành 64%
+            {completedStages === stages.length
+              ? "Đã hoàn thành toàn bộ"
+              : `Chặng ${currentStageIndex + 1}/${stages.length}`}
           </p>
         </article>
       </section>
@@ -217,7 +387,7 @@ function LearningPathPage() {
         <div className="relative mt-7 space-y-5">
           <div className="absolute bottom-10 left-7 top-10 hidden w-px bg-gradient-to-b from-emerald-400 via-cyan-400 to-slate-800 lg:block" />
 
-          {learningStages.map((stage, index) => {
+          {stages.map((stage, index) => {
             const isLocked = stage.status === "locked";
 
             return (
@@ -341,7 +511,7 @@ function LearningPathPage() {
                           stage.status === "completed" ? "secondary" : "primary"
                         }
                         fullWidth
-                        onClick={() => handleStageAction(stage.title)}
+                        onClick={() => handleStageAction(stage.id)}
                       >
                         {stage.status === "completed"
                           ? "Xem lại"

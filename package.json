@@ -7,13 +7,18 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "security:audit": "npm audit --omit=dev --audit-level=high && npm --prefix server audit --omit=dev --audit-level=high",
+    "cefrj:sync": "node scripts/sync-cefrj-profiles.mjs",
+    "cefrj:check": "node scripts/sync-cefrj-profiles.mjs --check",
+    "deploy:prepare": "node scripts/deploy-preflight.mjs",
+    "deploy:check": "npm run security:audit && npm run cefrj:check && npm run build && npm run lint && npm --prefix server run build && npm --prefix server run lint && npm --prefix server test -- --runInBand && npm --prefix server run content:check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.2",
+    "react-router-dom": "7.18.2",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {

@@ -4,6 +4,7 @@ import {
   Navigate,
   useLocation,
   useNavigate,
+  useSearchParams,
 } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
@@ -17,12 +18,14 @@ type LoginLocationState = {
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const { login, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -50,6 +53,7 @@ function LoginPage() {
       await login({
         email,
         password,
+        rememberMe,
       });
 
       navigate(locationState?.from || "/dashboard", {
@@ -67,17 +71,26 @@ function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-8 text-white sm:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/60 lg:grid-cols-2">
-        <section className="hidden bg-gradient-to-br from-cyan-500/20 via-slate-950 to-violet-500/20 p-10 lg:flex lg:flex-col lg:justify-between">
+    <main className="auth-canvas min-h-screen px-5 py-8 text-white sm:px-8">
+      <div className="pointer-events-none fixed left-[8%] top-[12%] h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl motion-safe:animate-pulse" />
+      <div className="pointer-events-none fixed bottom-[8%] right-[5%] h-96 w-96 rounded-full bg-violet-500/10 blur-3xl motion-safe:animate-pulse" />
+
+      <div className="auth-card mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl overflow-hidden rounded-[36px] border border-white/10 bg-slate-900/70 shadow-2xl shadow-black/30 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative hidden overflow-hidden bg-gradient-to-br from-cyan-500/20 via-slate-950 to-violet-500/20 p-10 lg:flex lg:flex-col lg:justify-between">
+          <div className="pointer-events-none absolute -right-24 top-24 h-72 w-72 rounded-full border border-cyan-300/15" />
+          <div className="pointer-events-none absolute -right-10 top-40 h-44 w-44 rounded-full border border-violet-300/15" />
           <Link
             to="/"
-            className="text-2xl font-black tracking-tight text-white"
+            className="relative text-2xl font-black tracking-tight text-white"
           >
             MTD <span className="text-cyan-400">Lingo Pro</span>
           </Link>
 
-          <div>
+          <div className="relative">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-emerald-200">
+              <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,.9)]" />
+              Phiên học được bảo vệ
+            </div>
             <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-300">
               Học tiếng Anh thông minh
             </p>
@@ -90,9 +103,25 @@ function LoginPage() {
               Đăng nhập để tiếp tục bài học, luyện từ vựng và theo dõi tiến
               độ mỗi ngày.
             </p>
+
+            <div className="mt-9 grid max-w-lg grid-cols-3 gap-3">
+              {[
+                ["6", "kỹ năng"],
+                ["A1–C2", "cấp độ"],
+                ["24/7", "tự học"],
+              ].map(([value, label]) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur"
+                >
+                  <p className="text-xl font-black text-white">{value}</p>
+                  <p className="mt-1 text-xs text-slate-400">{label}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <p className="text-sm text-slate-500">
+          <p className="relative text-sm text-slate-500">
             © 2026 MTD Lingo Pro
           </p>
         </section>
@@ -117,6 +146,15 @@ function LoginPage() {
             <p className="mt-3 text-sm leading-7 text-slate-400">
               Nhập email và mật khẩu đã đăng ký.
             </p>
+
+            {searchParams.get("passwordChanged") === "1" && (
+              <p
+                role="status"
+                className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200"
+              >
+                Mật khẩu đã được cập nhật. Hãy đăng nhập lại để bảo vệ tài khoản.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
               <Input
@@ -165,17 +203,19 @@ function LoginPage() {
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-400">
                   <input
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(event) => setRememberMe(event.target.checked)}
                     className="h-4 w-4 accent-cyan-400"
                   />
                   Ghi nhớ đăng nhập
                 </label>
 
-                <button
-                  type="button"
+                <Link
+                  to="/forgot-password"
                   className="text-sm font-bold text-cyan-300 transition hover:text-cyan-200"
                 >
                   Quên mật khẩu?
-                </button>
+                </Link>
               </div>
 
               <Button
@@ -186,6 +226,11 @@ function LoginPage() {
               >
                 Đăng nhập
               </Button>
+
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+                <span aria-hidden="true">🔒</span>
+                Mặc định chỉ lưu phiên trong tab; bật ghi nhớ cho thiết bị tin cậy.
+              </div>
             </form>
 
             <p className="mt-7 text-center text-sm text-slate-400">

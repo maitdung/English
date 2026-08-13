@@ -1,35 +1,96 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../../../components/ui/Button/Button";
-import { useAuth } from "../../auth/context/AuthContext";
+import { getCoursesRequest } from "../../../lib/api/courses-api";
 import {
-  flashcards,
-  lessons,
-} from "../../learning-engine/data/lessonCatalog";
+  getDailyPlan,
+  getTodayActivity,
+} from "../../learning-engine/data/dailyLearning";
+import { useAuth } from "../../auth/context/AuthContext";
+import { flashcards, lessons } from "../../learning-engine/data/lessonCatalog";
 import useLearningProgress from "../../learning-engine/hooks/useLearningProgress";
+import { practiceSets } from "../../practice/data/practiceCatalog";
+import { practiceSkillLabels } from "../../practice/types/practice";
 
-const weeklyActivity = [
-  { day: "T2", value: 0 },
-  { day: "T3", value: 0 },
-  { day: "T4", value: 0 },
-  { day: "T5", value: 0 },
-  { day: "T6", value: 0 },
-  { day: "T7", value: 0 },
-  { day: "CN", value: 0 },
+const trackedSkillIds = [
+  "vocabulary",
+  "listening",
+  "speaking",
+  "reading",
+  "writing",
+  "grammar",
+  "test",
 ];
+
+const staticLessonIds = new Set(lessons.map((lesson) => lesson.id));
 
 function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress } = useLearningProgress();
+  const [backendLessonCount, setBackendLessonCount] = useState(0);
+  const todayPlan = useMemo(() => getDailyPlan(progress), [progress]);
+  const todayActivity = useMemo(() => getTodayActivity(progress), [progress]);
+  const weeklyActivity = useMemo(() => {
+    const items: Array<{ day: string; value: number }> = [];
+    const now = new Date();
+
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - offset);
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+      const activity = progress.dailyActivity[key];
+      items.push({
+        day: new Intl.DateTimeFormat("vi-VN", {
+          weekday: "short",
+        })
+          .format(date)
+          .replace(".", ""),
+        value: Math.min(100, activity ? Math.max(activity.minutes * 2, 4) : 4),
+      });
+    }
+
+    return items;
+  }, [progress.dailyActivity]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCoursesRequest({ limit: 50 })
+      .then((response) => {
+        if (!cancelled) {
+          setBackendLessonCount(
+            response.data.reduce(
+              (total, course) => total + course.lessonCount,
+              0,
+            ),
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBackendLessonCount(0);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const completedLessonIds = useMemo(
+    () => [...new Set(progress.completedLessonIds)],
+    [progress.completedLessonIds],
+  );
 
   const completedLessons = useMemo(
-    () =>
-      lessons.filter((lesson) =>
-        progress.completedLessonIds.includes(lesson.id),
-      ),
-    [progress.completedLessonIds],
+    () => lessons.filter((lesson) => completedLessonIds.includes(lesson.id)),
+    [completedLessonIds],
   );
 
   const reviewedFlashcards = useMemo(
@@ -40,8 +101,47 @@ function DashboardPage() {
     [progress.reviewedFlashcardIds],
   );
 
-  const completedLessonCount = completedLessons.length;
+  const completedLessonCount = completedLessonIds.length;
+  const completedBackendLessonCount = completedLessonIds.filter(
+    (lessonId) => !staticLessonIds.has(lessonId),
+  ).length;
+  const totalLessonCount = lessons.length + backendLessonCount;
+  const safeTotalLessonCount = Math.max(totalLessonCount, completedLessonCount);
   const reviewedFlashcardCount = reviewedFlashcards.length;
+  const completedPracticeSets = useMemo(
+    () =>
+      practiceSets.filter(
+        (practiceSet) =>
+          progress.reviewRecords[`practice:${practiceSet.id}`],
+      ),
+    [progress.reviewRecords],
+  );
+  const practiceShowcase = useMemo(() => {
+    const skills = [
+      "listening",
+      "speaking",
+      "grammar",
+      "reading",
+      "writing",
+      "toeic",
+    ] as const;
+
+    return skills.flatMap((skill) => {
+      const skillSets = practiceSets.filter((item) => item.skill === skill);
+      const recommendedSet =
+        skillSets.find(
+          (item) =>
+            item.featured &&
+            !progress.reviewRecords[`practice:${item.id}`],
+        ) ??
+        skillSets.find(
+          (item) => !progress.reviewRecords[`practice:${item.id}`],
+        ) ??
+        skillSets[0];
+
+      return recommendedSet ? [recommendedSet] : [];
+    });
+  }, [progress.reviewRecords]);
 
   const totalLearningMinutes = completedLessons.reduce(
     (totalMinutes, lesson) => totalMinutes + lesson.duration,
@@ -49,17 +149,28 @@ function DashboardPage() {
   );
 
   const totalLearningItems =
-    lessons.length + flashcards.length + 1;
+    safeTotalLessonCount +
+    flashcards.length +
+    practiceSets.length +
+    trackedSkillIds.length +
+    1;
+
+  const completedSkillCount = trackedSkillIds.filter((skillId) =>
+    progress.completedSkillIds.includes(skillId),
+  ).length;
 
   const completedLearningItems =
     completedLessonCount +
     reviewedFlashcardCount +
+    completedPracticeSets.length +
+    completedSkillCount +
     (progress.quizHighScore > 0 ? 1 : 0);
 
   const overallProgress =
     totalLearningItems > 0
-      ? Math.round(
-          (completedLearningItems / totalLearningItems) * 100,
+      ? Math.min(
+          100,
+          Math.round((completedLearningItems / totalLearningItems) * 100),
         )
       : 0;
 
@@ -79,7 +190,7 @@ function DashboardPage() {
       value: String(completedLessonCount),
       detail:
         completedLessonCount > 0
-          ? `${completedLessonCount}/${lessons.length} bài trong chương trình`
+          ? `${completedLessonCount}/${safeTotalLessonCount} bài trong chương trình`
           : "Chưa hoàn thành bài học nào",
       icon: "📘",
     },
@@ -106,10 +217,7 @@ function DashboardPage() {
     },
     {
       label: "Điểm Quiz cao nhất",
-      value:
-        progress.quizHighScore > 0
-          ? `${progress.quizHighScore}%`
-          : "0%",
+      value: progress.quizHighScore > 0 ? `${progress.quizHighScore}%` : "0%",
       detail:
         progress.quizHighScore >= 80
           ? "Kết quả rất tốt"
@@ -161,6 +269,30 @@ function DashboardPage() {
       });
     }
 
+    if (completedSkillCount >= 3) {
+      unlockedAchievements.push({
+        icon: "✨",
+        title: "Học đa kỹ năng",
+        detail: `Đã hoàn thành ${completedSkillCount} phòng luyện kỹ năng`,
+      });
+    }
+
+    if (completedPracticeSets.length >= 1) {
+      unlockedAchievements.push({
+        icon: "⚡",
+        title: "Phiên luyện đầu tiên",
+        detail: `Hoàn thành “${completedPracticeSets[0].title}”`,
+      });
+    }
+
+    if (completedPracticeSets.length >= 5) {
+      unlockedAchievements.push({
+        icon: "🧠",
+        title: "Nhịp học đa kỹ năng",
+        detail: "Đã hoàn thành ít nhất 5 bộ luyện tương tác",
+      });
+    }
+
     if (progress.quizHighScore >= 80) {
       unlockedAchievements.push({
         icon: "🏆",
@@ -172,18 +304,24 @@ function DashboardPage() {
     return unlockedAchievements;
   }, [
     completedLessonCount,
+    completedPracticeSets,
+    completedSkillCount,
     progress.quizHighScore,
     reviewedFlashcardCount,
   ]);
 
   const handleContinueLearning = () => {
     const nextLesson = lessons.find(
-      (lesson) =>
-        !progress.completedLessonIds.includes(lesson.id),
+      (lesson) => !progress.completedLessonIds.includes(lesson.id),
     );
 
     if (nextLesson) {
       navigate(`/dashboard/lessons/${nextLesson.id}`);
+      return;
+    }
+
+    if (completedBackendLessonCount < backendLessonCount) {
+      navigate("/dashboard/courses");
       return;
     }
 
@@ -196,7 +334,7 @@ function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 sm:py-9">
-      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+      <section className="reveal-up flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-400">
             Tổng quan học tập
@@ -221,9 +359,7 @@ function DashboardPage() {
           onClick={handleContinueLearning}
           className="w-full sm:w-auto"
         >
-          {completedLearningItems === 0
-            ? "Bắt đầu học →"
-            : "Tiếp tục học →"}
+          {completedLearningItems === 0 ? "Bắt đầu học →" : "Tiếp tục học →"}
         </Button>
       </section>
 
@@ -231,15 +367,13 @@ function DashboardPage() {
         {overviewCards.map((card) => (
           <article
             key={card.label}
-            className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 transition hover:-translate-y-1 hover:border-cyan-400/20 hover:bg-slate-900/80"
+            className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 transition"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-400">{card.label}</p>
 
-                <p className="mt-2 text-3xl font-black">
-                  {card.value}
-                </p>
+                <p className="mt-2 text-3xl font-black">{card.value}</p>
               </div>
 
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/5 text-xl">
@@ -254,13 +388,145 @@ function DashboardPage() {
         ))}
       </section>
 
+      <section className="mt-6 rounded-3xl border border-cyan-400/15 bg-gradient-to-br from-cyan-500/[0.08] via-slate-900/70 to-violet-500/[0.08] p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">
+              Kế hoạch hôm nay
+            </p>
+            <h2 className="mt-2 text-2xl font-black">
+              Học mới, ôn cũ, tiến bộ đều
+            </h2>
+            <p className="mt-2 text-sm text-slate-400">
+              {todayPlan.length > 0
+                ? `${todayPlan.length} nhiệm vụ được chọn theo lịch ôn cá nhân.`
+                : "Bạn đã hoàn tất kế hoạch hôm nay — ngày mai sẽ có nội dung mới."}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="rounded-xl bg-emerald-400/10 px-3 py-2 font-black text-emerald-300">
+              🔥 {progress.streakDays} ngày liên tiếp
+            </span>
+            <span className="rounded-xl bg-white/5 px-3 py-2 text-slate-400">
+              {todayActivity.minutes} phút hôm nay
+            </span>
+          </div>
+        </div>
+
+        {todayPlan.length > 0 && (
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {todayPlan.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => navigate(item.route)}
+                className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-cyan-300">
+                    {item.isReview
+                      ? "Ôn lại"
+                      : item.type === "vocabulary"
+                        ? "Từ mới"
+                        : "Luyện mới"}
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">
+                    {item.level ?? "A1"}
+                  </span>
+                </div>
+                <p className="mt-3 truncate font-black">{item.title}</p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                  {item.subtitle}
+                </p>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/55 p-5 sm:p-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-violet-300">
+              Phòng luyện đa kỹ năng
+            </p>
+            <h2 className="mt-2 text-2xl font-black">
+              Không chỉ học từ — hãy dùng tiếng Anh
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+              Nghe, nói, đọc, viết, ngữ pháp và TOEIC trong các phiên 8–15 phút,
+              có phản hồi ngay sau từng lượt.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/practice")}
+            className="shrink-0 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 py-3 text-sm font-black text-cyan-200 transition hover:bg-cyan-300/15"
+          >
+            Xem {practiceSets.length} bộ bài →
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {practiceShowcase.map((practiceSet, index) => {
+            const record =
+              progress.reviewRecords[`practice:${practiceSet.id}`];
+
+            return (
+              <button
+                key={practiceSet.id}
+                type="button"
+                onClick={() =>
+                  navigate(`/dashboard/practice/${practiceSet.id}`)
+                }
+                className={`group relative overflow-hidden rounded-3xl border p-5 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30 ${
+                  index === 0
+                    ? "border-cyan-300/20 bg-gradient-to-br from-cyan-400/10 via-white/[0.035] to-blue-400/5 sm:col-span-2 xl:col-span-1"
+                    : "border-white/10 bg-white/[0.025]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.06] text-2xl">
+                    {practiceSet.icon}
+                  </span>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-black ${
+                      record
+                        ? "bg-emerald-400/10 text-emerald-300"
+                        : "bg-white/5 text-slate-500"
+                    }`}
+                  >
+                    {record ? `${record.lastScore}%` : practiceSet.level}
+                  </span>
+                </div>
+                <p className="mt-5 text-xs font-black uppercase tracking-[0.15em] text-cyan-300">
+                  {practiceSkillLabels[practiceSet.skill]}
+                </p>
+                <h3 className="mt-2 text-lg font-black">
+                  {practiceSet.title}
+                </h3>
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
+                  {practiceSet.description}
+                </p>
+                <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-xs font-bold text-slate-500">
+                  <span>
+                    {practiceSet.duration} phút · {practiceSet.exercises.length} lượt
+                  </span>
+                  <span className="text-cyan-300 transition group-hover:translate-x-1">
+                    {record ? "Luyện lại →" : "Bắt đầu →"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-black">
-                Hoạt động tuần này
-              </h2>
+              <h2 className="text-xl font-black">Hoạt động tuần này</h2>
 
               <p className="mt-1 text-sm text-slate-500">
                 Biểu đồ hoạt động sẽ được cập nhật khi có lịch sử học
@@ -282,10 +548,7 @@ function DashboardPage() {
                   <div
                     className="w-full rounded-xl bg-gradient-to-t from-blue-600 to-cyan-300 transition"
                     style={{
-                      height:
-                        item.value > 0
-                          ? `${item.value}%`
-                          : "4px",
+                      height: item.value > 0 ? `${item.value}%` : "4px",
                     }}
                   />
 
@@ -320,40 +583,28 @@ function DashboardPage() {
               aria-valuenow={goalProgress}
             >
               <div className="flex h-36 w-36 flex-col items-center justify-center rounded-full bg-slate-900">
-                <p className="text-4xl font-black">
-                  {goalProgress}%
-                </p>
+                <p className="text-4xl font-black">{goalProgress}%</p>
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Hoàn thành
-                </p>
+                <p className="mt-1 text-xs text-slate-500">Hoàn thành</p>
               </div>
             </div>
           </div>
 
           <div className="mt-7 space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
-                Hoàn thành bài học
-              </span>
+              <span className="text-slate-400">Hoàn thành bài học</span>
 
               <span className="font-bold">{lessonGoal} / 1</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
-                Ghi nhớ từ vựng
-              </span>
+              <span className="text-slate-400">Ghi nhớ từ vựng</span>
 
-              <span className="font-bold">
-                {vocabularyGoal} / 5
-              </span>
+              <span className="font-bold">{vocabularyGoal} / 5</span>
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">
-                Quiz đạt ít nhất 60%
-              </span>
+              <span className="text-slate-400">Quiz đạt ít nhất 60%</span>
 
               <span className="font-bold">{quizGoal} / 1</span>
             </div>
@@ -362,12 +613,10 @@ function DashboardPage() {
       </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black">
-                Bài học đã hoàn thành
-              </h2>
+              <h2 className="text-xl font-black">Bài học đã hoàn thành</h2>
 
               <p className="mt-1 text-sm text-slate-500">
                 Danh sách bài học của tài khoản hiện tại
@@ -383,8 +632,30 @@ function DashboardPage() {
             </button>
           </div>
 
-          {completedLessons.length > 0 ? (
+          {completedLessonCount > 0 ? (
             <div className="mt-6 space-y-4">
+              {completedBackendLessonCount > 0 && (
+                <div className="flex flex-col gap-4 rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.05] p-4 sm:flex-row sm:items-center">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-xl">
+                    🎓
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold">Khóa học theo cấp độ</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {completedBackendLessonCount} bài học đã được ghi nhận từ
+                      thư viện khóa học
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="small"
+                    onClick={() => navigate("/dashboard/courses")}
+                  >
+                    Mở khóa học
+                  </Button>
+                </div>
+              )}
               {completedLessons.map((lesson) => (
                 <div
                   key={lesson.id}
@@ -395,9 +666,7 @@ function DashboardPage() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold">
-                      {lesson.title}
-                    </p>
+                    <p className="truncate font-bold">{lesson.title}</p>
 
                     <p className="mt-1 text-xs text-slate-500">
                       {lesson.category} · {lesson.duration} phút
@@ -409,9 +678,7 @@ function DashboardPage() {
                   </div>
 
                   <div className="flex items-center justify-between gap-4 sm:block sm:text-right">
-                    <p className="text-sm font-black text-emerald-300">
-                      100%
-                    </p>
+                    <p className="text-sm font-black text-emerald-300">100%</p>
 
                     <Button
                       type="button"
@@ -449,7 +716,7 @@ function DashboardPage() {
           )}
         </article>
 
-        <article className="rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
+        <article className="premium-surface rounded-3xl border border-white/10 bg-slate-900/60 p-5 sm:p-7">
           <h2 className="text-xl font-black">Thành tích</h2>
 
           <p className="mt-1 text-sm text-slate-500">
@@ -468,9 +735,7 @@ function DashboardPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-bold">
-                      {achievement.title}
-                    </p>
+                    <p className="text-sm font-bold">{achievement.title}</p>
 
                     <p className="mt-1 text-xs leading-5 text-slate-500">
                       {achievement.detail}
@@ -483,13 +748,11 @@ function DashboardPage() {
             <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-10 text-center">
               <div className="text-5xl">🔒</div>
 
-              <h3 className="mt-4 font-black">
-                Chưa mở khóa thành tích
-              </h3>
+              <h3 className="mt-4 font-black">Chưa mở khóa thành tích</h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Học bài, ghi nhớ Flashcard hoặc làm Quiz để nhận thành
-                tích đầu tiên.
+                Học bài, ghi nhớ Flashcard hoặc làm Quiz để nhận thành tích đầu
+                tiên.
               </p>
             </div>
           )}

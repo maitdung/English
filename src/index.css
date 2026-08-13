@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
-
-/* ===========================
-   Global Theme
-=========================== */
-
 :root {
   color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
@@ -18,37 +19,199 @@ body,
 
 body {
   margin: 0;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    sans-serif;
-
-  background:
-    radial-gradient(circle at top left, #7c3aed 0%, transparent 35%),
-    radial-gradient(circle at bottom right, #2563eb 0%, transparent 40%),
-    linear-gradient(135deg, #0f172a 0%, #111827 55%, #020617 100%);
-
-  background-attachment: fixed;
-
-  color: white;
-
   overflow-x: hidden;
+  color: white;
+  background:
+    radial-gradient(circle at 8% 3%, rgb(34 211 238 / 12%), transparent 28%),
+    radial-gradient(circle at 92% 18%, rgb(139 92 246 / 13%), transparent 30%),
+    radial-gradient(circle at 52% 110%, rgb(37 99 235 / 13%), transparent 34%),
+    #020617;
+  background-attachment: fixed;
+  font-family:
+    Inter, "SF Pro Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ===========================
-   Scrollbar
-=========================== */
+body::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.2;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 2%) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+::selection {
+  color: #020617;
+  background: #67e8f9;
+}
 
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
+  border: 2px solid #020617;
   border-radius: 999px;
-  background: rgba(255,255,255,.18);
+  background: linear-gradient(#22d3ee, #8b5cf6);
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #020617;
+}
+
+:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 3px;
+}
+
+.auth-canvas {
+  background:
+    radial-gradient(circle at 10% 0%, rgb(34 211 238 / 14%), transparent 30%),
+    radial-gradient(circle at 95% 100%, rgb(139 92 246 / 16%), transparent 32%),
+    linear-gradient(145deg, #020617, #07111f 50%, #020617);
+}
+
+.auth-card {
+  animation: reveal-card 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  box-shadow:
+    0 35px 90px rgb(0 0 0 / 42%),
+    inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
+.premium-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: 0 12px 34px rgb(34 211 238 / 10%);
+}
+
+.premium-button::after {
+  position: absolute;
+  z-index: -1;
+  top: -120%;
+  left: -35%;
+  width: 28%;
+  height: 340%;
+  content: "";
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 32%),
+    transparent
+  );
+  transform: rotate(22deg);
+  transition:
+    left 600ms ease,
+    opacity 200ms ease;
+}
+
+.premium-button:hover::after {
+  left: 120%;
+  opacity: 1;
+}
+
+.premium-surface {
+  box-shadow:
+    0 22px 70px rgb(0 0 0 / 24%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  transition:
+    transform 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.premium-surface:hover {
+  border-color: rgb(103 232 249 / 24%);
+  box-shadow:
+    0 28px 82px rgb(0 0 0 / 30%),
+    0 0 0 1px rgb(34 211 238 / 4%);
+  transform: translateY(-3px);
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s 900ms ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 7s ease infinite;
+}
+
+.reveal-up {
+  animation: reveal-up 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.reveal-up-delayed {
+  animation: reveal-up 700ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes reveal-card {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

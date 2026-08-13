@@ -1,15 +1,12 @@
-import { useState } from "react";
-import {
-  NavLink,
-  Outlet,
-  useNavigate,
-} from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
+import TelegramSupportButton from "../components/support/TelegramSupportButton";
 import { useAuth } from "../features/auth/context/AuthContext";
 
 const navigationItems = [
   {
-    label: "Tổng quan",
+    label: "Hôm nay",
     path: "/dashboard",
     icon: "🏠",
     end: true,
@@ -18,6 +15,26 @@ const navigationItems = [
     label: "Lộ trình học",
     path: "/dashboard/learning",
     icon: "🗺️",
+  },
+  {
+    label: "Phòng kỹ năng",
+    path: "/dashboard/skills",
+    icon: "🎯",
+  },
+  {
+    label: "Thư viện luyện tập",
+    path: "/dashboard/practice",
+    icon: "⚡",
+  },
+  {
+    label: "Sách kiến thức",
+    path: "/dashboard/books",
+    icon: "📚",
+  },
+  {
+    label: "Bản đồ CEFR",
+    path: "/dashboard/reference",
+    icon: "🧭",
   },
   {
     label: "Khóa học",
@@ -30,19 +47,19 @@ const navigationItems = [
     icon: "📖",
   },
   {
-    label: "Flashcard",
-    path: "/dashboard/flashcards",
-    icon: "🃏",
-  },
-  {
     label: "Luyện nghe",
     path: "/dashboard/listening",
     icon: "🎧",
   },
   {
-    label: "Quiz",
-    path: "/dashboard/quiz",
-    icon: "✅",
+    label: "Writing Studio",
+    path: "/dashboard/writing",
+    icon: "✍️",
+  },
+  {
+    label: "Speaking Coach",
+    path: "/dashboard/speaking-coach",
+    icon: "🗣️",
   },
   {
     label: "Luyện thi TOEIC",
@@ -58,24 +75,84 @@ const navigationItems = [
 
 function DashboardLayout() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshCurrentUser } = useAuth();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [dailyGoal, setDailyGoal] = useState("45");
+  const hasRefreshedSessionRef = useRef(false);
+
+  const visibleNavigationItems =
+    user?.role === "ADMIN"
+      ? [
+          ...navigationItems,
+          {
+            label: "Quản trị hệ thống",
+            path: "/dashboard/admin",
+            icon: "⚙️",
+          },
+        ]
+      : navigationItems;
+
+  useEffect(() => {
+    if (!user || hasRefreshedSessionRef.current) {
+      return;
+    }
+
+    hasRefreshedSessionRef.current = true;
+
+    void refreshCurrentUser().catch(() => {
+      // Giữ dashboard hoạt động ngay cả khi lần đồng bộ này thất bại.
+    });
+  }, [refreshCurrentUser, user]);
+
+  useEffect(() => {
+    const readDailyGoal = () => {
+      if (!user) {
+        setDailyGoal("45");
+        return;
+      }
+
+      try {
+        const storedPreferences = JSON.parse(
+          window.localStorage.getItem(
+            `mtd-lingo-profile-preferences:${user.id}`,
+          ) ?? "{}",
+        ) as { dailyGoal?: unknown };
+
+        setDailyGoal(
+          typeof storedPreferences.dailyGoal === "string"
+            ? storedPreferences.dailyGoal
+            : "45",
+        );
+      } catch {
+        setDailyGoal("45");
+      }
+    };
+
+    readDailyGoal();
+    window.addEventListener("mtd-lingo-preferences-updated", readDailyGoal);
+
+    return () =>
+      window.removeEventListener(
+        "mtd-lingo-preferences-updated",
+        readDailyGoal,
+      );
+  }, [user]);
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+
     navigate("/login", {
       replace: true,
     });
   };
 
-  const userInitial =
-    user?.fullName.trim().charAt(0).toUpperCase() || "U";
+  const userInitial = user?.fullName.trim().charAt(0).toUpperCase() || "U";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -113,7 +190,7 @@ function DashboardLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          {navigationItems.map((item) => (
+          {visibleNavigationItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -142,19 +219,13 @@ function DashboardLayout() {
         <div className="border-t border-white/10 p-4">
           <div className="rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 p-4">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
-              Mục tiêu hôm nay
+              Mục tiêu mỗi ngày
             </p>
 
-            <div className="mt-3 flex items-end justify-between">
-              <p className="text-2xl font-black">32 phút</p>
-              <p className="text-xs font-bold text-slate-400">
-                / 45 phút
-              </p>
-            </div>
-
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-              <div className="h-full w-[71%] rounded-full bg-cyan-400" />
-            </div>
+            <p className="mt-3 text-2xl font-black">{dailyGoal} phút</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Hoàn thành một phiên luyện để giữ nhịp học hôm nay.
+            </p>
           </div>
         </div>
       </aside>
@@ -163,9 +234,7 @@ function DashboardLayout() {
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-slate-950/90 px-5 backdrop-blur-xl sm:px-8">
           <button
             type="button"
-            onClick={() =>
-              setIsSidebarOpen((currentValue) => !currentValue)
-            }
+            onClick={() => setIsSidebarOpen((currentValue) => !currentValue)}
             aria-label="Mở thanh điều hướng"
             className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-xl lg:hidden"
           >
@@ -173,21 +242,15 @@ function DashboardLayout() {
           </button>
 
           <div className="hidden lg:block">
-            <p className="text-sm text-slate-500">
-              Chào mừng trở lại,
-            </p>
+            <p className="text-sm text-slate-500">Chào mừng trở lại,</p>
 
-            <p className="mt-1 font-black">
-              {user?.fullName || "Học viên"}
-            </p>
+            <p className="mt-1 font-black">{user?.fullName || "Học viên"}</p>
           </div>
 
           <div className="relative ml-auto">
             <button
               type="button"
-              onClick={() =>
-                setShowUserMenu((currentValue) => !currentValue)
-              }
+              onClick={() => setShowUserMenu((currentValue) => !currentValue)}
               className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-2 pr-3 transition hover:border-white/20"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 font-black text-slate-950">
@@ -257,6 +320,8 @@ function DashboardLayout() {
         <main>
           <Outlet />
         </main>
+
+        <TelegramSupportButton />
       </div>
     </div>
   );

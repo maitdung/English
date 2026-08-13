@@ -4,6 +4,10 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import Button from "../../../components/ui/Button/Button";
 import Input from "../../../components/ui/Input/Input";
 import { useAuth } from "../context/AuthContext";
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "../utils/password";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -31,8 +35,8 @@ function RegisterPage() {
       return "Vui lòng nhập email.";
     }
 
-    if (password.length < 6) {
-      return "Mật khẩu phải có ít nhất 6 ký tự.";
+    if (!isStrongPassword(password)) {
+      return PASSWORD_REQUIREMENTS_MESSAGE;
     }
 
     if (password !== confirmPassword) {
@@ -164,8 +168,11 @@ function RegisterPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 8 ký tự, đủ 4 nhóm"
                 autoComplete="new-password"
+                minLength={8}
+                maxLength={72}
+                helperText="Gồm chữ hoa, chữ thường, số và ký tự đặc biệt; không có khoảng trắng."
                 required
                 rightElement={
                   <button
@@ -201,17 +208,30 @@ function RegisterPage() {
                     setAcceptedTerms(event.target.checked)
                   }
                   className="mt-1 h-4 w-4 shrink-0 accent-cyan-400"
+                  required
+                  aria-describedby="register-legal-consent"
                 />
 
-                <span>
+                <span id="register-legal-consent">
                   Tôi đồng ý với{" "}
-                  <button
-                    type="button"
-                    className="font-bold text-cyan-300"
+                  <Link
+                    to="/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold text-cyan-300 underline decoration-cyan-300/30 underline-offset-4"
                   >
                     điều khoản sử dụng
-                  </button>{" "}
-                  và chính sách bảo mật.
+                  </Link>{" "}
+                  và{" "}
+                  <Link
+                    to="/privacy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold text-cyan-300 underline decoration-cyan-300/30 underline-offset-4"
+                  >
+                    chính sách quyền riêng tư
+                  </Link>
+                  .
                 </span>
               </label>
 

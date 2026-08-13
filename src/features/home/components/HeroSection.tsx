@@ -1,59 +1,85 @@
+import { Link } from "react-router-dom";
+
 const statistics = [
   {
-    value: "1.200+",
-    label: "Bài học",
+    value: "7",
+    label: "Kỹ năng tương tác",
   },
   {
-    value: "8.500+",
-    label: "Từ vựng",
+    value: "A1–C2",
+    label: "Khung trình độ",
   },
   {
-    value: "150+",
-    label: "Đề luyện tập",
+    value: "500+",
+    label: "Bài tập trong hệ thống",
+  },
+];
+
+const dailyMix = [
+  {
+    icon: "🎧",
+    title: "Nghe & bắt chi tiết",
+    meta: "B1 · 4 lượt · 8 phút",
+    color: "bg-blue-400/15 text-blue-100",
+    status: "Tiếp theo",
+  },
+  {
+    icon: "✦",
+    title: "Xếp câu điều kiện",
+    meta: "Ngữ pháp · 5 lượt · 7 phút",
+    color: "bg-rose-400/15 text-rose-100",
+    status: "Ôn lại",
+  },
+  {
+    icon: "🗣️",
+    title: "Shadowing tại công sở",
+    meta: "Nói · 4 lượt · 6 phút",
+    color: "bg-violet-400/15 text-violet-100",
+    status: "Mới",
   },
 ];
 
 function HeroSection() {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl" />
-      <div className="absolute -left-40 top-52 h-80 w-80 rounded-full bg-blue-600/10 blur-3xl" />
-      <div className="absolute -right-40 top-32 h-80 w-80 rounded-full bg-violet-600/10 blur-3xl" />
+      <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl motion-safe:animate-pulse" />
+      <div className="animate-float absolute -left-40 top-52 h-80 w-80 rounded-full bg-blue-600/10 blur-3xl" />
+      <div className="animate-float-delayed absolute -right-40 top-32 h-80 w-80 rounded-full bg-violet-600/10 blur-3xl" />
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:px-8 lg:py-28">
-        <div>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-300">
-            <span className="h-2 w-2 rounded-full bg-cyan-400" />
-            Học tiếng Anh thông minh hơn mỗi ngày
+        <div className="reveal-up">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200 shadow-lg shadow-cyan-500/5 backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(103,232,249,.9)]" />
+            7 kỹ năng · A1–C2 · phản hồi tức thì
           </div>
 
           <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            Làm chủ tiếng Anh với một
-            <span className="block bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-              lộ trình rõ ràng
+            Học ít lan man hơn.
+            <span className="animate-gradient block bg-gradient-to-r from-cyan-200 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+              Thực hành nhiều hơn.
             </span>
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
-            Học từ vựng, ngữ pháp, phát âm và luyện đề TOEIC trên cùng một nền
-            tảng. Theo dõi tiến độ từng ngày và tập trung vào những kỹ năng bạn
-            còn yếu.
+            Lộ trình học tiếng Anh dành cho người Việt với bài nghe, nói, đọc,
+            viết, ngữ pháp, từ vựng và TOEIC thật sự tương tác. Mỗi ngày hệ thống
+            chọn một phiên ngắn, chấm ngay và lưu đúng điểm bạn cần ôn.
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              className="rounded-2xl bg-cyan-400 px-7 py-4 font-bold text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-300"
+            <Link
+              to="/register"
+              className="premium-button inline-flex items-center justify-center rounded-2xl bg-cyan-300 px-7 py-4 font-black text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200"
             >
-              Bắt đầu học ngay →
-            </button>
+              Bắt đầu lộ trình miễn phí →
+            </Link>
 
-            <button
-              type="button"
+            <a
+              href="#practice-demo"
               className="rounded-2xl border border-white/15 bg-white/5 px-7 py-4 font-bold text-white transition hover:border-white/25 hover:bg-white/10"
             >
-              Xem lộ trình học
-            </button>
+              Thử bài tập ngay
+            </a>
           </div>
 
           <div className="mt-12 grid max-w-xl grid-cols-3 gap-4">
@@ -70,72 +96,72 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-xl">
+        <div className="reveal-up-delayed relative mx-auto w-full max-w-xl">
           <div className="absolute -inset-1 rounded-[34px] bg-gradient-to-r from-cyan-500/40 via-blue-500/30 to-violet-500/40 blur-xl" />
 
-          <div className="relative rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
+          <div className="premium-surface relative rounded-[32px] border border-white/10 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Xin chào, MTD 👋</p>
-                <h2 className="mt-1 text-xl font-bold">Tiếp tục hành trình</h2>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-violet-600 font-bold">
-                M
-              </div>
-            </div>
-
-            <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-400">Mục tiêu hôm nay</p>
-                  <p className="mt-1 font-bold">Hoàn thành 3 bài học</p>
-                </div>
-
-                <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-                  67%
-                </span>
-              </div>
-
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
-                <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" />
-              </div>
-
-              <p className="mt-3 text-xs text-slate-500">
-                Bạn đã hoàn thành 2 trên 3 bài học.
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-500/15 to-transparent p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/20 text-xl">
-                  🎧
-                </div>
-
-                <p className="mt-5 text-sm text-slate-400">Bài học tiếp theo</p>
-                <p className="mt-1 font-bold">Listening Part 2</p>
-                <p className="mt-2 text-xs text-slate-500">12 phút · Cơ bản</p>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-transparent p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/20 text-xl">
-                  🔥
-                </div>
-
-                <p className="mt-5 text-sm text-slate-400">Chuỗi học tập</p>
-                <p className="mt-1 text-2xl font-black">12 ngày</p>
-                <p className="mt-2 text-xs text-slate-500">
-                  Kỷ lục của bạn: 18 ngày
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">
+                  Bản xem trước lộ trình
                 </p>
+                <h2 className="mt-2 text-xl font-black">Daily Mix · 21 phút</h2>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 via-blue-500 to-violet-500 font-black text-slate-950 shadow-lg shadow-cyan-500/15">
+                3
               </div>
             </div>
 
-            <button
-              type="button"
-              className="mt-5 w-full rounded-2xl bg-white py-3.5 font-bold text-slate-950 transition hover:bg-slate-200"
+            <div className="mt-7 space-y-3">
+              {dailyMix.map((item, index) => (
+                <div
+                  key={item.title}
+                  className={`group flex items-center gap-4 rounded-2xl border p-4 transition ${
+                    index === 0
+                      ? "border-cyan-300/25 bg-cyan-300/[0.07]"
+                      : "border-white/10 bg-white/[0.025]"
+                  }`}
+                >
+                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg ${item.color}`}>
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-black">
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block text-xs text-slate-500">
+                      {item.meta}
+                    </span>
+                  </span>
+                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-black text-slate-400">
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 grid grid-cols-[1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+              <div>
+                <div className="flex items-center justify-between gap-3 text-xs font-bold">
+                  <span className="text-slate-400">Mục tiêu 45 phút</span>
+                  <span className="text-emerald-300">21 phút đã xếp</span>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full w-[47%] rounded-full bg-gradient-to-r from-cyan-300 to-violet-400" />
+                </div>
+              </div>
+              <span className="text-2xl" aria-label="Chuỗi học tập">
+                🔥
+              </span>
+            </div>
+
+            <Link
+              to="/login"
+              className="premium-button mt-5 flex w-full items-center justify-center rounded-2xl bg-white py-3.5 font-bold text-slate-950 transition hover:bg-cyan-100"
             >
-              Tiếp tục bài học
-            </button>
+              Mở không gian học tập
+            </Link>
           </div>
         </div>
       </div>
