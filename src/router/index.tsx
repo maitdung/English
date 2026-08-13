@@ -57,6 +57,9 @@ const KnowledgeBooksPage = lazy(
   () => import("../features/practice/pages/KnowledgeBooksPage"),
 );
 const ProfilePage = lazy(() => import("../features/profile/pages/ProfilePage"));
+const CefrReferencePage = lazy(
+  () => import("../features/reference/pages/CefrReferencePage"),
+);
 const SpeakingCoachPage = lazy(
   () => import("../features/speaking/pages/SpeakingCoachPage"),
 );
@@ -67,6 +70,9 @@ const ToeicPage = lazy(() => import("../features/toeic/pages/ToeicPage"));
 const VocabularyPage = lazy(
   () => import("../features/vocabulary/pages/VocabularyPage"),
 );
+const WritingPage = lazy(() => import("../pages/WritingPage"));
+const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
+const TermsPage = lazy(() => import("../pages/TermsPage"));
 
 function RouteLoading() {
   return (
@@ -117,6 +123,14 @@ export const router = createBrowserRouter([
     element: lazyPage(<ResetPasswordPage />),
   },
   {
+    path: "/privacy",
+    element: lazyPage(<PrivacyPage />),
+  },
+  {
+    path: "/terms",
+    element: lazyPage(<TermsPage />),
+  },
+  {
     element: <ProtectedRoute />,
     children: [
       {
@@ -150,6 +164,10 @@ export const router = createBrowserRouter([
           {
             path: "books",
             element: lazyPage(<KnowledgeBooksPage />),
+          },
+          {
+            path: "reference",
+            element: lazyPage(<CefrReferencePage />),
           },
           {
             path: "courses",
@@ -186,6 +204,10 @@ export const router = createBrowserRouter([
           {
             path: "listening",
             element: lazyPage(<ListeningPage />),
+          },
+          {
+            path: "writing",
+            element: lazyPage(<WritingPage />),
           },
           {
             path: "toeic",

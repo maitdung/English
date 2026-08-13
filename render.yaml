@@ -4,7 +4,9 @@ services:
     env: node
     branch: develop
     rootDir: server
-    buildCommand: npm ci && npm run build
+    # Gói free không hỗ trợ pre-deploy command riêng. Cài cả build tools dù
+    # NODE_ENV=production, chỉ migrate sau khi compile pass và trước khi start.
+    buildCommand: npm ci --include=dev && npm run build && npx prisma migrate deploy
     startCommand: npm run start:prod
     healthCheckPath: /api/health
     autoDeployTrigger: commit

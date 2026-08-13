@@ -22,7 +22,7 @@ và khu vực quản trị người dùng.
   Rhetoric & Adaptation.
 - Phòng luyện kỹ năng theo cấp độ A1–C2: từ vựng, nghe, nói, đọc, viết, ngữ
   pháp và kiểm tra.
-- Thư viện luyện tập offline gồm **24 bộ bài / 136 lượt tương tác**, phủ 7
+- Thư viện luyện tập offline gồm **36 bộ bài / 184 lượt tương tác**, phủ 7
   dạng: chọn đáp án, nghe–chọn, điền từ, chính tả, xếp câu, viết có hướng dẫn
   và nói đuổi; kết quả được lưu theo từng bộ để làm kế hoạch hằng ngày.
 - Sách **TOEIC 7 Parts** có 11 bộ / 84 câu: Part 1 ảnh, Part 2 hỏi–đáp,
@@ -33,6 +33,12 @@ và khu vực quản trị người dùng.
   đa kỹ năng và thư viện offline để vẫn học được khi API tạm thời gián đoạn.
 - Quiz có chế độ Nền tảng/Tổng hợp/Nâng cao, câu hỏi B2–C1 và giải thích sau
   mỗi đáp án.
+- Writing Studio có đề theo mục tiêu A1–C2, chấm theo rubric, sửa lỗi, gợi ý
+  từ vựng, bản viết cải thiện và lịch sử bài theo tài khoản.
+- Bản đồ CEFR tra cứu **9.935 mục từ vựng A1–C2** và **500 mục ngữ pháp** từ
+  CEFR-J/Octanove. Trong hồ sơ ngữ pháp, 170 mục có nhãn A1–B2 và 330 mục
+  chưa được nguồn gắn nhãn; ứng dụng không suy diễn phần này thành coverage
+  ngữ pháp C1/C2. Dữ liệu được ghim revision và checksum để có thể tái tạo.
 - Kế hoạch học mỗi ngày tự chọn từ mới và mục cần ôn đến hạn; lưu streak, điểm,
   số lần làm và interval ôn cho từng mục.
 - Bài học lấy từ API, phát âm bằng Web Speech API, chấm đáp án phía server và
@@ -115,6 +121,13 @@ npm run content:verify      # so khớp source với database
 npm run content:stats
 ```
 
+Dữ liệu tham chiếu CEFR-J phía frontend được quản lý riêng:
+
+```bash
+npm run cefrj:sync   # tải đúng revision đã ghim và xác minh checksum
+npm run cefrj:check  # chỉ kiểm tra dữ liệu đang lưu, không cần mạng
+```
+
 Học liệu được quản lý trong `server/prisma/content`. Import mặc định không xóa
 toàn bộ dữ liệu; mỗi khóa học được upsert và mỗi bài được cập nhật trong
 transaction. Làm giàu từ vựng qua API công cộng mặc định được tắt để CI/deploy
@@ -124,17 +137,22 @@ chấp nhận thời gian chờ từ dịch vụ bên ngoài.
 ## Kiểm tra chất lượng
 
 ```bash
-# Frontend
-npm run build
-npm run lint
+# Audit dependency, kiểm tra CEFR-J, build/lint frontend + backend,
+# unit test và kiểm tra nguồn học liệu
+npm run deploy:check
 
-# Backend
+# Kiểm tra migration và API end-to-end với PostgreSQL đang chạy
 cd server
-npm run typecheck
-npm test -- --runInBand
-npm run build
+npx prisma migrate deploy
+npm run content:import
+npm run content:verify
 npm run test:e2e -- --runInBand
 ```
+
+Workflow **Application Quality** chạy trên mọi pull request và push, cài cả
+hai lockfile bằng `npm ci`, audit dependency production ở mức `high`, kiểm tra
+CEFR-J, build/lint, unit test, content check, áp toàn bộ migration lên một
+PostgreSQL sạch, import/verify học liệu rồi mới chạy e2e.
 
 ## Deploy nhanh
 
@@ -167,7 +185,9 @@ npm run deploy:check
 4. Backend:
 
 - Deploy riêng trên Render / Railway / Fly / VPS
-- Chạy `npx prisma migrate deploy`
+- Blueprint `render.yaml` tự chạy `npx prisma migrate deploy` trong build trước
+  khi phát hành server mới (phù hợp gói Render Free không có pre-deploy command).
+- Với nền tảng khác, chạy `npx prisma migrate deploy` trước khi start phiên bản mới.
 - Chạy `npm run seed:content`
 - Start: `npm run start:prod`
 

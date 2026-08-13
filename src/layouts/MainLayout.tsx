@@ -141,9 +141,17 @@ function MainLayout() {
             </p>
           </div>
 
-          <p className="text-sm text-slate-500">
-            © 2026 MTD Lingo. Built with React & TypeScript.
-          </p>
+          <div className="flex flex-col gap-3 text-sm text-slate-500 sm:items-end">
+            <p>© 2026 MTD Lingo. Built with React & TypeScript.</p>
+            <div className="flex gap-4 text-xs font-bold">
+              <Link to="/privacy" className="transition hover:text-slate-200">
+                Quyền riêng tư
+              </Link>
+              <Link to="/terms" className="transition hover:text-slate-200">
+                Điều khoản
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
 

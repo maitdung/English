@@ -79,6 +79,7 @@ model User {
   exerciseAttempts     ExerciseAttempt[]
   dailyLearningActivity DailyLearningActivity[]
   vocabularyReviews    VocabularyReview[]
+  writingSubmissions   WritingSubmission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -324,6 +325,37 @@ model VocabularyReview {
   @@index([vocabularyId])
   @@index([nextReviewAt])
   @@map("vocabulary_reviews")
+}
+
+model WritingSubmission {
+  id                    String      @id @default(uuid())
+  userId                String
+  taskType              String
+  level                 CourseLevel
+  prompt                String?     @db.Text
+  content               String      @db.Text
+  targetWords           Int?
+  wordCount             Int
+  overallScore          Int
+  cefrEstimate          CourseLevel
+  summaryVi             String      @db.Text
+  criteria              Json
+  corrections           Json
+  strengths             Json
+  priorities            Json
+  improvedVersion       String      @db.Text
+  vocabularySuggestions Json
+  source                String
+  aiConsentAt           DateTime?
+  aiConsentVersion      String?     @db.VarChar(32)
+  reviewedAt            DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reviewedAt(sort: Desc)])
+  @@index([userId, taskType])
+  @@index([reviewedAt])
+  @@map("writing_submissions")
 }
 
 model AdminSetting {

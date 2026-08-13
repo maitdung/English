@@ -208,17 +208,30 @@ function RegisterPage() {
                     setAcceptedTerms(event.target.checked)
                   }
                   className="mt-1 h-4 w-4 shrink-0 accent-cyan-400"
+                  required
+                  aria-describedby="register-legal-consent"
                 />
 
-                <span>
+                <span id="register-legal-consent">
                   Tôi đồng ý với{" "}
-                  <button
-                    type="button"
-                    className="font-bold text-cyan-300"
+                  <Link
+                    to="/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold text-cyan-300 underline decoration-cyan-300/30 underline-offset-4"
                   >
                     điều khoản sử dụng
-                  </button>{" "}
-                  và chính sách bảo mật.
+                  </Link>{" "}
+                  và{" "}
+                  <Link
+                    to="/privacy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold text-cyan-300 underline decoration-cyan-300/30 underline-offset-4"
+                  >
+                    chính sách quyền riêng tư
+                  </Link>
+                  .
                 </span>
               </label>
 

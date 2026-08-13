@@ -48,6 +48,37 @@ const envSchema = z.object({
   ),
   FRONTEND_URL: z.string().min(1),
   OPENAI_API_KEY: z.string().optional().default(''),
+  XAI_API_KEY: z.string().optional().default(''),
+  GROK_API_KEY: z.string().optional().default(''),
+  GEMINI_API_KEY: z.string().optional().default(''),
+  AI_PROVIDER: z.preprocess(
+    (value) =>
+      typeof value === 'string' && value.trim() === '' ? undefined : value,
+    z.enum(['openai', 'xai', 'gemini']).optional(),
+  ),
+  OPENAI_WRITING_MODEL: z.string().min(1).default('gpt-4o-mini'),
+  XAI_WRITING_MODEL: z.string().min(1).default('grok-4.3'),
+  GEMINI_WRITING_MODEL: z.string().min(1).default('gemini-3.5-flash'),
+  XAI_SPEAKING_MODEL: z.string().min(1).default('grok-4.3'),
+  GEMINI_SPEAKING_MODEL: z.string().min(1).default('gemini-3.5-flash'),
+  AI_REQUEST_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(3_000)
+    .max(60_000)
+    .default(15_000),
+  WRITING_AI_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(1_000)
+    .max(60_000)
+    .default(20_000),
+  WRITING_RETENTION_DAYS: z.coerce
+    .number()
+    .int()
+    .min(7)
+    .max(3_650)
+    .default(365),
   ENABLE_SWAGGER_DOCS: z
     .enum(['true', 'false'])
     .default('false')

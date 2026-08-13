@@ -17,6 +17,11 @@ const navigationItems = [
     icon: "🗺️",
   },
   {
+    label: "Phòng kỹ năng",
+    path: "/dashboard/skills",
+    icon: "🎯",
+  },
+  {
     label: "Thư viện luyện tập",
     path: "/dashboard/practice",
     icon: "⚡",
@@ -25,6 +30,11 @@ const navigationItems = [
     label: "Sách kiến thức",
     path: "/dashboard/books",
     icon: "📚",
+  },
+  {
+    label: "Bản đồ CEFR",
+    path: "/dashboard/reference",
+    icon: "🧭",
   },
   {
     label: "Khóa học",
@@ -40,6 +50,11 @@ const navigationItems = [
     label: "Luyện nghe",
     path: "/dashboard/listening",
     icon: "🎧",
+  },
+  {
+    label: "Writing Studio",
+    path: "/dashboard/writing",
+    icon: "✍️",
   },
   {
     label: "Speaking Coach",
@@ -94,6 +109,7 @@ function DashboardLayout() {
   useEffect(() => {
     const readDailyGoal = () => {
       if (!user) {
+        setDailyGoal("45");
         return;
       }
 
@@ -104,9 +120,11 @@ function DashboardLayout() {
           ) ?? "{}",
         ) as { dailyGoal?: unknown };
 
-        if (typeof storedPreferences.dailyGoal === "string") {
-          setDailyGoal(storedPreferences.dailyGoal);
-        }
+        setDailyGoal(
+          typeof storedPreferences.dailyGoal === "string"
+            ? storedPreferences.dailyGoal
+            : "45",
+        );
       } catch {
         setDailyGoal("45");
       }

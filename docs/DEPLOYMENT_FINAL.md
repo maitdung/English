@@ -39,14 +39,18 @@ store this secret in the browser or push source code from the browser.
 
 ## Database
 
-1. Run Prisma migrations:
+`render.yaml` already runs the additive Prisma migrations in Render's build
+step, before the new server version starts. This is required on the free plan,
+where a separate pre-deploy command is unavailable.
+
+On another backend platform, run migrations before starting the new version:
 
 ```bash
 cd server
 npx prisma migrate deploy
 ```
 
-2. Seed content:
+Seed content when the catalog changes:
 
 ```bash
 npm run seed:content

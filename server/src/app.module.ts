@@ -11,6 +11,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { validateEnv } from './config/env.validation';
 import { SpeakingCoachModule } from './speaking-coach/speaking-coach.module';
 import { UsersModule } from './users/users.module';
+import { WritingModule } from './writing/writing.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     CoursesModule,
     LearningProgressModule,
     SpeakingCoachModule,
+    WritingModule,
   ],
 })
 export class AppModule {}

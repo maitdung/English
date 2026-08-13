@@ -1,0 +1,106 @@
+name: Application Quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: application-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application-quality:
+    name: Build, test, migrate and verify
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mtd_lingo_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d mtd_lingo_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mtd_lingo_ci?schema=public
+      FRONTEND_URL: http://localhost:5173
+      JWT_ACCESS_SECRET: ci-only-access-secret-not-for-production-0001
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-not-for-production-0002
+      PASSWORD_RESET_EXPOSE_TOKEN: "false"
+      HEALTH_CHECK_REDIS_ENABLED: "false"
+      CONTENT_SEED_VALIDATE: "true"
+      CONTENT_SEED_VERBOSE: "false"
+      ENABLE_VOCABULARY_ENRICHMENT: "false"
+      ENABLE_SWAGGER_DOCS: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+
+      - name: Install frontend dependencies from lockfile
+        run: npm ci
+
+      - name: Install server dependencies from lockfile
+        working-directory: server
+        run: npm ci
+
+      - name: Audit production dependencies (high severity)
+        run: npm run security:audit
+
+      - name: Verify pinned CEFR-J reference data
+        run: npm run cefrj:check
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Lint server
+        working-directory: server
+        run: npm run lint
+
+      - name: Build server
+        working-directory: server
+        run: npm run build
+
+      - name: Run server unit tests
+        working-directory: server
+        run: npm test -- --runInBand
+
+      - name: Check learning content source
+        working-directory: server
+        run: npm run content:check
+
+      - name: Apply every migration to clean PostgreSQL
+        working-directory: server
+        run: npx prisma migrate deploy
+
+      - name: Import and verify learning content
+        working-directory: server
+        run: npm run content:import && npm run content:verify
+
+      - name: Run API end-to-end tests
+        working-directory: server
+        run: npm run test:e2e -- --runInBand

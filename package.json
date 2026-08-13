@@ -8,8 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "security:audit": "npm audit --omit=dev --audit-level=high && npm --prefix server audit --omit=dev --audit-level=high",
+    "cefrj:sync": "node scripts/sync-cefrj-profiles.mjs",
+    "cefrj:check": "node scripts/sync-cefrj-profiles.mjs --check",
     "deploy:prepare": "node scripts/deploy-preflight.mjs",
-    "deploy:check": "npm run build && npm run lint && npm --prefix server run build && npm --prefix server test -- --runInBand src/auth/auth.controller.spec.ts src/users/users.controller.spec.ts"
+    "deploy:check": "npm run security:audit && npm run cefrj:check && npm run build && npm run lint && npm --prefix server run build && npm --prefix server run lint && npm --prefix server test -- --runInBand && npm --prefix server run content:check"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

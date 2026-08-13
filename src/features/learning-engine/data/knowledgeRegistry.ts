@@ -72,6 +72,35 @@ export const externalKnowledgeResources: ExternalKnowledgeResource[] = [
       },
     ],
   },
+  {
+    id: "olp-en-cefrj",
+    title: "Open Language Profiles — CEFR-J English datasets",
+    kind: "reference",
+    url: "https://github.com/openlanguageprofiles/olp-en-cefrj",
+    revision: "d4e45b75b38f27b30dfc5c44d8c571aec7e7092f",
+    license: "CEFR-J terms; Octanove C1/C2 CC BY-SA 4.0",
+    attribution:
+      "Tono Laboratory at TUFS; Octanove Labs; Open Language Profiles",
+    localDocumentation: "resources/external/olp-en-cefrj/README.md",
+    methods: [
+      {
+        id: "cefr-vocabulary-map",
+        title: "Bản đồ từ vựng A1–C2",
+        summary:
+          "Tra cứu headword và từ loại theo cấp CEFR-J, kèm hồ sơ C1/C2.",
+        application:
+          "Bản đồ CEFR tải dữ liệu tĩnh đã ghim checksum để tìm và lọc theo cấp độ.",
+      },
+      {
+        id: "cefr-grammar-map",
+        title: "Bản đồ ngữ pháp CEFR-J",
+        summary:
+          "Đối chiếu cấu trúc với CEFR-J, Core Inventory, EGP và GSE.",
+        application:
+          "Kho tham chiếu giúp người học và biên soạn viên xác định độ khó tương đối của cấu trúc.",
+      },
+    ],
+  },
 ];
 
 export const fluentKnowledgeResource = externalKnowledgeResources[0];

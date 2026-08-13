@@ -1,3 +1,4 @@
+import { extendedPracticeSets } from "./extendedPracticeCatalog";
 import { toeicPracticeSets } from "./toeicCatalog";
 import type { PracticeSet } from "../types/practice";
 
@@ -1149,5 +1150,6 @@ const corePracticeSets: PracticeSet[] = [
 /** Unified offline catalog used by the library, daily plan, and TOEIC page. */
 export const practiceSets: PracticeSet[] = [
   ...corePracticeSets,
+  ...extendedPracticeSets,
   ...toeicPracticeSets,
 ];

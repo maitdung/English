@@ -24,7 +24,8 @@ VITE_API_URL=https://english-3t66.onrender.com/api
 HEALTH_CHECK_REDIS_ENABLED=false
 ```
 
-3. Run migrations:
+3. On Render Free, use the repository `render.yaml`; it runs migrations in the
+   build step before the new server starts. On other platforms, run:
 
 ```bash
 cd server
